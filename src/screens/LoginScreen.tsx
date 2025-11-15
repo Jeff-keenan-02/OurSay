@@ -1,27 +1,52 @@
-import { useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 export default function LoginScreen() {
-  const navigation: any = useNavigation(); // ✅ Get navigation without props
-  const [email, setEmail] = useState("");
+  const navigation: any = useNavigation();
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const handleLogin = () => {
-    console.log("Logging in with:", email, password);
-    navigation.navigate("Home");
+  const handleLogin = async () => {
+    if (!username || !password) {
+      setErrorMsg("Both fields required");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:3000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMsg(data.error);
+        return;
+      }
+
+      console.log("Login success:", data);
+      navigation.navigate("Home");
+    } catch (err) {
+      console.error(err);
+      setErrorMsg("Network error");
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome Back</Text>
+      <Text style={styles.title}>Login</Text>
+
+      {errorMsg !== "" && <Text style={styles.error}>{errorMsg}</Text>}
 
       <TextInput
         style={styles.input}
-        placeholder="Email"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
+        placeholder="Username"
+        value={username}
+        onChangeText={setUsername}
       />
 
       <TextInput
@@ -32,32 +57,23 @@ export default function LoginScreen() {
         onChangeText={setPassword}
       />
 
-      <TouchableOpacity onPress={handleLogin} style={styles.button}>
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
-        <Text style={styles.link}>Don't have an account? Sign up</Text>
+        <Text style={styles.link}>Create an account</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", padding: 20 },
-  title: { fontSize: 28, marginBottom: 20, textAlign: "center" },
-  input: {
-    backgroundColor: "#eee",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 15,
-  },
-  button: {
-    backgroundColor: "#007bff",
-    padding: 15,
-    borderRadius: 8,
-    marginTop: 10,
-  },
-  buttonText: { color: "white", textAlign: "center", fontWeight: "bold" },
-  link: { textAlign: "center", marginTop: 15 }
+  container: { padding: 30 },
+  title: { fontSize: 26, fontWeight: "bold", marginBottom: 20 },
+  input: { borderWidth: 1, padding: 12, borderRadius: 8, marginBottom: 15 },
+  button: { backgroundColor: "#3949ab", padding: 15, borderRadius: 8 },
+  buttonText: { color: "#fff", textAlign: "center", fontWeight: "600" },
+  error: { color: "red", marginBottom: 10 },
+  link: { marginTop: 15, color: "#3949ab", textAlign: "center" }
 });
