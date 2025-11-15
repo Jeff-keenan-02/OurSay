@@ -1,18 +1,3 @@
-// import React from 'react';
-// import { View, Text, StyleSheet } from 'react-native';
-
-// export default function HomeScreen() {
-//   return (
-//     <View style={styles.container}>
-//       <Text style={styles.text}>Home</Text>
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-//   text: { fontSize: 24 }
-// });
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
@@ -23,20 +8,6 @@ const navigation: any = useNavigation(); // ✅ Get navigation without props
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to OurSay</Text>
       <Text style={styles.subtitle}>Verified Civic Engagement Platform</Text>
-{/* 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('Verify')}
-      >
-        <Text style={styles.buttonText}>Verify Your Identity</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[styles.button, styles.secondaryButton]}
-        onPress={() => navigation.navigate('Settings')}
-      >
-        <Text style={styles.buttonText}>Go to Settings</Text>
-      </TouchableOpacity> */}
     </View>
   );
 }
