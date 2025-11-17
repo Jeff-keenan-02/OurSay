@@ -1,51 +1,57 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+// src/screens/SettingsScreen.tsx
+import React, { useContext } from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { AuthContext } from "../context/AuthContext";
 
 export default function SettingsScreen() {
+  const { logout, user } = useContext(AuthContext);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Settings</Text>
-      <View style={styles.optionsContainer}>
-        <TouchableOpacity style={styles.option}>
-          <Text style={styles.optionText}>Account</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.option}>
-          <Text style={styles.optionText}>Notifications</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.option}>
-          <Text style={styles.optionText}>Privacy & Security</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.option}>
-          <Text style={styles.optionText}>About</Text>
-        </TouchableOpacity>
+      <Text style={styles.header}>Settings</Text>
+
+      <View style={styles.infoBox}>
+        <Text style={styles.label}>Logged in as:</Text>
+        <Text style={styles.username}>{user?.username}</Text>
       </View>
+
+      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+        <Text style={styles.logoutText}>Sign Out</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 60,
-    paddingHorizontal: 24,
-    backgroundColor: '#f5f7fa',
-  },
-  title: {
+  container: { flex: 1, padding: 24, backgroundColor: "#eef2ff" },
+
+  header: {
     fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 20,
-    textAlign: 'center',
+    fontWeight: "700",
+    color: "#1a237e",
+    marginBottom: 30,
   },
-  optionsContainer: {
-    marginTop: 20,
+
+  infoBox: {
+    backgroundColor: "white",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 40,
+    elevation: 2,
   },
-  option: {
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderColor: '#dce1e6',
+
+  label: { fontSize: 14, color: "#555" },
+  username: { fontSize: 18, fontWeight: "600", marginTop: 4 },
+
+  logoutButton: {
+    backgroundColor: "#d32f2f",
+    paddingVertical: 14,
+    borderRadius: 10,
   },
-  optionText: {
+  logoutText: {
+    color: "white",
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: "600",
+    textAlign: "center",
   },
 });

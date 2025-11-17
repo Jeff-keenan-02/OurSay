@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
+import { AuthContext } from "../context/AuthContext";
 
 type RootStackParamList = {
   DiscussionDetail: { id: number };
@@ -17,6 +18,7 @@ type Comment = {
   id: number;
   body: string;
   created_at: string;
+  username: string | null;  // <-- added username
 };
 
 type Discussion = {
@@ -26,7 +28,7 @@ type Discussion = {
   comments: Comment[];
 };
 
-// --- helper to format "x minutes ago" ---
+// Format timestamps like “3m ago”
 function timeAgo(timestamp: string) {
   const date = new Date(timestamp);
   const now = new Date();
@@ -45,11 +47,15 @@ export default function DiscussionDetailScreen() {
   const route = useRoute<RouteProp<RootStackParamList, "DiscussionDetail">>();
   const { id } = route.params;
 
+  const { user } = useContext(AuthContext);
+
+  
   const [discussion, setDiscussion] = useState<Discussion | null>(null);
   const [newComment, setNewComment] = useState("");
 
   const API_BASE = "http://localhost:3000";
 
+  // Load discussion + comments
   const loadDiscussion = () => {
     fetch(`${API_BASE}/discussions/${id}`)
       .then((res) => res.json())
@@ -61,17 +67,25 @@ export default function DiscussionDetailScreen() {
     loadDiscussion();
   }, []);
 
+  // Submit a new comment
   const submitComment = () => {
     if (!newComment.trim()) return;
 
+    if (!user) {  
+      alert("You must be logged in to comment.");
+      return;
+    } 
     fetch(`${API_BASE}/discussions/${id}/comments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ body: newComment }),
+      body: JSON.stringify({
+        body: newComment,
+        userId: user.id,
+      }),
     })
       .then(() => {
         setNewComment("");
-        loadDiscussion(); // refresh comments
+        loadDiscussion();
       })
       .catch((err) => console.error("Error posting comment:", err));
   };
@@ -80,7 +94,7 @@ export default function DiscussionDetailScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Discussion Header */}
+      {/* Main Post */}
       <View style={styles.postCard}>
         <Text style={styles.title}>{discussion.title}</Text>
         <Text style={styles.body}>{discussion.body}</Text>
@@ -88,20 +102,28 @@ export default function DiscussionDetailScreen() {
 
       <Text style={styles.commentsHeader}>Comments</Text>
 
-      {/* Comment List */}
+      {/* Comments List */}
       <FlatList
         data={discussion.comments}
         keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={{ paddingBottom: 80 }}
+        contentContainerStyle={{ paddingBottom: 90 }}
         renderItem={({ item }) => (
           <View style={styles.commentCard}>
+            <View style={styles.commentHeader}>
+              <Text style={styles.username}>
+                {item.username ?? "Anonymous"}
+              </Text>
+              <Text style={styles.commentTime}>
+                {timeAgo(item.created_at)}
+              </Text>
+            </View>
+
             <Text style={styles.commentText}>{item.body}</Text>
-            <Text style={styles.commentTime}>{timeAgo(item.created_at)}</Text>
           </View>
         )}
       />
 
-      {/* Comment Input */}
+      {/* Comment Input Bar */}
       <View style={styles.inputContainer}>
         <TextInput
           value={newComment}
@@ -110,6 +132,7 @@ export default function DiscussionDetailScreen() {
           placeholder="Write a comment..."
           placeholderTextColor="#777"
         />
+
         <TouchableOpacity style={styles.button} onPress={submitComment}>
           <Text style={styles.buttonText}>Post</Text>
         </TouchableOpacity>
@@ -148,8 +171,24 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     elevation: 1,
   },
-  commentText: { fontSize: 15, color: "#333" },
-  commentTime: { fontSize: 12, color: "#666", marginTop: 4 },
+
+  commentHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+
+  username: {
+    fontWeight: "700",
+    color: "#3949ab",
+  },
+
+  commentText: { fontSize: 15, color: "#333", marginTop: 2 },
+
+  commentTime: {
+    fontSize: 12,
+    color: "#666",
+  },
 
   inputContainer: {
     position: "absolute",
@@ -181,3 +220,7 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: "white", fontWeight: "600" },
 });
+
+function alert(arg0: string) {
+  throw new Error("Function not implemented.");
+}

@@ -1,60 +1,64 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+
 
 type Poll = {
   id: number;
   title: string;
   description: string | null;
-  votesYes: number;
-  votesNo: number;
+  votes_yes: number;
+  votes_no: number;
 };
 
 export default function PollsScreen() {
-  const [polls, setPolls] = useState<Poll[]>([]);
+  const { user } = useContext(AuthContext);
 
-  // Load data from backend
-  useEffect(() => {
-    fetch("http://localhost:3000/polls")
+  const [polls, setPolls] = useState<Poll[]>([]);
+  const API = "http://localhost:3000";
+
+  const loadPolls = () => {
+    fetch(`${API}/polls`)
       .then(res => res.json())
-      .then(data => {
-        // Add vote fields so UI works
-        const pollsWithVotes = data.map((p: any) => ({
-          ...p,
-          votesYes: 0,
-          votesNo: 0
-        }));
-        setPolls(pollsWithVotes);
-      })
+      .then(data => setPolls(data))
       .catch(err => console.error("Error fetching polls:", err));
+  };
+
+  useEffect(() => {
+    loadPolls();
   }, []);
 
-  // Handle votes (local only for now)
-  const castVote = (id: number, type: "yes" | "no") => {
-    setPolls(prev =>
-      prev.map(p =>
-        p.id === id
-          ? {
-              ...p,
-              votesYes: type === "yes" ? p.votesYes + 1 : p.votesYes,
-              votesNo: type === "no" ? p.votesNo + 1 : p.votesNo
-            }
-          : p
-      )
-    );
+  const castVote = async (id: number, choice: "yes" | "no") => {
+    if (!user) {
+      alert("You must be logged in to vote.");
+      return;
+   }
+    try {
+      await fetch(`${API}/polls/${id}/vote`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, choice })
+      });
+
+      loadPolls();
+    } catch (err) {
+      console.error("Error voting:", err);
+    }
   };
 
   const renderPoll = ({ item }: { item: Poll }) => (
     <View style={styles.pollCard}>
       <Text style={styles.question}>{item.title}</Text>
-      <Text style={styles.description}>{item.description}</Text>
+      {item.description && <Text style={styles.description}>{item.description}</Text>}
 
       <View style={styles.voteRow}>
         <TouchableOpacity style={styles.voteButton} onPress={() => castVote(item.id, "yes")}>
-          <Text style={styles.voteText}>Yes ({item.votesYes})</Text>
+          <Text style={styles.voteText}>Yes ({item.votes_yes})</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={[styles.voteButton, styles.noButton]} onPress={() => castVote(item.id, "no")}>
-          <Text style={styles.voteText}>No ({item.votesNo})</Text>
+          <Text style={styles.voteText}>No ({item.votes_no})</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -84,3 +88,7 @@ const styles = StyleSheet.create({
   noButton: { backgroundColor: '#1a237e' },
   voteText: { color: 'white', fontWeight: 'bold' },
 });
+
+function alert(arg0: string) {
+  throw new Error('Function not implemented.');
+}

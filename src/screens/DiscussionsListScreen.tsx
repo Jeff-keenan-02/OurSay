@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
+import { AuthContext } from '../context/AuthContext';
 
 type Discussion = {
   id: number;
@@ -17,6 +18,8 @@ type RootStackParamList = {
 };
 
 export default function DiscussionsListScreen() {
+  const { user } = useContext(AuthContext);
+
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
 
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -40,11 +43,14 @@ export default function DiscussionsListScreen() {
 
   const sendVote = async (id: number, direction: 'up' | 'down') => {
     try {
-      // TODO: replace hardcoded 1 with logged-in user id once auth is wired
+        if (!user) {
+          alert("You must be logged in to vote");
+          return;
+        }
       const res = await fetch(`${API_BASE}/discussions/${id}/vote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: 1, direction })
+        body: JSON.stringify({ userId: user.id, direction })
       });
 
       if (!res.ok) {
@@ -134,3 +140,7 @@ const styles = StyleSheet.create({
   voteText: { color: 'white', fontWeight: 'bold' },
   meta: { color: '#555', fontWeight: '600' }
 });
+
+function alert(arg0: string) {
+  throw new Error('Function not implemented.');
+}

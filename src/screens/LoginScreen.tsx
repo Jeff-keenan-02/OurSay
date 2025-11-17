@@ -1,19 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { AuthContext } from "../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 
 export default function LoginScreen() {
-  const navigation: any = useNavigation();
+  const navigation: any = useNavigation();   // ✅ FIX HERE
+  const { login } = useContext(AuthContext);
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
   const handleLogin = async () => {
-    if (!username || !password) {
-      setErrorMsg("Both fields required");
-      return;
-    }
-
     try {
       const res = await fetch("http://localhost:3000/login", {
         method: "POST",
@@ -24,12 +22,12 @@ export default function LoginScreen() {
       const data = await res.json();
 
       if (!res.ok) {
-        setErrorMsg(data.error);
+        setErrorMsg(data.error || "Invalid login");
         return;
       }
 
-      console.log("Login success:", data);
-      navigation.navigate("Home");
+      login(data.user);// store user globally
+
     } catch (err) {
       console.error(err);
       setErrorMsg("Network error");
@@ -39,23 +37,10 @@ export default function LoginScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
-
       {errorMsg !== "" && <Text style={styles.error}>{errorMsg}</Text>}
 
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+      <TextInput style={styles.input} placeholder="Username" value={username} onChangeText={setUsername} />
+      <TextInput style={styles.input} placeholder="Password" secureTextEntry value={password} onChangeText={setPassword} />
 
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Login</Text>
@@ -64,16 +49,53 @@ export default function LoginScreen() {
       <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
         <Text style={styles.link}>Create an account</Text>
       </TouchableOpacity>
+
     </View>
   );
 }
 
+
 const styles = StyleSheet.create({
-  container: { padding: 30 },
-  title: { fontSize: 26, fontWeight: "bold", marginBottom: 20 },
-  input: { borderWidth: 1, padding: 12, borderRadius: 8, marginBottom: 15 },
-  button: { backgroundColor: "#3949ab", padding: 15, borderRadius: 8 },
-  buttonText: { color: "#fff", textAlign: "center", fontWeight: "600" },
-  error: { color: "red", marginBottom: 10 },
-  link: { marginTop: 15, color: "#3949ab", textAlign: "center" }
+  container: {
+    flex: 1,
+    backgroundColor: '#f0f4ff',
+    padding: 20,
+    justifyContent: 'center'
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#1a237e',
+    marginBottom: 24,
+    textAlign: 'center'
+  },
+  input: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#c5cae9'
+  },
+  button: {
+    backgroundColor: '#3949ab',
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center'
+  },
+  buttonDisabled: {
+    opacity: 0.7
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold'
+  },
+  link: { 
+    marginTop: 15, 
+    color: "#3949ab", 
+    textAlign: "center" }
+
 });

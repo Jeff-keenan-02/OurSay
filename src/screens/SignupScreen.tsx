@@ -1,43 +1,37 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-
-const API_BASE = 'http://localhost:3000'; // same as you used for /polls
+import React, { useState, useContext } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { AuthContext } from "../context/AuthContext";
+import { useNavigation } from "@react-navigation/native";
 
 export default function SignupScreen() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const navigation = useNavigation<any>();
+  const { login } = useContext(AuthContext);
+
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const handleSignup = async () => {
-    if (!username || !password) {
-      Alert.alert('Missing fields', 'Please enter both a username and password.');
-      return;
-    }
-
     try {
-      setLoading(true);
-      const res = await fetch(`${API_BASE}/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("http://localhost:3000/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        Alert.alert('Signup failed', data.error || 'Something went wrong.');
+        setErrorMsg(data.error || "Signup failed");
         return;
       }
 
-      Alert.alert('Success', 'Account created successfully.');
-      setUsername('');
-      setPassword('');
-      // later: navigate to Home or Login if you want
+      // ⭐ Automatically log user in (best practice)
+      login(data.user);
+
     } catch (err) {
-      console.error('Signup error:', err);
-      Alert.alert('Error', 'Could not connect to the server.');
-    } finally {
-      setLoading(false);
+      console.error(err);
+      setErrorMsg("Network error");
     }
   };
 
@@ -45,31 +39,30 @@ export default function SignupScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Create Account</Text>
 
+      {errorMsg !== "" && <Text style={styles.error}>{errorMsg}</Text>}
+
       <TextInput
         style={styles.input}
-        placeholder="Username"
-        autoCapitalize="none"
+        placeholder="Choose Username"
         value={username}
         onChangeText={setUsername}
       />
 
       <TextInput
         style={styles.input}
-        placeholder="Password"
+        placeholder="Choose Password"
         secureTextEntry
-        autoCapitalize="none"
         value={password}
         onChangeText={setPassword}
       />
 
-      <TouchableOpacity
-        style={[styles.button, loading && styles.buttonDisabled]}
-        onPress={handleSignup}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>
-          {loading ? 'Creating...' : 'Sign Up'}
-        </Text>
+      <TouchableOpacity style={styles.button} onPress={handleSignup}>
+        <Text style={styles.buttonText}>Sign Up</Text>
+      </TouchableOpacity>
+
+      {/* ⭐ Add link to login */}
+      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+        <Text style={styles.link}>Already have an account? Log in</Text>
       </TouchableOpacity>
     </View>
   );
@@ -112,5 +105,16 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold'
+  },
+  link: { 
+    marginTop: 15, 
+    color: "#3949ab", 
+    textAlign: "center" },
+    
+  error: {
+    color: '#d32f2f',
+    fontSize: 14,
+    marginBottom: 16,
+    textAlign: 'center'
   }
 });
