@@ -4,7 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 
 export default function LoginScreen() {
-  const navigation: any = useNavigation();   // ✅ FIX HERE
+  const navigation: any = useNavigation();
   const { login } = useContext(AuthContext);
 
   const [username, setUsername] = useState("");
@@ -96,6 +96,12 @@ const styles = StyleSheet.create({
   link: { 
     marginTop: 15, 
     color: "#3949ab", 
-    textAlign: "center" }
+    textAlign: "center" },
 
+  error: {
+    color: '#d32f2f',
+    fontSize: 14,
+    marginBottom: 16,
+    textAlign: 'center'
+  }
 });
