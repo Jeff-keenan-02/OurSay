@@ -1,12 +1,22 @@
 import React, { useState, useContext } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
+import { globalStyles } from "../theme/globalStyles";
+import { useTheme } from "react-native-paper";
+
+import {
+  Text,
+  TextInput,
+  Button,
+  Card,
+  Avatar,
+} from "react-native-paper";
 
 export default function SignupScreen() {
-  const navigation = useNavigation<any>();
+  const navigation: any = useNavigation();
   const { login } = useContext(AuthContext);
-
+  const theme = useTheme();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -16,7 +26,7 @@ export default function SignupScreen() {
       const res = await fetch("http://localhost:3000/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
       });
 
       const data = await res.json();
@@ -26,9 +36,7 @@ export default function SignupScreen() {
         return;
       }
 
-      // ⭐ Automatically log user in (best practice)
       login(data.user);
-
     } catch (err) {
       console.error(err);
       setErrorMsg("Network error");
@@ -36,85 +44,130 @@ export default function SignupScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
+    <View style={[globalStyles.screenCenter, { backgroundColor: theme.colors.background }]}>
 
-      {errorMsg !== "" && <Text style={styles.error}>{errorMsg}</Text>}
-
-      <TextInput
-        style={styles.input}
-        placeholder="Choose Username"
-        value={username}
-        onChangeText={setUsername}
+      {/* Branding Icon */}
+      <Avatar.Icon
+        size={84}
+        icon="account-plus"
+        color={theme.colors.primary} 
+        style={styles.icon}
       />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Choose Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+      {/* App Title */}
+       <Text
+         variant="headlineLarge"
+         // 2. Use the theme's onBackground color for high contrast text
+         style={[styles.title, { color: theme.colors.onBackground }]} 
+       >
+         OurSay
+      </Text>
 
-      <TouchableOpacity style={styles.button} onPress={handleSignup}>
-        <Text style={styles.buttonText}>Sign Up</Text>
-      </TouchableOpacity>
+      {/* Subtitle */}
+        <Text
+          variant="bodyMedium"
+          // 3. Use the theme's muted color for secondary text
+          style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}
+        >
+        Create an account to take part in verified discussions
+      </Text>
 
-      {/* ⭐ Add link to login */}
-      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-        <Text style={styles.link}>Already have an account? Log in</Text>
-      </TouchableOpacity>
+      {/* Signup Card */}
+      {/* Login Card (Card uses theme.colors.surface automatically) */}
+          <Card 
+            mode="elevated" 
+            style={[
+              { backgroundColor: theme.colors.surface }, 
+              styles.SignupCard // <--- ADD THIS CUSTOM STYLE
+            ]}
+          >
+            <Card.Title
+              title="Sign Up"
+              // 4. Use the theme's onSurface color for the card title
+              titleStyle={[styles.cardTitle, { color: theme.colors.onSurface }]}
+            />
+    
+            <Card.Content>
+              {errorMsg ? (
+                <Text style={[globalStyles.error, { color: theme.colors.error }]}>
+                  {errorMsg}
+                </Text>
+              ) : null}
+    
+              <TextInput
+                // TextInput will automatically use theme.colors.surfaceVariant
+                mode="outlined"
+                label="Username"
+                value={username}
+                onChangeText={setUsername}
+                autoCapitalize="none"
+              />
+              {/* ... Password Input ... */}
+              <TextInput
+                mode="outlined"
+                label="Password"
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+              />
+              <Button
+                  mode="contained"
+                  onPress={handleSignup}
+                >
+                  Sign Up
+                </Button>
+
+          <Button
+            mode="text"
+            onPress={() => navigation.navigate("Login")}
+            style={styles.link}
+          >
+            Already have an account? Log in
+          </Button>
+
+        </Card.Content>
+      </Card>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f4ff',
-    padding: 20,
-    justifyContent: 'center'
+// 5. Remove all color rules from the StyleSheet.create block
+  icon: {
+    backgroundColor: "transparent",
+    marginBottom: 10,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a237e',
-    marginBottom: 24,
-    textAlign: 'center'
+    textAlign: "center",
+    marginTop: 4,
+    fontWeight: "bold",
+    // Color removed
   },
-  input: {
-    backgroundColor: 'white',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#c5cae9'
+  subtitle: {
+    textAlign: "center",
+    marginBottom: 20,
+    // Color removed
   },
-  button: {
-    backgroundColor: '#3949ab',
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center'
+  cardTitle: {
+    textAlign: "center",
+    fontSize: 24,
+
   },
-  buttonDisabled: {
-    opacity: 0.7
+  link: {
+    marginTop: 6,
   },
-  buttonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold'
+  scrollContent: {
+    flexGrow: 1, // Allows content to take up full screen height
+    justifyContent: 'center', // Centers content vertically
+    alignItems: 'center',    // Centers content horizontally
+    paddingVertical: 20,     // Ensures padding at top/bottom of scrollable area
   },
-  link: { 
-    marginTop: 15, 
-    color: "#3949ab", 
-    textAlign: "center" },
-    
-  error: {
-    color: '#d32f2f',
-    fontSize: 14,
-    marginBottom: 16,
-    textAlign: 'center'
-  }
+    SignupCard: {
+    // This constrains the card width to 90% of the screen
+    width: '90%', 
+    // This allows it to look good on tablets/larger screens
+    maxWidth: 400, 
+    padding: 10, // Add some padding around the content
+    // Remove vertical margin since it's centered
+  },
 });

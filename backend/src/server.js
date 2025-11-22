@@ -1,10 +1,10 @@
 // backend/src/server.js
-require('dotenv').config();
-const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
 const crypto = require('crypto');
 
+
+const express = require('express');
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -17,7 +17,6 @@ const pool = new Pool({
   database: 'oursaydb',
   port: 5431
 });
-
 // --- simple password hashing helper ---
 const PASSWORD_SALT = process.env.PASSWORD_SALT || 'dev_salt_change_me';
 
@@ -27,7 +26,6 @@ function hashPassword(password) {
     .update(password + PASSWORD_SALT)
     .digest('hex');
 }
-
 // ---------- AUTH ROUTES ----------
 
 // POST /signup  { username, password }

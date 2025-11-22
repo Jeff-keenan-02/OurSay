@@ -1,7 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
-import { useContext } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { View, StyleSheet, FlatList } from "react-native";
 import { AuthContext } from "../context/AuthContext";
+import { globalStyles } from "../theme/globalStyles";
+
+import {
+  Text,
+  Card,
+  Button,
+  Divider,
+  useTheme,
+} from "react-native-paper";
 
 
 type Poll = {
@@ -14,15 +22,16 @@ type Poll = {
 
 export default function PollsScreen() {
   const { user } = useContext(AuthContext);
-
   const [polls, setPolls] = useState<Poll[]>([]);
+  const theme = useTheme();
+
   const API = "http://localhost:3000";
 
   const loadPolls = () => {
     fetch(`${API}/polls`)
-      .then(res => res.json())
-      .then(data => setPolls(data))
-      .catch(err => console.error("Error fetching polls:", err));
+      .then((res) => res.json())
+      .then((data) => setPolls(data))
+      .catch((err) => console.error("Error fetching polls:", err));
   };
 
   useEffect(() => {
@@ -30,15 +39,13 @@ export default function PollsScreen() {
   }, []);
 
   const castVote = async (id: number, choice: "yes" | "no") => {
-    if (!user) {
-      alert("You must be logged in to vote.");
-      return;
-   }
+    if (!user) return alert("You must be logged in to vote.");
+
     try {
       await fetch(`${API}/polls/${id}/vote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, choice })
+        body: JSON.stringify({ userId: user.id, choice }),
       });
 
       loadPolls();
@@ -48,47 +55,123 @@ export default function PollsScreen() {
   };
 
   const renderPoll = ({ item }: { item: Poll }) => (
-    <View style={styles.pollCard}>
-      <Text style={styles.question}>{item.title}</Text>
-      {item.description && <Text style={styles.description}>{item.description}</Text>}
+   
+   
+   
+      <Card
+    mode="flat"
+    style={[
+      globalStyles.card,
+      styles.pollCard,
+      { backgroundColor: "#1E2A3A" }, // <--- CHANGE COLOUR HERE
+    ]}
+    theme={{ roundness: 18 }}
+  >
+      <Text
+        variant="titleMedium"
+        style={[
+          styles.pollTitle,
+          { color: theme.colors.onSurface, marginBottom: 4, flexWrap: "wrap" }
+        ]}
+      >
+      {item.title}
+      </Text>
+      <Card.Content style={styles.cardInner}>
+        {item.description && (
+          <Text style={{ color: theme.colors.onSurfaceVariant }}>
+            {item.description}
+          </Text>
+        )}
 
-      <View style={styles.voteRow}>
-        <TouchableOpacity style={styles.voteButton} onPress={() => castVote(item.id, "yes")}>
-          <Text style={styles.voteText}>Yes ({item.votes_yes})</Text>
-        </TouchableOpacity>
+        <Divider style={{ marginVertical: 14 }} />
 
-        <TouchableOpacity style={[styles.voteButton, styles.noButton]} onPress={() => castVote(item.id, "no")}>
-          <Text style={styles.voteText}>No ({item.votes_no})</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+        {/* Buttons Row */}
+        <View style={styles.voteRow}>
+          <Button
+            mode="contained"
+            onPress={() => castVote(item.id, "yes")}
+            style={globalStyles.button}
+    
+          >
+            Yes ({item.votes_yes})
+          </Button>
+
+          <Button
+            mode="contained"
+            buttonColor="#b54949"
+            onPress={() => castVote(item.id, "no")}
+            style={globalStyles.button}
+          >
+            No ({item.votes_no})
+          </Button>
+        </View>
+      </Card.Content>
+    </Card>
+
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Community Polls</Text>
+  <View
+      style={[
+        globalStyles.screen,
+        { backgroundColor: theme.colors.background },
+      ]}
+    >
+      <Text
+        variant="headlineMedium"
+        style={[styles.title, { color: theme.colors.onBackground }]}
+      >
+        Community Polls
+      </Text>
+
       <FlatList
+        style={{ backgroundColor: theme.colors.background }} // fix blur issues
         data={polls}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderPoll}
-        contentContainerStyle={{ paddingBottom: 20 }}
+        contentContainerStyle={{ paddingBottom: 30 }}
       />
     </View>
   );
 }
 
+// --- Local styles (unique to this screen only) ---
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f0f4ff', padding: 20 },
-  title: { fontSize: 28, fontWeight: 'bold', color: '#1a237e', marginBottom: 20, textAlign: 'center' },
-  pollCard: { backgroundColor: 'white', padding: 16, borderRadius: 12, marginBottom: 16, elevation: 2 },
-  question: { fontSize: 18, marginBottom: 6, color: '#1a237e', fontWeight: '600' },
-  description: { fontSize: 14, marginBottom: 12, color: '#555' },
-  voteRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  voteButton: { backgroundColor: '#3949ab', paddingVertical: 10, paddingHorizontal: 16, borderRadius: 8 },
-  noButton: { backgroundColor: '#1a237e' },
-  voteText: { color: 'white', fontWeight: 'bold' },
+  title: {
+    color: "#e0e0e0",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+
+  pollTitle: {
+    color: "#e0e0e0",
+    fontSize: 20,
+    fontWeight: "600",
+  },
+  description: {
+    color: "#c2c2c2",
+    marginBottom: 10,
+  },
+  voteRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  pollCard: {
+  marginBottom: 20,
+  borderRadius: 50,
+  paddingTop: 20,
+  paddingBottom: 10,
+  paddingHorizontal: 14,  
+  borderColor: "#ffffff22", // very subtle white border
+  borderWidth: 1,
+  },
+  cardInner: {
+    paddingHorizontal: 0,
+    paddingBottom: 14,
+    paddingTop: 20,  
+  },
 });
 
 function alert(arg0: string) {
-  throw new Error('Function not implemented.');
+  throw new Error("Function not implemented.");
 }

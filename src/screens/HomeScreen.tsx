@@ -1,136 +1,194 @@
-// 
 import React, { useContext, useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, FlatList } from "react-native";
+import { View, StyleSheet, FlatList } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { AuthContext } from "../context/AuthContext";
+import { globalStyles } from "../theme/globalStyles";
+
+import {
+  Text,
+  Card,
+  Button,
+  IconButton,
+  Divider,
+  useTheme,
+} from "react-native-paper";
 
 export default function HomeScreen() {
+  const theme = useTheme();
   const navigation: any = useNavigation();
+  const { user } = useContext(AuthContext);
 
   const [featuredPoll, setFeaturedPoll] = useState<any>(null);
   const [trendingDiscussions, setTrendingDiscussions] = useState<any[]>([]);
 
   const API = "http://localhost:3000";
 
-  const { user } = useContext(AuthContext);   // user.id required
-
+  // -------------------------------
+  // Voting logic
+  // -------------------------------
   const sendVote = async (id: number, direction: "up" | "down") => {
-    if (!user) {
-      alert("You must be logged in to vote");
-      return;
-    }
+    if (!user) return alert("You must be logged in to vote");
+
     try {
       const res = await fetch(`${API}/discussions/${id}/vote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, direction })
-    });
+        body: JSON.stringify({ userId: user.id, direction }),
+      });
 
-    const updated = await res.json(); // { id, upvotes, downvotes }
+      const updated = await res.json();
 
-    // update the trendingDiscussions list locally
-    setTrendingDiscussions(prev =>
-      prev.map(d =>
-        d.id === updated.id
-          ? { ...d, upvotes: updated.upvotes, downvotes: updated.downvotes }
-          : d
-      )
-    );
+      setTrendingDiscussions((prev) =>
+        prev.map((d) => (d.id === updated.id ? { ...d, ...updated } : d))
+      );
+    } catch (err) {
+      console.error("Vote error", err);
+    }
+  };
 
-  } catch (err) {
-    console.error("Home vote error:", err);
-  }
-};
-
+  // -------------------------------
+  // Load polls + discussions
+  // -------------------------------
   useEffect(() => {
     fetch(`${API}/polls`)
-      .then(res => res.json())
-      .then(data => setFeaturedPoll(data[0]))  // top poll
+      .then((res) => res.json())
+      .then((data) => setFeaturedPoll(data[0]))
       .catch(console.error);
 
     fetch(`${API}/discussions`)
-      .then(res => res.json())
-      .then(data => setTrendingDiscussions(data.slice(0, 3))) // top 3
+      .then((res) => res.json())
+      .then((data) => setTrendingDiscussions(data.slice(0, 3)))
       .catch(console.error);
   }, []);
 
   return (
     <FlatList
+      style={{ backgroundColor: theme.colors.background }}
+      contentContainerStyle={{ paddingBottom: 40 }}
       ListHeaderComponent={
-        <View style={styles.container}>
-
+        <View
+        style={[
+          globalStyles.screen,
+          { backgroundColor: theme.colors.background },
+        ]}
+      >
           {/* HEADER */}
-          <Text style={styles.title}>OurSay</Text>
-          <Text style={styles.subtitle}>Your voice. Your community.</Text>
+          <Text variant="headlineLarge" style={[styles.headerTitle, { color: theme.colors.onBackground }]}>
+            OurSay
+          </Text>
+
+          <Text variant="bodyMedium" style={[styles.headerSubtitle, { color: theme.colors.onSurfaceVariant }]}>
+            Your community. Your voice.
+          </Text>
 
           {/* FEATURED POLL */}
           {featuredPoll && (
-            <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Featured Poll</Text>
-              <Text style={styles.question}>{featuredPoll.title}</Text>
+            <Card
+              mode="elevated"
+              style={[globalStyles.card, styles.card]}
+              theme={{ colors: { surface: theme.colors.surface } }}
+            >
+              <Card.Title
+                title="Featured Poll"
+                titleStyle={[styles.sectionTitle, { color: theme.colors.onSurface }]}
+              />
 
-              {featuredPoll.description && (
-                <Text style={styles.description}>{featuredPoll.description}</Text>
-              )}
-
-              <View style={styles.voteRow}>
-                <TouchableOpacity
-                  style={styles.voteButton}
-                  onPress={() =>
-                    navigation.navigate("Polls")
-                  }
+              <Card.Content>
+                <Text
+                  variant="titleMedium"
+                  style={[styles.pollTitle, { color: theme.colors.onSurface }]}
                 >
-                  <Text style={styles.voteText}>Vote Now</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+                  {featuredPoll.title}
+                </Text>
+
+                {featuredPoll.description && (
+                  <Text style={{ color: theme.colors.onSurfaceVariant }}>
+                    {featuredPoll.description}
+                  </Text>
+                )}
+
+                <Button
+                  mode="contained"
+                  onPress={() => navigation.navigate("Polls")}
+                  style={globalStyles.button}
+                >
+                  Vote Now
+                </Button>
+              </Card.Content>
+            </Card>
           )}
 
-          {/* TRENDING DISCUSSIONS */}
-          <Text style={styles.sectionTitle}>Trending Discussions</Text>
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: theme.colors.onBackground, marginTop: 20 },
+            ]}
+          >
+            Trending Discussions
+          </Text>
         </View>
       }
       data={trendingDiscussions}
       keyExtractor={(item) => item.id.toString()}
       renderItem={({ item }) => (
-        <TouchableOpacity
-          style={styles.discussionCard}
+        <View style={styles.sectionWrapper}>
+        <Card
+          mode="elevated"
+          style={[globalStyles.card, styles.card]}
+          theme={{ colors: { surface: theme.colors.surface } }}
           onPress={() =>
-          navigation.navigate("Discuss", {
-          screen: "DiscussionDetail",
-          params: {
-            id: item.id,
-            title: item.title,
-            fromHome: true
+            navigation.navigate("Discuss", {
+              screen: "DiscussionDetail",
+              params: { id: item.id, title: item.title },
+            })
           }
-        })
-      }
         >
-          <Text style={styles.discussionTitle}>{item.title}</Text>
-          <Text numberOfLines={2} style={styles.discussionBody}>{item.body}</Text>
+          <Card.Title
+            title={item.title}
+            titleStyle={{ color: theme.colors.onSurface }}
+          />
 
-          <View style={styles.row}>
-            {/* 👍 Upvote */}
-            <TouchableOpacity onPress={() => sendVote(item.id, "up")}>
-              <Text>👍 {item.upvotes}</Text>
-            </TouchableOpacity>
+          <Card.Content>
+            <Text numberOfLines={3} style={{ color: theme.colors.onSurfaceVariant }}>
+              {item.body}
+            </Text>
 
-            {/* 👎 Downvote */}
-            <TouchableOpacity onPress={() => sendVote(item.id, "down")}>
-              <Text>👎 {item.downvotes}</Text>
-            </TouchableOpacity>
+            <Divider style={{ marginVertical: 10 }} />
 
-            <Text>💬 {item.comment_count}</Text>
-          </View>
-        </TouchableOpacity>
+            <View style={styles.row}>
+              <IconButton
+                icon="thumb-up"
+                size={20}
+                iconColor={theme.colors.primary}
+                onPress={() => sendVote(item.id, "up")}
+              />
+              <Text style={{ color: theme.colors.onSurface }}>{item.upvotes}</Text>
+
+              <IconButton
+                icon="thumb-down"
+                size={20}
+                iconColor={theme.colors.primary}
+                onPress={() => sendVote(item.id, "down")}
+              />
+              <Text style={{ color: theme.colors.onSurface }}>{item.downvotes}</Text>
+
+              <IconButton
+                icon="comment"
+                size={20}
+                iconColor={theme.colors.primary}
+              />
+              <Text style={{ color: theme.colors.onSurface }}>{item.comment_count}</Text>
+            </View>
+          </Card.Content>
+        </Card>
+        </View>
+
       )}
       ListFooterComponent={
         <View style={{ padding: 20 }}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate("Discuss")}
-          >
-            <Text style={styles.link}>See all discussions →</Text>
-          </TouchableOpacity>
+          <Button mode="text" onPress={() => navigation.navigate("Discuss")}>
+            View All Discussions →
+          </Button>
         </View>
       }
     />
@@ -138,34 +196,42 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20 },
-  title: { fontSize: 32, fontWeight: "bold", marginBottom: 4, color: "#1a237e" },
-  subtitle: { fontSize: 16, marginBottom: 20, color: "#555" },
-  sectionTitle: { fontSize: 22, fontWeight: "bold", marginBottom: 10, color: "#1a237e" },
-  card: {
-    backgroundColor: "white",
-    padding: 16,
-    borderRadius: 12,
+  headerTitle: {
+    textAlign: "center",
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    textAlign: "center",
     marginBottom: 20,
-    elevation: 2,
   },
-  question: { fontSize: 18, fontWeight: "600", marginBottom: 6 },
-  description: { color: "#555", marginBottom: 12 },
-  voteRow: { flexDirection: "row", gap: 10 },
-  voteButton: { backgroundColor: "#3949ab", padding: 12, borderRadius: 8 },
-  voteText: { color: "white", fontWeight: "bold" },
-  discussionCard: {
-    backgroundColor: "white",
-    padding: 16,
-    marginHorizontal: 20,
-    marginBottom: 14,
-    borderRadius: 12,
-    elevation: 2,
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: "600",
+    marginBottom: 10,
   },
-  discussionTitle: { fontSize: 18, fontWeight: "bold", color: "#1a237e" },
-  discussionBody: { color: "#444", marginVertical: 6 },
-  row: { flexDirection: "row", gap: 10 },
-  link: { color: "#3949ab", fontWeight: "600", textAlign: "center", fontSize: 16 },
+  pollTitle: {
+    marginBottom: 6,
+  },
+
+sectionWrapper: {
+  width: "100%",
+  paddingHorizontal: 14,
+  marginBottom: 20,
+},
+
+card: {
+  width: "100%",
+  borderRadius: 18,
+  paddingBottom: 10,
+  alignSelf: "center",
+  backgroundColor: "rgba(255,255,255,0.04)",
+},
+
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
 });
 
 function alert(arg0: string) {

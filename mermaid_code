@@ -1,0 +1,213 @@
+%% Use Case Diagram for OurSay Mobile System
+%% Requires Mermaid 10+ (supports use case diagrams)
+
+usecaseDiagram
+
+actor User
+actor Admin
+
+rectangle "OurSay Mobile System" {
+
+    User --> (View Polls)
+    User --> (Vote on Polls)
+    User --> (View Discussions)
+    User --> (Create Discussion)
+    User --> (Comment on Discussion)
+    User --> (Verify Identity)
+
+    (Verify Identity) ..> (Verified vote on polls) : <<extend>>
+    (Verify Identity) ..> (Verified Create Discussion) : <<extend>>
+    (Verify Identity) ..> (Verified Comment on discussion) : <<extend>>
+
+    Admin --> (Create Poll)
+    Admin --> (Moderate Discussions)
+}
+
+
+---
+config:
+  theme: neo-dark
+---
+sequenceDiagram
+    actor User
+    participant RN as React Native App
+    participant API as Backend
+    participant DB as PostgreSQL
+
+    User ->> RN: Enter username & password
+    RN ->> API: POST /login
+    API ->> DB: SELECT user WHERE username
+    DB -->> API: User record + password hash
+    API ->> API: Verify password (bcrypt compare)
+    API -->> RN: Login success + user object
+    RN -->> User: Redirect to Home
+
+
+
+    ---
+config:
+  theme: neo-dark
+  layout: elk
+---
+flowchart TB
+ subgraph L1["📱 Presentation Layer (Client)"]
+        RN["React Native Mobile App\n• UI & Navigation\n• Poll View / Vote\n• Discussion View\n• Identity Verification Trigger"]
+  end
+ subgraph L2["🟦Application Layer (Backend API)"]
+        API["Node.js / Express API"]
+        Auth["Authentication Service Login
+     Signup
+     Password Hashing"]
+        Verify["Verification Service\n• Passport Scan Upload\n• Hash Generation\n• token = SHA-256(document_fields + salt)"]
+        Polls["Poll & Discussion Service\n• Create Poll\n• Submit Vote\n• Discussion Threads\n• Verified vs Unverified counts"]
+  end
+ subgraph L3["🟩 External Services"]
+        SDK["Passport Parsing / Verification API\n(PixLab or ML Kit OCR)"]
+  end
+ subgraph L4["🗄️ Data Layer"]
+        PG[("PostgreSQL Database\n• users\n• polls\n• poll_votes\n• discussions\n• discussion_votes")]
+  end
+    API --> Auth & Verify & Polls
+    RN --> API
+    Verify --> SDK & PG
+    Auth --> PG
+    Polls --> PG
+
+
+
+    ---
+config:
+  theme: neo-dark
+  layout: elk
+  look: neo
+---
+classDiagram
+    class User {
+        +int id
+        +string username
+        +string password_hash
+        +string identity_token  (nullable)
+        +timestamp created_at
+        +login()
+        +signup()
+        +verifyIdentity()
+    }
+    class Poll {
+        +int id
+        +string title
+        +string description
+        +int created_by
+        +timestamp created_at
+        +createPoll()
+        +getPolls()
+    }
+
+    class PollVote {
+        +int id
+        +int poll_id
+        +int user_id  (nullable)
+        +string choice
+        +boolean is_verified
+        +timestamp created_at
+        +submitVote()
+    }
+
+    User --> Poll : "creates"
+    User --> PollVote : "casts"
+    Poll --> PollVote : "1..* votes"
+    class Discussion {
+        +int id
+        +string title
+        +string body
+        +int user_id
+        +timestamp created_at
+        +createDiscussion()
+    }
+
+    class Comment {
+        +int id
+        +int discussion_id
+        +int user_id
+        +string text
+        +timestamp created_at
+        +addComment()
+    }
+
+    class DiscussionVote {
+        +int id
+        +int discussion_id
+        +int user_id
+        +int value (+1/-1)
+        +timestamp created_at
+        +castVote()
+    }
+
+    User --> Discussion : "starts"
+    User --> Comment : "writes"
+    User --> DiscussionVote : "votes on"
+    Discussion --> Comment : "has many"
+    Discussion --> DiscussionVote : "has many"
+    class VerificationService {
+        +uploadPassportImage()
+        +parsePassport()  // PixLab or ML Kit
+        +generateIdentityToken()
+    }
+
+    User --> VerificationService : "requests verification"
+
+
+
+    ---
+config:
+  theme: neo-dark
+---
+flowchart LR
+
+  subgraph Device["📱 User Device"]
+    App["React Native App"]
+  end
+
+  subgraph Backend["🖥️ Backend Server"]
+    NodeAPI["Node.js / Express Server"]
+  end
+
+  subgraph Storage["🗄️ Database Server"]
+    PostgreSQL["PostgreSQL Instance"]
+  end
+
+  subgraph External["🌐 External Services"]
+    VerifyAPI["Passport Verification API\n(PixLab / ML Kit OCR)"]
+  end
+
+  App -- HTTPS --> NodeAPI
+  NodeAPI -- SQL --> PostgreSQL
+  NodeAPI -- HTTPS --> VerifyAPI
+
+
+
+  ---
+config:
+  layout: elk
+  theme: neo-dark
+---
+flowchart TB
+ subgraph Presentation["📱 Presentation Layer"]
+        RN["React Native App\n• UI Screens\n• Navigation\n• Poll/Discussion Views\n• Verification Trigger"]
+  end
+ subgraph Application["🟦 Application Layer (Backend Logic)"]
+        API["Node.js / Express API"]
+        Auth["Authentication Service\n• Login\n• Signup\n• Password Hashing"]
+        Verify["Verification Service\n• Passport Image Upload\n• Hash Generation\n• identity_token"]
+        Polls["Poll & Discussion Service\n• Poll CRUD\n• Vote Handling\n• Discussion Threads"]
+  end
+ subgraph Data["🗄️ Data Layer"]
+        PG[("PostgreSQL\n• users\n• polls\n• poll_votes\n• discussions\n• discussion_votes")]
+  end
+ subgraph External["🟩 External Verification"]
+        SDK["Passport Parsing API\n(PixLab / ML Kit OCR)"]
+  end
+    RN --> API
+    API --> Auth & Polls & Verify
+    Verify --> SDK & PG
+    Auth --> PG
+    Polls --> PG

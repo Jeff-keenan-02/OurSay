@@ -1,17 +1,30 @@
 import React, { useState, useContext } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
+import { globalStyles } from "../theme/globalStyles";
+
+import {
+  Text,
+  TextInput,
+  Button,
+  Card,
+  Avatar,
+  useTheme, // <--- ADD THIS IMPORT
+} from "react-native-paper";
 
 export default function LoginScreen() {
   const navigation: any = useNavigation();
   const { login } = useContext(AuthContext);
+  const 
+  theme = useTheme(); // <--- CALL THE HOOK
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  const handleLogin = async () => {
+  // ... (handleLogin function remains the same)
+    const handleLogin = async () => {
     try {
       const res = await fetch("http://localhost:3000/login", {
         method: "POST",
@@ -26,8 +39,7 @@ export default function LoginScreen() {
         return;
       }
 
-      login(data.user);// store user globally
-
+      login(data.user);
     } catch (err) {
       console.error(err);
       setErrorMsg("Network error");
@@ -35,73 +47,130 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      {errorMsg !== "" && <Text style={styles.error}>{errorMsg}</Text>}
+    // 1. Set the background color dynamically from the theme
+    <View style={[globalStyles.screenCenter, { backgroundColor: theme.colors.background }]}>
+      
+      {/* Branding Icon */} 
+      <Avatar.Icon
+        size={84}
+        icon="account-lock"
+        // Use the primary Neo Teal color for the icon's foreground
+        color={theme.colors.primary} 
+        style={styles.icon}
+      />
 
-      <TextInput style={styles.input} placeholder="Username" value={username} onChangeText={setUsername} />
-      <TextInput style={styles.input} placeholder="Password" secureTextEntry value={password} onChangeText={setPassword} />
+      {/* App Title */}
+      <Text
+        variant="headlineLarge"
+        // 2. Use the theme's onBackground color for high contrast text
+        style={[styles.title, { color: theme.colors.onBackground }]} 
+      >
+        OurSay
+      </Text>
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
-      </TouchableOpacity>
+      <Text
+        variant="bodyMedium"
+        // 3. Use the theme's muted color for secondary text
+        style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}
+      >
+        Have Your Voice Heard
+      </Text>
 
-      <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
-        <Text style={styles.link}>Create an account</Text>
-      </TouchableOpacity>
+      {/* Login Card (Card uses theme.colors.surface automatically) */}
+      <Card 
+        mode="elevated" 
+        style={[
+          { backgroundColor: theme.colors.surface }, 
+          styles.loginCard // <--- ADD THIS CUSTOM STYLE
+        ]}
+      >
+        <Card.Title
+          title="Login"
+          // 4. Use the theme's onSurface color for the card title
+          titleStyle={[styles.cardTitle, { color: theme.colors.onSurface }]}
+        />
 
+        <Card.Content>
+          {errorMsg ? (
+            <Text style={[globalStyles.error, { color: theme.colors.error }]}>
+              {errorMsg}
+            </Text>
+          ) : null}
+
+          <TextInput
+            // TextInput will automatically use theme.colors.surfaceVariant
+            mode="outlined"
+            label="Username"
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize="none"
+          />
+          {/* ... Password Input ... */}
+          <TextInput
+            mode="outlined"
+            label="Password"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+
+          <Button
+            mode="contained"
+            onPress={handleLogin}
+          >
+            Login
+          </Button>
+
+          <Button
+            mode="text"
+            onPress={() => navigation.navigate("Signup")}
+            style={styles.link}
+          >
+            Create an account
+          </Button>
+        </Card.Content>
+      </Card>
     </View>
   );
 }
 
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f4ff',
-    padding: 20,
-    justifyContent: 'center'
+  // 5. Remove all color rules from the StyleSheet.create block
+  icon: {
+    backgroundColor: "transparent",
+    marginBottom: 10,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a237e',
-    marginBottom: 24,
-    textAlign: 'center'
+    textAlign: "center",
+    marginTop: 4,
+    fontWeight: "bold",
+    // Color removed
   },
-  input: {
-    backgroundColor: 'white',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#c5cae9'
+  subtitle: {
+    textAlign: "center",
+    marginBottom: 20,
+    // Color removed
   },
-  button: {
-    backgroundColor: '#3949ab',
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center'
-  },
-  buttonDisabled: {
-    opacity: 0.7
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold'
-  },
-  link: { 
-    marginTop: 15, 
-    color: "#3949ab", 
-    textAlign: "center" },
+  cardTitle: {
+    textAlign: "center",
+    fontSize: 24,
 
-  error: {
-    color: '#d32f2f',
-    fontSize: 14,
-    marginBottom: 16,
-    textAlign: 'center'
-  }
+  },
+  link: {
+    marginTop: 6,
+  },
+  scrollContent: {
+    flexGrow: 1, // Allows content to take up full screen height
+    justifyContent: 'center', // Centers content vertically
+    alignItems: 'center',    // Centers content horizontally
+    paddingVertical: 20,     // Ensures padding at top/bottom of scrollable area
+  },
+  loginCard: {
+    // This constrains the card width to 90% of the screen
+    width: '90%', 
+    // This allows it to look good on tablets/larger screens
+    maxWidth: 400, 
+    padding: 10, // Add some padding around the content
+    // Remove vertical margin since it's centered
+  },
 });
