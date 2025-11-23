@@ -1,19 +1,12 @@
 declare module "react-native-vector-icons/MaterialCommunityIcons" {
-  import { Icon } from "react-native-vector-icons/Icon";
-  export default Icon;
-}
+  import { Component } from "react";
+  import { TextProps } from "react-native";
 
-declare module "react-native-vector-icons/FontAwesome" {
-  import { Icon } from "react-native-vector-icons/Icon";
-  export default Icon;
-}
+  export interface IconProps extends TextProps {
+    name: string;
+    size?: number;
+    color?: string;
+  }
 
-declare module "react-native-vector-icons/Ionicons" {
-  import { Icon } from "react-native-vector-icons/Icon";
-  export default Icon;
-}
-
-declare module "react-native-vector-icons/Feather" {
-  import { Icon } from "react-native-vector-icons/Icon";
-  export default Icon;
+  export default class MaterialCommunityIcons extends Component<IconProps> {}
 }
