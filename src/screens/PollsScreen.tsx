@@ -55,18 +55,15 @@ export default function PollsScreen() {
   };
 
   const renderPoll = ({ item }: { item: Poll }) => (
-   
-   
-   
-      <Card
-    mode="flat"
-    style={[
-      globalStyles.card,
-      styles.pollCard,
-      { backgroundColor: "#1E2A3A" }, // <--- CHANGE COLOUR HERE
-    ]}
-    theme={{ roundness: 18 }}
-  >
+    <Card
+      mode="flat"
+      style={[
+        globalStyles.card,
+        styles.pollCard,
+        { backgroundColor: "#1E2A3A" }, // <--- CHANGE COLOUR HERE
+      ]}
+      theme={{ roundness: 18 }}
+    >
       <Text
         variant="titleMedium"
         style={[
@@ -117,12 +114,29 @@ export default function PollsScreen() {
         { backgroundColor: theme.colors.background },
       ]}
     >
-      <Text
-        variant="headlineMedium"
-        style={[styles.title, { color: theme.colors.onBackground }]}
-      >
-        Community Polls
-      </Text>
+
+        <Text
+    variant="headlineMedium"
+    style={{
+      color: theme.colors.onBackground,
+      textAlign: "center",
+      marginBottom: 6,
+      fontWeight: "700",
+    }}
+  >
+    Community Polls
+  </Text>
+  
+  <Text
+    variant="bodyMedium"
+    style={{
+      color: theme.colors.onSurfaceVariant,
+      textAlign: "center",
+      marginBottom: 20,
+    }}
+  >
+    Vote on polls today to have your voice heard!
+  </Text>
 
       <FlatList
         style={{ backgroundColor: theme.colors.background }} // fix blur issues
@@ -158,7 +172,7 @@ const styles = StyleSheet.create({
   },
   pollCard: {
   marginBottom: 20,
-  borderRadius: 50,
+  borderRadius: 30,
   paddingTop: 20,
   paddingBottom: 10,
   paddingHorizontal: 14,  

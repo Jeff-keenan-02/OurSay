@@ -2,9 +2,12 @@
 const cors = require('cors');
 const { Pool } = require('pg');
 const crypto = require('crypto');
-
-
 const express = require('express');
+const multer = require('multer');
+const axios = require('axios');
+const FormData = require('form-data');
+const { parse } = require('mrz');
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -17,7 +20,9 @@ const pool = new Pool({
   database: 'oursaydb',
   port: 5431
 });
-// --- simple password hashing helper ---
+//---------------------------------------------------------------------------
+// --- simple password hashing helper 
+//---------------------------------------------------------------------------
 const PASSWORD_SALT = process.env.PASSWORD_SALT || 'dev_salt_change_me';
 
 function hashPassword(password) {
@@ -26,9 +31,120 @@ function hashPassword(password) {
     .update(password + PASSWORD_SALT)
     .digest('hex');
 }
-// ---------- AUTH ROUTES ----------
 
-// POST /signup  { username, password }
+
+// ---------------------------------------------------------------------------
+// POST /verify-passport
+// → Verifies a passport image by reading the MRZ and validating it.
+// ---------------------------------------------------------------------------
+// Use in-memory storage for uploaded files
+const upload = multer({ storage: multer.memoryStorage() });
+
+
+// PLACE IN ENVIRONMENT VARIABLE
+const CLOUD_FUNCTION_URL =
+  "https://europe-west1-oursay.cloudfunctions.net/scanPassport";
+
+// PLACE IN ENVIRONMENT VARIABLE
+const IDENTITY_SALT = "SUPPER_SECRET_REAL_SECRET_SALT";
+
+
+app.post("/verify-passport", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const userId = req.body.userId;
+
+    if (!userId) {
+      return res.status(400).json({ error: "Missing userId" });
+    }
+
+    // 1. Build multipart form-data to send to Cloud Function
+    const form = new FormData();
+    form.append("file", req.file.buffer, {
+      filename: req.file.originalname || "passport.jpg",
+      contentType: req.file.mimetype || "image/jpeg",
+    });
+
+    // 2. Call the Cloud Function
+    const cfResponse = await axios.post(CLOUD_FUNCTION_URL, form, {
+      headers: form.getHeaders(),
+      timeout: 60000,
+    });
+
+    const { mrz_lines } = cfResponse.data;
+
+    if (!mrz_lines || mrz_lines.length < 2) {
+      return res.status(400).json({
+        error: "MRZ not returned from OCR service",
+        raw: cfResponse.data,
+      });
+    }
+
+    // 3. Parse MRZ
+    const mrzResult = parse(mrz_lines);
+
+    if (!mrzResult.valid) {
+      return res.status(400).json({
+        error: "MRZ validation failed",
+        details: mrzResult.errors,
+        mrz_lines,
+      });
+    }
+
+    const f = mrzResult.fields;
+
+    // 4. Build identity string you consider "unique enough"
+    const identityStringParts = {
+      documentNumber: f.documentNumber || null,
+      issuingCountry: f.issuingCountry || null,
+      dateOfBirth: null,          // will fill in later
+      expiry: f.expirationDate || null,
+      nationality: null           // will fill in later
+    };
+
+    const identityString = JSON.stringify(identityStringParts);
+
+    // 5. Hash it so you never store raw MRZ
+    const identityHash = crypto
+      .createHash("sha256")
+      .update(identityString + IDENTITY_SALT)
+      .digest("hex");
+
+    // 6. Store hash in the database
+    await pool.query(
+      "UPDATE users SET identity_token = $1 WHERE id = $2",
+      [identityHash, userId]
+    );
+
+    console.log("User verified:", userId);
+
+    // 7. Respond to the mobile app
+    return res.status(200).json({
+      verified: true,
+      identity_token: identityHash,
+    });
+  } catch (err) {
+    console.error(
+      "Verification error:",
+      err.response?.data || err.message || err
+    );
+    return res.status(500).json({
+      error: "Verification failed",
+      detail: err.response?.data || err.message || "Unknown error",
+    });
+  }
+});
+
+//---------------------------------------------------------------------------
+//              AUTH ROUTES
+//
+//        Handles: user signup and login.
+//---------------------------------------------------------------------------
+
+//  POST /signup  { username, password }
 app.post('/signup', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -68,7 +184,7 @@ app.post('/login', async (req, res) => {
     }
 
     const result = await pool.query(
-      'SELECT id, username, password_hash FROM users WHERE username = $1',
+      'SELECT id, username, password_hash , identity_token FROM users WHERE username = $1',
       [username]
     );
 
@@ -80,15 +196,16 @@ app.post('/login', async (req, res) => {
     const hashedInput = hashPassword(password);
 
     if (hashedInput !== user.password_hash) {
-      return res.status(401).json({ error: 'Invalid username or password' });
+      return res.status(401).json({ error: 'Invalid password' });
     }
 
     // For now: just return user info (no JWT yet)
-    return res.json({
+    return res.json({ 
       message: 'Login successful',
       user: {
         id: user.id,
-        username: user.username
+        username: user.username,
+        identity_token: user.identity_token
       }
     });
   } catch (err) {
@@ -313,9 +430,13 @@ app.get('/discussions/:id/comments', async (req, res) => {
 
 
 // ---------------------------------------------------------------------------
-// GET /polls
+// POLL SYSTEM ROUTES
+// Handles: listing polls, viewing a single poll,
+// posting votes, and vote tally logic.
 // ---------------------------------------------------------------------------
 
+
+// GET /polls
 app.get('/polls', async (req, res) => {
   try {
     const result = await pool.query(`
@@ -338,6 +459,7 @@ app.get('/polls', async (req, res) => {
   }
 });
 
+// Vote on a specific poll
 app.post('/polls/:id/vote', async (req, res) => {
   try {
     const { id } = req.params;
@@ -350,6 +472,7 @@ app.post('/polls/:id/vote', async (req, res) => {
     if (!userId) {
       return res.status(400).json({ error: "userId is required (temporary)" });
     }
+ 
 
     // UPSERT (users cannot vote twice)
     await pool.query(`
@@ -366,5 +489,6 @@ app.post('/polls/:id/vote', async (req, res) => {
   }
 });
 
+// Start the server
 app.listen(3000, () => console.log('Backend running on port 3000'));
 

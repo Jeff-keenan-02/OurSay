@@ -9,17 +9,17 @@ import SignupScreen from "../screens/SignupScreen";
 const Stack = createNativeStackNavigator();
 
 export default function AuthNavigator() {
-  const theme = useTheme(); // <--- Hook into Slate/Teal theme
+  const theme = useTheme(); //
 
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
 
-        // Ensure the background behind the animation is your Deep Slate color
+        // Ensure the background behind the animation is themed
         contentStyle: { backgroundColor: theme.colors.background },
         
-        // 2. smooth animation (optional but nice)
+        // 2. smooth animation
         animation: 'slide_from_right', 
       }}
     >

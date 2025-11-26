@@ -12,10 +12,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 export default function App() {
   return (
     <SafeAreaProvider>
-      <PaperProvider theme={neoDarkTheme}
-            settings={{
-        icon: (props) => <MaterialCommunityIcons {...props} />,
-      }}>
+      <PaperProvider theme={neoDarkTheme}>
         {/* THIS IS THE ONLY NavigationContainer in the entire project! */}
         <NavigationContainer > 
             <AuthProvider>

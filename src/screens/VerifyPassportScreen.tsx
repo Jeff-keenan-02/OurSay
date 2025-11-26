@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { StyleSheet, Image, View } from "react-native";
 import * as ImagePicker from "react-native-image-picker";
+// import AsyncStorage from "@react-native-async-storage/async-storage";
+// await AsyncStorage.clear();
+import { Alert } from "react-native";
 
 import {
   Text,
@@ -12,6 +15,8 @@ import {
 } from "react-native-paper";
 
 import { globalStyles } from "../theme/globalStyles";
+import { AuthContext } from "../context/AuthContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type PhotoAsset = {
   uri: string;
@@ -20,9 +25,11 @@ type PhotoAsset = {
 };
 
 export default function VerifyPassportScreen() {
+  const theme = useTheme();
   const [photo, setPhoto] = useState<PhotoAsset | null>(null);
   const [loading, setLoading] = useState(false);
-  const theme = useTheme();
+  const { user , login} = useContext(AuthContext);
+  const API = "http://localhost:3000";
 
   const choosePhoto = () => {
     ImagePicker.launchImageLibrary({ mediaType: "photo" }, (response) => {
@@ -40,43 +47,69 @@ export default function VerifyPassportScreen() {
   };
 
   const uploadPassport = async () => {
-    if (!photo?.uri) {
-      alert("Please choose a passport image first.");
+    if (!photo || !photo.uri) {
+      Alert.alert("Please choose a passport image first.");
       return;
     }
 
     setLoading(true);
 
     try {
+        let fixedUri = photo.uri;
+      if (!fixedUri.startsWith("file://")) {
+        fixedUri = fixedUri.replace("ph://", "file://");
+      }
       const data = new FormData();
       data.append("file", {
-        uri: photo.uri,
-        type: "image/jpeg",
+        uri: fixedUri,
+        type: photo.type ?? "image/jpeg",
         name: photo.fileName ?? "passport.jpg",
-      } as any);
+      });
+
+      if (!user || user.id == null) {
+        Alert.alert("No authenticated user — please sign in and try again.");
+        setLoading(false);
+        return;
+      }
+
+      data.append("userId", user.id.toString());
 
       const response = await fetch(
-        "https://europe-west1-oursay.cloudfunctions.net/scanPassport",
+        `${API}/verify-passport`,
         {
           method: "POST",
-          headers: { "Content-Type": "multipart/form-data" },
           body: data,
         }
       );
 
       const json = await response.json();
+      console.log("VERIFY RESPONSE:", json);
 
-      if (json.ok) {
-        alert("MRZ Read:\n" + JSON.stringify(json.mrz, null, 2));
+      if (response.ok && json.verified) {                        
+        Alert.alert("✅ Identity verified");
+
+        // Clear stored user data to force refresh
+        await AsyncStorage.removeItem("user");
+
+        // Update AuthContext with the new identity token
+        if (user) {
+          const updatedUser = {
+            id: user.id,
+            username: user.username,
+            identity_token: json.identity_token.toString()
+          };
+          await login(updatedUser);
+        }
+
       } else {
-        alert("OCR Failed:\n" + (json.error || "Unknown error"));
+        Alert.alert("Verification failed.\n" + (json.error || "Unknown error"));
       }
     } catch (err) {
       console.error("UPLOAD ERROR:", err);
-      alert("Network Error — Unable to send image.");
+      Alert.alert("Network Error — Unable to send image.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -187,6 +220,4 @@ const styles = StyleSheet.create({
   },
 });
 
-function alert(arg0: string) {
-  throw new Error("Function not implemented.");
-}
+

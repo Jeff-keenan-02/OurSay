@@ -69,21 +69,17 @@ export default function SettingsScreen() {
           Account Details
         </List.Subheader>
 
-        <List.Item
-          title="Verification Status"
-          titleStyle={{ color: theme.colors.onSurface }}
-          description={user?.identity_token ? "Verified User" : "Not Verified"}
-          descriptionStyle={{
-            color: user?.identity_token ? "#8dfc8d" : "#ffae63",
-          }}
-          left={(props) => (
-            <List.Icon
-              {...props}
-              color={user?.identity_token ? "#4caf50" : "#ff9800"}
-              icon={user?.identity_token ? "shield-check" : "shield-alert"}
-            />
-          )}
-        />
+      <List.Item
+        title="Verification Status"
+        description={user?.identity_token ? "Verified User" : "Not Verified"}
+        left={(props) => (
+          <List.Icon
+            {...props}
+            color={user?.identity_token ? "#4caf50" : "#ff9800"}
+            icon={user?.identity_token ? "shield-check" : "shield-alert"}
+          />
+        )}
+      />
 
         <Divider style={styles.divider} />
 

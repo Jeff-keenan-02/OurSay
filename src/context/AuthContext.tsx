@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 type User = {
   id: number;
   username: string;
+  identity_token?: string | null; // optional field for verification status
 };
 
 type AuthContextType = {
