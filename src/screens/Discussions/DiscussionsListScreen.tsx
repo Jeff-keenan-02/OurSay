@@ -2,15 +2,16 @@ import React, { useCallback, useContext } from "react";
 import { View, FlatList, Alert } from "react-native";
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import { Text, useTheme } from "react-native-paper";
-
 import { AuthContext } from "../../context/AuthContext";
-import { globalStyles } from "../../theme/globalStyles";
-import DiscussionCard from "../../components/DiscussionCards/DisscussionCard";
-
+import { globalStyles } from "../../styles/globalStyles";
+import DiscussionCard from "../../components/Discussion/DisscussionCard";
 import { useDiscussionVote } from "../../hooks/useDiscussionVote";
 import { useCategoryDiscussions } from "../../hooks/useCategoryDiscussions";
 import { Discussion } from "../../types/Discussion";
 import { DiscussionStackParams } from "../../navigation/DiscussionStack";
+import { Screen } from "../../layout/Screen";
+import { Section } from "../../layout/Section";
+
 
 export default function DiscussionsListScreen() {
   const theme = useTheme();
@@ -45,47 +46,37 @@ export default function DiscussionsListScreen() {
   );
 
   return (
-    <View style={globalStyles.screen}>
-      <Text
-        variant="headlineMedium"
-        style={{
-          color: theme.colors.onBackground,
-          textAlign: "center",
-          marginBottom: 6,
-          fontWeight: "700",
-        }}
-      >
-        {title}
-      </Text>
-
-      <Text
-        variant="bodyMedium"
-        style={{
-          color: theme.colors.onSurfaceVariant,
-          textAlign: "center",
-          marginBottom: 20,
-        }}
-      >
-        See what people are saying in this category.
-      </Text>
-
-      {loading ? (
-        <Text style={{ color: theme.colors.onSurfaceVariant, textAlign: "center" }}>
-          Loading discussions...
-        </Text>
-      ) : (
-        <FlatList<Discussion>
-          data={discussions}
-          renderItem={({ item }) => (
-            <DiscussionCard
-              discussion={item}
-              onPress={() => openDiscussion(item.id)}
-              onVote={handleVote}
-            />
-          )}
-          keyExtractor={(item) => item.id.toString()}
-        />
-      )}
-    </View>
-  );
+    <Screen
+      scroll
+      title={title}
+      subtitle="See what people are saying in this category."
+    >
+      <Section>
+        {loading ? (
+          <Text
+            style={{
+              color: theme.colors.onSurfaceVariant,
+              textAlign: "center",
+              marginTop: 20,
+            }}
+          >
+            Loading discussions…
+          </Text>
+        ) : (
+          <FlatList<Discussion>
+            data={discussions}
+            keyExtractor={(item) => item.id.toString()}
+            scrollEnabled={false}
+            renderItem={({ item }) => (
+              <DiscussionCard
+                discussion={item}
+                onPress={() => openDiscussion(item.id)}
+                onVote={handleVote}
+              />
+            )}
+          />
+        )}
+      </Section>
+    </Screen>
+    );
 }

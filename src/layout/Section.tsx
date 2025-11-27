@@ -5,24 +5,29 @@ import { Text, useTheme } from "react-native-paper";
 
 interface SectionProps {
   label?: string;
+  subtitle?: string;
   children: React.ReactNode;
 }
 
-export function Section({ label, children }: SectionProps) {
+export function Section({ label, subtitle, children }: SectionProps) {
   const theme = useTheme();
 
   return (
-    <View style={styles.wrapper}>
+    <View style={styles.section}>
       {label && (
+        <Text style={[styles.label, { color: theme.colors.primary }]}>
+          {label}
+        </Text>
+      )}
+
+      {subtitle && (
         <Text
-          variant="labelLarge"
-          style={{
-            color: theme.colors.primary,
-            marginBottom: 8,
-            letterSpacing: 0.5,
-          }}
+          style={[
+            styles.subtitle,
+            { color: theme.colors.onSurfaceVariant }
+          ]}
         >
-          {label.toUpperCase()}
+          {subtitle}
         </Text>
       )}
 
@@ -32,7 +37,16 @@ export function Section({ label, children }: SectionProps) {
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    marginBottom: 24,
+  section: {
+    marginBottom: 28,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "700",
+    marginBottom: 2,
+  },
+  subtitle: {
+    fontSize: 13,
+    marginBottom: 14,
   },
 });

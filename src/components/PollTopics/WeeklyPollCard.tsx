@@ -24,20 +24,11 @@ type Props = {
 export default function WeeklyPollCard({ poll, onPress }: Props) {
   const theme = useTheme(); // gets the app’s theme — consistent light/dark mode colors
 
-  /**
-   * Calculate progress percentage for the progress bar.
-   * Example:
-   * 3 answered out of 6 => 0.5 (50%)
-   */
-  const progress =
-    poll.total_polls === 0 ? 0 : poll.completed_polls / poll.total_polls;
+
+  //Calculate progress percentage for the progress bar.
+  const progress = poll.total_polls === 0 ? 0 : poll.completed_polls / poll.total_polls;
 
   return (
-    /**
-     * TouchableOpacity means:
-     *  - The entire card is clickable
-     *  - Pressing it can navigate the user to the weekly poll swipe screen
-     */
     <TouchableOpacity onPress={onPress}>
       <Card
         style={[
@@ -97,9 +88,10 @@ export default function WeeklyPollCard({ poll, onPress }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    marginHorizontal: 16,
-    marginTop: 20,
-    borderRadius: 16,
-    paddingBottom: 10,
+    width: "100%",          
+    borderRadius: 18,
+    paddingVertical: 14,
+    paddingHorizontal: 14,   
+    elevation: 2,     
   },
 });

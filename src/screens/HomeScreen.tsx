@@ -5,7 +5,7 @@ import { useNavigation, useFocusEffect } from "@react-navigation/native";
 
 import WeeklyPollCard from "../components/PollTopics/WeeklyPollCard";
 
-import DiscussionCardTrending from "../components/DiscussionCards/DisscussionCardTrending"
+import DiscussionCardTrending from "../components/Discussion/DisscussionCardTrending"
 
 import { AuthContext } from "../context/AuthContext";
 import { useWeeklyPoll } from "../hooks/useWeeklyPoll";
@@ -25,6 +25,9 @@ export default function HomeScreen() {
 
   // Hook to get trending topics
   const { discussions, setDiscussions, loadDiscussions } = useTrendingDiscussions(API);
+
+    // Top 3 trending prevent errors
+  const trending = discussions.slice(0, 3);
 
   // Hook to vote
   const { vote } = useDiscussionVote(API, user, setDiscussions);
@@ -86,18 +89,21 @@ export default function HomeScreen() {
         )}
       </Section>
 
-      <Section label="Trending Discussions">
+      {/* Trending Section */}
+      <Section label="Trending Discussions" subtitle="Top conversations happening right now">
         <FlatList
-          data={discussions}
-          scrollEnabled={false}
-          keyExtractor={(item) => item.id.toString()}
+          data={trending}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 12, paddingRight: 16 }}
           renderItem={({ item }) => (
-       <DiscussionCardTrending
+            <DiscussionCardTrending
               discussion={item}
               onPress={() => openDiscussion(item.id, item.title)}
               onVote={vote}
             />
           )}
+          keyExtractor={(item) => item.id.toString()}
         />
       </Section>
     </Screen>

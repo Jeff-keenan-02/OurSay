@@ -106,12 +106,10 @@ export default function DiscussionCard({ discussion, onPress, onVote }: Props) {
 }
 
 const styles = StyleSheet.create({
-  sectionWrapper: {
-    width: "100%",
-    paddingHorizontal: 14,
-    marginBottom: 10,
-  },
-
+sectionWrapper: {
+  width: 260,  // <--- force properly sized cards
+  marginHorizontal: 4,
+},
   discussionCard: {
     borderRadius: 18,
     borderColor: "#ffffff22",

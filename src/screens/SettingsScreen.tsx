@@ -1,7 +1,6 @@
 import React, { useContext } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet } from "react-native";
 import { AuthContext } from "../context/AuthContext";
-import { globalStyles } from "../theme/globalStyles";
 
 import {
   Text,
@@ -13,142 +12,112 @@ import {
   useTheme,
 } from "react-native-paper";
 
+import { Screen } from "../layout/Screen";
+import { Section } from "../layout/Section";
+
 export default function SettingsScreen() {
-  const { logout, user } = useContext(AuthContext);
   const theme = useTheme();
+  const { logout, user } = useContext(AuthContext);
 
   return (
-<View
-  style={[
-    globalStyles.screen,
-    { backgroundColor: theme.colors.background }
-  ]}
->
-      
-      {/* Header */}
-      <Text style={globalStyles.heading}>Settings</Text>
-      <Text style={[globalStyles.subheading, { marginBottom: 30 }]}>
-        Manage your account and preferences.
-      </Text>
+    <Screen
+      title="Settings"
+      subtitle="Manage your account and preferences."
+    >
+      {/* --- USER CARD --- */}
+      <Section label="Your Account">
+        <Card
+          mode="elevated"
+          style={styles.card}
+          theme={{ colors: { surface: theme.colors.surface } }}
+        >
+          <Card.Title
+            title="Logged in as"
+            titleStyle={[styles.cardTitle, { color: theme.colors.onSurface }]}
+            left={(props) => (
+              <Avatar.Icon
+                {...props}
+                icon="account"
+                size={48}
+                color={theme.colors.onPrimary}
+                style={styles.avatar}
+              />
+            )}
+          />
 
-      {/* User Info Card */}
-      <Card
-        mode="elevated"
-        style={[styles.card, globalStyles.card]}
-        theme={{ colors: { surface: theme.colors.surface } }}
-      >
-        <Card.Title
-          title="Logged In As:"
-          titleStyle={[styles.cardTitle, { color: theme.colors.onSurface }]}
+          <Text
+            style={[
+              styles.username,
+              { color: theme.colors.onSurfaceVariant }
+            ]}
+          >
+            {user?.username}
+          </Text>
+        </Card>
+      </Section>
+
+      {/* --- ACCOUNT DETAILS --- */}
+      <Section label="Account Details">
+        <List.Item
+          title="Verification Status"
+          description={user?.identity_token ? "Verified User" : "Not Verified"}
           left={(props) => (
-            <Avatar.Icon
+            <List.Icon
               {...props}
-              icon="account"
-              size={48}
-              color="#ffffff"
-              style={styles.avatar}
+              color={user?.identity_token ? "#4caf50" : "#ff9800"}
+              icon={user?.identity_token ? "shield-check" : "shield-alert"}
             />
           )}
         />
-     
-      </Card>
-              {/* Logout Button */}
-          <Button
-            mode="contained"
-            style={styles.logoutButton}
-            buttonColor="#cc7744"
-          >
-          <Text style={styles.username}>{user?.username}</Text>
-          </Button>
-         
-    
+      </Section>
 
-      {/* Settings List */}
-      <List.Section>
-        <List.Subheader style={styles.subheaderText}>
-          Account Details
-        </List.Subheader>
-
-      <List.Item
-        title="Verification Status"
-        description={user?.identity_token ? "Verified User" : "Not Verified"}
-        left={(props) => (
-          <List.Icon
-            {...props}
-            color={user?.identity_token ? "#4caf50" : "#ff9800"}
-            icon={user?.identity_token ? "shield-check" : "shield-alert"}
-          />
-        )}
-      />
-
-        <Divider style={styles.divider} />
-
-        <List.Subheader style={styles.subheaderText}>
-          Appearance
-        </List.Subheader>
-
+      {/* --- APPEARANCE --- */}
+      <Section label="Appearance">
         <List.Item
           title="Theme"
-          titleStyle={{ color: theme.colors.onSurface }}
           description="Neo Dark"
-          descriptionStyle={{ color: theme.colors.onSurfaceVariant }}
           left={(props) => (
             <List.Icon {...props} color="#90caf9" icon="palette" />
           )}
         />
-      </List.Section>
+      </Section>
 
-      {/* Logout Button */}
-      <Button
-        mode="contained"
-        onPress={logout}
-        style={styles.logoutButton}
-        buttonColor="#b54949"
-      >
-        Sign Out
-      </Button>
-    </View>
+      {/* --- SIGN OUT --- */}
+      <Section>
+        <Button
+          mode="contained"
+          onPress={logout}
+          style={styles.logoutButton}
+          buttonColor="#b54949"
+        >
+          Sign Out
+        </Button>
+      </Section>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    marginBottom: 25,
     borderRadius: 18,
-    paddingVertical: 4,
+    paddingVertical: 10,
+    marginBottom: 10,
   },
-
   cardTitle: {
     fontSize: 18,
     fontWeight: "600",
   },
-
   avatar: {
     backgroundColor: "#3949ab",
   },
-
   username: {
-    color: "#c2c2c2",
-    fontSize: 18,
-    fontWeight: "600",
-    marginTop: 5,
+    fontSize: 17,
+    marginTop: 8,
+    marginLeft: 16,
   },
-
-  subheaderText: {
-    color: "#aaaaaa",
-    fontSize: 14,
-    marginLeft: 10,
-    marginBottom: 4,
-  },
-
-  divider: {
-    marginVertical: 12,
-    backgroundColor: "#3b3b3b",
-  },
-
   logoutButton: {
-    marginTop: 30,
     borderRadius: 10,
     paddingVertical: 8,
+    marginTop: 20,
   },
 });

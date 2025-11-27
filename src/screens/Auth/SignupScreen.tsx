@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { View, StyleSheet } from "react-native";
 import { AuthContext } from "../../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
-import { globalStyles } from "../../theme/globalStyles";
+import { globalStyles } from "../../styles/globalStyles";
 import { useTheme } from "react-native-paper";
 import { useSignup } from "../../hooks/auth/useSignup";
 
