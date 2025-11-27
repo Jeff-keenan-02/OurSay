@@ -3,8 +3,8 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useTheme } from "react-native-paper"; // <--- Import this
 
-import LoginScreen from "../screens/LoginScreen";
-import SignupScreen from "../screens/SignupScreen";
+import LoginScreen from "../screens/Auth/LoginScreen";
+import SignupScreen from "../screens/Auth/SignupScreen";
 
 const Stack = createNativeStackNavigator();
 

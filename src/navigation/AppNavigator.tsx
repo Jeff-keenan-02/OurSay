@@ -4,10 +4,10 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { IconButton, useTheme } from "react-native-paper";
 
 import HomeScreen from "../screens/HomeScreen";
-import PollsScreen from "../screens/PollsScreen";
 import VerifyPassportScreen from "../screens/VerifyPassportScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import DiscussionStack from "./DiscussionStack";
+import PollStack from "./PollStack";
 
 
 const Tab = createBottomTabNavigator();
@@ -35,17 +35,17 @@ export default function AppNavigator() {
       />
       <Tab.Screen
         name="Polls"
-        component={PollsScreen}
+        component={PollStack}
         options={{
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
-
             <MaterialCommunityIcons name="ballot-outline" color={color} size={size} />
           ),
         }}
       />
 
       <Tab.Screen
-        name="Discuss"
+        name="Discussions"
         component={DiscussionStack}
         options={{
           headerShown: false, // Keep this false as the Stack handles its own headers

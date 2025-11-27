@@ -20,6 +20,7 @@
     "multer": "^2.0.2",
     "react": "19.1.1",
     "react-native": "0.82.1",
+    "react-native-deck-swiper": "^2.0.19",
     "react-native-gesture-handler": "^2.29.1",
     "react-native-image-picker": "^8.2.1",
     "react-native-paper": "^5.14.5",

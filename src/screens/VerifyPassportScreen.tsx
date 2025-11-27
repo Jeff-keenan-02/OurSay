@@ -73,7 +73,6 @@ export default function VerifyPassportScreen() {
       }
 
       data.append("userId", user.id.toString());
-
       const response = await fetch(
         `${API}/verify-passport`,
         {

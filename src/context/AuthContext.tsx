@@ -31,6 +31,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loadUser();
   }, []);
 
+  
   const login = async (userData: User) => {
     setUser(userData);
     await AsyncStorage.setItem("user", JSON.stringify(userData));
