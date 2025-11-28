@@ -8,9 +8,10 @@ import DiscussionCard from "../../components/Discussion/DisscussionCard";
 import { useDiscussionVote } from "../../hooks/useDiscussionVote";
 import { useCategoryDiscussions } from "../../hooks/useCategoryDiscussions";
 import { Discussion } from "../../types/Discussion";
-import { DiscussionStackParams } from "../../navigation/DiscussionStack";
+
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
+import { DiscussionStackParams } from "../../navigation/types/DiscussionStackTypes";
 
 
 export default function DiscussionsListScreen() {
@@ -57,7 +58,7 @@ export default function DiscussionsListScreen() {
             style={{
               color: theme.colors.onSurfaceVariant,
               textAlign: "center",
-              marginTop: 20,
+              marginTop: 0,
             }}
           >
             Loading discussions…

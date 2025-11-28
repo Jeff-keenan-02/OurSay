@@ -1,8 +1,9 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import PollTopicsScreen from "../screens/Polls/PollTopicsScreen";
-import SwipePollScreen from "../screens/Polls/SwipePollScreen";
+
 import { useTheme } from "react-native-paper";
+import PollTopicsScreen from "../../screens/Polls/PollTopicsScreen";
+import SwipePollScreen from "../../screens/Polls/SwipePollScreen";
 
 const Stack = createNativeStackNavigator();
 

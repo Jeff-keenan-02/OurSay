@@ -21,7 +21,7 @@ export default function SettingsScreen() {
 
   return (
     <Screen
-      title="Settings"
+      title=""
       subtitle="Manage your account and preferences."
     >
       {/* --- USER CARD --- */}
@@ -32,7 +32,7 @@ export default function SettingsScreen() {
           theme={{ colors: { surface: theme.colors.surface } }}
         >
           <Card.Title
-            title="Logged in as"
+            title={`Logged in as ${user?.username}`}
             titleStyle={[styles.cardTitle, { color: theme.colors.onSurface }]}
             left={(props) => (
               <Avatar.Icon
@@ -44,15 +44,6 @@ export default function SettingsScreen() {
               />
             )}
           />
-
-          <Text
-            style={[
-              styles.username,
-              { color: theme.colors.onSurfaceVariant }
-            ]}
-          >
-            {user?.username}
-          </Text>
         </Card>
       </Section>
 
@@ -80,6 +71,7 @@ export default function SettingsScreen() {
             <List.Icon {...props} color="#90caf9" icon="palette" />
           )}
         />
+        
       </Section>
 
       {/* --- SIGN OUT --- */}
@@ -87,7 +79,6 @@ export default function SettingsScreen() {
         <Button
           mode="contained"
           onPress={logout}
-          style={styles.logoutButton}
           buttonColor="#b54949"
         >
           Sign Out
@@ -114,10 +105,5 @@ const styles = StyleSheet.create({
     fontSize: 17,
     marginTop: 8,
     marginLeft: 16,
-  },
-  logoutButton: {
-    borderRadius: 10,
-    paddingVertical: 8,
-    marginTop: 20,
   },
 });

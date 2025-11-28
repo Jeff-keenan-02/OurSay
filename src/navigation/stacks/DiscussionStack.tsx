@@ -1,16 +1,12 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useTheme } from "react-native-paper"; // <--- 1. Import Hook
+import { useTheme } from "react-native-paper"; 
 
-import DiscussionsListScreen from "../screens/Discussions/DiscussionsListScreen";
-import DiscussionDetailScreen from "../screens/Discussions/DiscussionDetailScreen";
-import DiscussionCategoriesScreen from "../screens/Discussions/discussionCategoriesScreen";
+import DiscussionsListScreen from "../../screens/Discussions/DiscussionsListScreen";
+import DiscussionDetailScreen from "../../screens/Discussions/DiscussionDetailScreen";
+import DiscussionCategoriesScreen from "../../screens/Discussions/discussionCategoriesScreen";
+import { DiscussionStackParams } from "../types/DiscussionStackTypes";
 
-export type DiscussionStackParams = {
-  DiscussionCategories: undefined;
-  DiscussionsList: { categoryId: number | null; title: string };
-  DiscussionDetail: { id: number; title: string };
-};
 
 const Stack = createNativeStackNavigator<DiscussionStackParams>();
 
@@ -35,12 +31,12 @@ export default function DiscussionStack() {
       <Stack.Screen
         name="DiscussionCategories"
         component={DiscussionCategoriesScreen}
-        options={{ title: "Discussion Categories" }}
+        options={{ title: "Categories" }}
       />
       <Stack.Screen
         name="DiscussionsList"
         component={DiscussionsListScreen}
-        options={{ title: "Discussions" }}
+        options={{ title: "" }}
       />
 
       <Stack.Screen

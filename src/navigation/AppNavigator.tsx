@@ -6,8 +6,12 @@ import { IconButton, useTheme } from "react-native-paper";
 import HomeScreen from "../screens/HomeScreen";
 import VerifyPassportScreen from "../screens/VerifyPassportScreen";
 import SettingsScreen from "../screens/SettingsScreen";
-import DiscussionStack from "./DiscussionStack";
-import PollStack from "./PollStack";
+import DiscussionStack from "./stacks/DiscussionStack";
+import PollStack from "./stacks/PollStack";
+import HomeStack from "./stacks/HomeStack";
+import VerifyStack from "./stacks/VerifyStack";
+import SettingsStack from "./stacks/SettingsStack";
+
 
 
 const Tab = createBottomTabNavigator();
@@ -16,34 +20,35 @@ export default function AppNavigator() {
   const theme = useTheme(); 
 
   return (
-    <Tab.Navigator
-    screenOptions={{
-    headerStyle: {
-      height: 56,
-      backgroundColor: theme.colors.background,
-    },
-    headerTitleStyle: {
-      fontSize: 18,
-      fontWeight: "600",
-      color: theme.colors.onBackground,
-    },
-    headerShadowVisible: false,
-    tabBarStyle: {
-      backgroundColor: theme.colors.surface,
-      borderTopWidth: 0,
-      height: 64,
-      paddingBottom: 6,
-    },
-    tabBarActiveTintColor: theme.colors.primary,
-    tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
-    
-  }}
+      <Tab.Navigator
+      screenOptions={{
+        // --- Native Header Styling ---
+        headerStyle: {
+          backgroundColor: theme.colors.background,
+          height: 60,                    // Clean height like Stack
+        },
+        headerTitleStyle: {
+          fontSize: 20,
+          fontWeight: "700",
+          color: theme.colors.onBackground,
+        },
+
+        // --- Bottom Tab Bar Styling ---
+        tabBarStyle: {
+          backgroundColor: theme.colors.surface,
+          borderTopWidth: 0,
+          height: 64,
+          paddingBottom: 6,
+        },
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
+      }}
     >
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
+        component={HomeStack}
         options={{
-          headerShown: true,
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="home-outline" color={color} size={size} />
           ),
@@ -64,7 +69,7 @@ export default function AppNavigator() {
         name="Discussions"
         component={DiscussionStack}
         options={{
-          headerShown: false, // Keep this false as the Stack handles its own headers
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="comment-multiple-outline" color={color} size={size} />
           ),
@@ -73,11 +78,12 @@ export default function AppNavigator() {
 
       <Tab.Screen
         name="Verify"
-        component={VerifyPassportScreen}
+        component={VerifyStack}
         options={{
+          headerShown: false,
+          title:"",
           tabBarLabel: "Verify ID",
           tabBarIcon: ({ color, size }) => (
-            // Using a shield icon usually implies trust/security more than just 'passport'
             <MaterialCommunityIcons name="shield-check-outline" color={color} size={size} />
           ),
         }}
@@ -85,8 +91,9 @@ export default function AppNavigator() {
 
       <Tab.Screen
         name="Settings"
-        component={SettingsScreen}
+        component={SettingsStack}
         options={{
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="cog-outline" color={color} size={size} />
           ),

@@ -3,6 +3,7 @@ import React from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { globalStyles } from "../styles/globalStyles";
+import { AppHeader } from "./AppHeader";
 
 interface ScreenProps {
   title?: string;
@@ -33,23 +34,9 @@ export function Screen({
           center ? globalStyles.screenCenter : null, // ⬅️ center INSIDE scroll
         ]}
       >
-        {title && (
-          <Text
-            variant="headlineMedium"
-            style={[styles.title, { color: theme.colors.onBackground }]}
-          >
-            {title}
-          </Text>
-        )}
+        {/* Unified App Header */}
+        {title && <AppHeader title={title} subtitle={subtitle} />}
 
-        {subtitle && (
-          <Text
-            variant="bodyMedium"
-            style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}
-          >
-            {subtitle}
-          </Text>
-        )}
 
         {children}
       </ScrollView>
@@ -65,23 +52,8 @@ export function Screen({
         center ? globalStyles.screenCenter : null, // ⬅️ center whole screen
       ]}
     >
-      {title && (
-        <Text
-          variant="headlineMedium"
-          style={[styles.title, { color: theme.colors.onBackground }]}
-        >
-          {title}
-        </Text>
-      )}
-
-      {subtitle && (
-        <Text
-          variant="bodyMedium"
-          style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}
-        >
-          {subtitle}
-        </Text>
-      )}
+      {/* Unified App Header */}
+      {title && <AppHeader title={title} subtitle={subtitle} />}
 
       {children}
     </View>
@@ -91,19 +63,12 @@ export function Screen({
 const styles = StyleSheet.create({
 container: {
   flex: 1,
-  paddingHorizontal: 20,
-  paddingTop: 32,        // More breathing room under iPhone dynamic island
+  paddingHorizontal: 10,
+  paddingTop: 0,
   paddingBottom: 20,
-  gap: 8,                // Adds small spacing between title + subtitle
+  gap: 8,
 },
   scrollContent: {
-    paddingBottom: 40,
-  },
-  title: {
-    fontWeight: "700",
-    marginBottom: 4,
-  },
-  subtitle: {
-    marginBottom: 18,
+    paddingBottom: 0,
   },
 });

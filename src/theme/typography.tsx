@@ -60,6 +60,14 @@ export const typography = {
     fontWeight: "400",
     lineHeight: 20,
   },
+  /** * Massive Left-Aligned Header (Like "Today" in App Store)
+   */
+  hero: {
+    fontSize: 34,
+    fontWeight: "800",
+    letterSpacing: -0.5, // Tighter spacing for big text
+    lineHeight: 40,
+  },
 
   /**
    * Small metadata text.
