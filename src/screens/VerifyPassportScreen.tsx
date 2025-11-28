@@ -15,6 +15,8 @@ import { globalStyles } from "../styles/globalStyles"; // make sure this path ma
 import { usePassportVerification } from "../hooks/verify/usePassportVerification";
 import { Screen } from "../layout/Screen";
 import { Section } from "../layout/Section";
+import { spacing } from "../theme/spacing";
+import { typography } from "../theme/typography";
 
 export default function VerifyPassportScreen() {
   const theme = useTheme();
@@ -28,164 +30,127 @@ export default function VerifyPassportScreen() {
     uploadPassport,
   } = usePassportVerification(API, user, login);
 
- return (
-    <View
-      style={[
-        styles.wrapper,
-        { backgroundColor: theme.colors.background },
-      ]}
+   return (
+    <Screen
+      scroll
+      title="Verify Identity"
+      subtitle="Upload a clear photo of your passport information page."
     >
-      {/* Page Title */}
-      <Text
-        style={[
-          styles.title,
-          { color: theme.colors.onBackground },
-        ]}
-      >
-        Verify Your Identity
-      </Text>
+      <Section>
+        <Card
+          mode="elevated"
+          style={[
+            styles.card,
+            { backgroundColor: theme.colors.surface }
+          ]}
+        >
+          <Card.Content style={styles.cardContent}>
+            
+            {/* Icon Circle */}
+            {!photo && (
+              <View
+                style={[
+                  styles.iconWrapper,
+                  { borderColor: theme.colors.primary }
+                ]}
+              >
+                <Avatar.Icon
+                  size={70}
+                  icon="passport"
+                  color="white"
+                  style={[
+                    styles.icon,
+                    { backgroundColor: theme.colors.primary }
+                  ]}
+                />
+              </View>
+            )}
 
-      <Text
-        style={[
-          styles.subtitle,
-          { color: theme.colors.onSurfaceVariant },
-        ]}
-      >
-        Upload a clear photo of the passport information page.
-      </Text>
-
-      {/* Main Card */}
-      <Card
-        mode="elevated"
-        style={[
-          styles.card,
-          { backgroundColor: theme.colors.surface },
-        ]}
-      >
-        <Card.Content style={styles.cardContent}>
-          {/* Icon with ring */}
-          {!photo && (
-            <View
+            {/* Card Title */}
+            <Text
               style={[
-                styles.iconWrapper,
-                { borderColor: theme.colors.primary },
+                typography.title,
+                styles.cardTitle,
+                { color: theme.colors.onSurface }
               ]}
             >
-              <Avatar.Icon
-                size={66}
-                icon="passport"
-                color="white"
-                style={[
-                  styles.icon,
-                  { backgroundColor: theme.colors.primary },
-                ]}
-              />
-            </View>
-          )}
+              Passport Upload
+            </Text>
 
-          {/* Title inside card */}
-          <Text
-            style={[
-              styles.cardTitle,
-              { color: theme.colors.onSurface },
-            ]}
-          >
-            Passport Photo
-          </Text>
-
-          <Text
-            style={[
-              styles.cardSubtitle,
-              { color: theme.colors.onSurfaceVariant },
-            ]}
-          >
-            Make sure the MRZ (bottom text) is clearly visible.
-          </Text>
-
-          {/* Image Preview */}
-          {photo && (
-            <Image
-              source={{ uri: photo.uri }}
-              style={styles.preview}
-            />
-          )}
-
-          {/* Buttons */}
-          {!loading && (
-            <Button
-              mode="contained"
-              onPress={photo ? uploadPassport : choosePhoto}
-              style={styles.button}
+            <Text
+              style={[
+                typography.body,
+                styles.cardSubtitle,
+                { color: theme.colors.onSurfaceVariant }
+              ]}
             >
-              {photo ? "Upload to Verify" : "Choose Passport Photo"}
-            </Button>
-          )}
+              Ensure the MRZ (the machine-readable text at the bottom) is visible.
+            </Text>
 
-          {loading && (
-            <ActivityIndicator size="large" style={{ marginTop: 20 }} />
-          )}
-        </Card.Content>
-      </Card>
-    </View>
+            {/* Photo Preview */}
+            {photo && (
+              <Image
+                source={{ uri: photo.uri }}
+                style={styles.preview}
+              />
+            )}
+
+            {/* Buttons */}
+            {!loading && (
+              <Button
+                mode="contained"
+                onPress={photo ? uploadPassport : choosePhoto}
+                style={styles.button}
+              >
+                {photo ? "Upload & Verify" : "Choose Passport Photo"}
+              </Button>
+            )}
+
+            {loading && (
+              <ActivityIndicator size="large" style={{ marginTop: spacing.md }} />
+            )}
+          </Card.Content>
+        </Card>
+      </Section>
+    </Screen>
   );
 }
+
 const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-    paddingHorizontal: 18,
-    paddingTop: 22,
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "700",
-    marginBottom: 6,
-    textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 14,
-    textAlign: "center",
-    marginBottom: 24,
-    paddingHorizontal: 10,
-  },
   card: {
-    width: "94%",
     borderRadius: 18,
-    paddingVertical: 20,
+    paddingVertical: spacing.lg,
   },
   cardContent: {
     alignItems: "center",
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.md,
   },
   iconWrapper: {
-    padding: 8,
+    padding: 10,
     borderWidth: 2,
     borderRadius: 60,
-    marginBottom: 14,
+    marginBottom: spacing.md,
   },
   icon: {
     backgroundColor: "#3a7bfe",
   },
   cardTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginBottom: 4,
     textAlign: "center",
+    marginBottom: spacing.xs,
   },
   cardSubtitle: {
-    fontSize: 14,
-    marginBottom: 16,
     textAlign: "center",
+    marginBottom: spacing.lg,
   },
   button: {
-    width: "85%",
-    marginTop: 10,
-    borderRadius: 10,
+    width: "90%",
+    borderRadius: 12,
+    marginTop: spacing.md,
   },
   preview: {
     width: 260,
     height: 260,
-    borderRadius: 12,
-    marginVertical: 14,
+    borderRadius: 14,
+    marginBottom: spacing.md,
   },
 });
