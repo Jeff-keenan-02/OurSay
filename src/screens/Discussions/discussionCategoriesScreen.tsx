@@ -12,6 +12,7 @@ import { useDiscussionVote } from "../../hooks/useDiscussionVote";
 import { AuthContext } from "../../context/AuthContext";
 import { Section } from "../../layout/Section";
 import { Screen } from "../../layout/Screen";
+import { CategoryCard } from "../../components/Discussion/CategoryCard";
 
 export default function DiscussionCategoriesScreen() {
   const theme = useTheme();
@@ -49,13 +50,9 @@ export default function DiscussionCategoriesScreen() {
   };
 
     return (
-    <Screen
-      scroll
-      title="Discussions"
-      subtitle="Explore topics and see what people care about today."
-    >
+    <Screen scroll>
       {/* Trending Section */}
-      <Section label="Trending Discussions" subtitle="Top conversations happening right now">
+      <Section label="Trending Discussions">
         <FlatList
           data={trending}
           horizontal
@@ -73,29 +70,19 @@ export default function DiscussionCategoriesScreen() {
       </Section>
 
       {/* Categories Section */}
-      <Section label="Browse by Category" subtitle="Choose a topic to dive deeper">
+      <Section label="Browse by Category">
         <FlatList
           data={categories}
           scrollEnabled={false}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={{ gap: 12 }}
           renderItem={({ item }) => (
-            <TouchableOpacity
+            <CategoryCard
+              title={item.title}
+              description={item.description}
+              icon="dots-grid"
               onPress={() => openCategory(item)}
-              style={[styles.categoryCard, { backgroundColor: theme.colors.surface }]}
-            >
-              <Text style={[styles.categoryTitle, { color: theme.colors.onSurface }]}>
-                {item.title}
-              </Text>
-
-              {item.description && (
-                <Text
-                  style={[styles.categoryDescription, { color: theme.colors.onSurfaceVariant }]}
-                >
-                  {item.description}
-                </Text>
-              )}
-            </TouchableOpacity>
+            />
           )}
         />
       </Section>

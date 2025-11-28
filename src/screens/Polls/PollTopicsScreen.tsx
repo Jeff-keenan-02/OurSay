@@ -47,8 +47,7 @@ export default function PollTopicsScreen() {
   return (
     <Screen
       scroll
-      title="Weekly Poll"
-      subtitle="Participate in weekly polls and explore topics that matter."
+   
     >
       {/* FEATURED WEEKLY POLL */}
       <Section label="Featured this week">
@@ -61,17 +60,6 @@ export default function PollTopicsScreen() {
 
       {/* ALL POLL TOPICS */}
       <Section label="Topics">
-        <Text
-          style={[
-            typography.subtitle,
-            {
-              color: theme.colors.onSurfaceVariant,
-              marginBottom: spacing.sm,
-            },
-          ]}
-        >
-          View topics and vote on polls that matter to you.
-        </Text>
 
         <FlatList
           data={topics.filter((t) => !t.is_weekly)}

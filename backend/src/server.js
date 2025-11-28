@@ -308,7 +308,7 @@ app.get('/discussions/:id', async (req, res) => {
        FROM comments c
        LEFT JOIN users u ON u.id = c.user_id
        WHERE c.discussion_id = $1
-       ORDER BY c.created_at ASC`,
+       ORDER BY c.created_at DESC`,
       [id]
     );
 

@@ -29,92 +29,163 @@ export default function VerifyPassportScreen() {
   } = usePassportVerification(API, user, login);
 
  return (
-    <Screen center scroll title="Identity Verification" subtitle="Upload a clear photo of your passport information page.">
-      <Section>
-        <Card
-          mode="elevated"
-          style={[styles.card, { backgroundColor: theme.colors.surface }]}
-        >
-          <Card.Content style={{ alignItems: "center" }}>
-            <Avatar.Icon
-              size={80}
-              icon="passport"
-              style={styles.icon}
-              color="white"
-            />
+    <View
+      style={[
+        styles.wrapper,
+        { backgroundColor: theme.colors.background },
+      ]}
+    >
+      {/* Page Title */}
+      <Text
+        style={[
+          styles.title,
+          { color: theme.colors.onBackground },
+        ]}
+      >
+        Verify Your Identity
+      </Text>
 
-            <Text style={[styles.title, { color: theme.colors.onSurface }]}>
-              Passport Verification
-            </Text>
+      <Text
+        style={[
+          styles.subtitle,
+          { color: theme.colors.onSurfaceVariant },
+        ]}
+      >
+        Upload a clear photo of the passport information page.
+      </Text>
 
-            <Text
+      {/* Main Card */}
+      <Card
+        mode="elevated"
+        style={[
+          styles.card,
+          { backgroundColor: theme.colors.surface },
+        ]}
+      >
+        <Card.Content style={styles.cardContent}>
+          {/* Icon with ring */}
+          {!photo && (
+            <View
               style={[
-                styles.subtitle,
-                { color: theme.colors.onSurfaceVariant }
+                styles.iconWrapper,
+                { borderColor: theme.colors.primary },
               ]}
             >
-              Upload the page with the MRZ clearly visible.
-            </Text>
+              <Avatar.Icon
+                size={66}
+                icon="passport"
+                color="white"
+                style={[
+                  styles.icon,
+                  { backgroundColor: theme.colors.primary },
+                ]}
+              />
+            </View>
+          )}
 
-            {!photo && !loading && (
-              <Button mode="contained" onPress={choosePhoto} style={styles.btn}>
-                Choose Passport Photo
-              </Button>
-            )}
+          {/* Title inside card */}
+          <Text
+            style={[
+              styles.cardTitle,
+              { color: theme.colors.onSurface },
+            ]}
+          >
+            Passport Photo
+          </Text>
 
-            {photo && (
-              <>
-                <Image source={{ uri: photo.uri }} style={styles.preview} />
+          <Text
+            style={[
+              styles.cardSubtitle,
+              { color: theme.colors.onSurfaceVariant },
+            ]}
+          >
+            Make sure the MRZ (bottom text) is clearly visible.
+          </Text>
 
-                {!loading && (
-                  <Button
-                    mode="contained"
-                    onPress={uploadPassport}
-                    style={styles.btn}
-                  >
-                    Upload to Verify
-                  </Button>
-                )}
-              </>
-            )}
+          {/* Image Preview */}
+          {photo && (
+            <Image
+              source={{ uri: photo.uri }}
+              style={styles.preview}
+            />
+          )}
 
-            {loading && <ActivityIndicator size="large" style={{ marginTop: 20 }} />}
-          </Card.Content>
-        </Card>
-      </Section>
-    </Screen>
+          {/* Buttons */}
+          {!loading && (
+            <Button
+              mode="contained"
+              onPress={photo ? uploadPassport : choosePhoto}
+              style={styles.button}
+            >
+              {photo ? "Upload to Verify" : "Choose Passport Photo"}
+            </Button>
+          )}
+
+          {loading && (
+            <ActivityIndicator size="large" style={{ marginTop: 20 }} />
+          )}
+        </Card.Content>
+      </Card>
+    </View>
   );
 }
-
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: 16,
-    paddingVertical: 16,
-  },
-  icon: {
-    backgroundColor: "#3949ab",
-    marginBottom: 16,
+  wrapper: {
+    flex: 1,
+    paddingHorizontal: 18,
+    paddingTop: 22,
+    alignItems: "center",
   },
   title: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: "700",
     marginBottom: 6,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 14,
-    marginBottom: 20,
+    textAlign: "center",
+    marginBottom: 24,
+    paddingHorizontal: 10,
+  },
+  card: {
+    width: "94%",
+    borderRadius: 18,
+    paddingVertical: 20,
+  },
+  cardContent: {
+    alignItems: "center",
+    paddingHorizontal: 10,
+  },
+  iconWrapper: {
+    padding: 8,
+    borderWidth: 2,
+    borderRadius: 60,
+    marginBottom: 14,
+  },
+  icon: {
+    backgroundColor: "#3a7bfe",
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 4,
     textAlign: "center",
   },
-  btn: {
-    width: "80%",
-    marginTop: 12,
+  cardSubtitle: {
+    fontSize: 14,
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  button: {
+    width: "85%",
+    marginTop: 10,
     borderRadius: 10,
   },
   preview: {
     width: 260,
     height: 260,
     borderRadius: 12,
-    marginVertical: 16,
+    marginVertical: 14,
   },
 });

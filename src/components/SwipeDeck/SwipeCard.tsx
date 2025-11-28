@@ -1,42 +1,90 @@
-// components/SwipeDeck/SwipeCard.tsx
 import React from "react";
-import { Card, Text, useTheme } from "react-native-paper";
-import { StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
+import { Text, useTheme } from "react-native-paper";
 
 export default function SwipeCard({ card }: { card: any }) {
   const theme = useTheme();
 
   if (!card) {
     return (
-      <Card style={[styles.card, { backgroundColor: theme.colors.surfaceVariant }]}>
-        <Card.Title title="Loading…" />
-      </Card>
+      <View style={[styles.card, { backgroundColor: theme.colors.surfaceVariant }]}>
+        <Text style={[styles.loading, { color: theme.colors.onSurface }]}>
+          Loading…
+        </Text>
+      </View>
     );
   }
+
   return (
-    <Card style={[styles.card, { backgroundColor: theme.colors.surfaceVariant }]}>
-      <Card.Title
-        title={card.title}
-        titleStyle={{
-          color: theme.colors.onSurface,
-          fontSize: 22,
-          fontWeight: "700",
-        }}
-      />
-      <Card.Content>
-        <Text style={{ color: theme.colors.onSurfaceVariant, fontSize: 16 }}>
-          {card.description || "No description"}
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.colors.surface,
+          borderColor: theme.colors.outlineVariant,
+        },
+      ]}
+    >
+      <View style={styles.inner}>
+        <Text
+          style={[
+            styles.title,
+            { color: theme.colors.onBackground }
+          ]}
+        >
+          {card.title}
         </Text>
-      </Card.Content>
-    </Card>
+
+        <Text
+          style={[
+            styles.description,
+            { color: theme.colors.onSurfaceVariant }
+          ]}
+        >
+          {card.description || "No description provided"}
+        </Text>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
     height: 420,
+    borderRadius: 22,
     padding: 24,
-    borderRadius: 20,
     justifyContent: "center",
+    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOpacity: 0.12,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  },
+
+  inner: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 10,
+  },
+
+  title: {
+    fontSize: 26,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 14,
+  },
+
+  description: {
+    fontSize: 16,
+    lineHeight: 22,
+    textAlign: "center",
+    opacity: 0.85,
+  },
+
+  loading: {
+    fontSize: 20,
+    fontWeight: "600",
+    textAlign: "center",
   },
 });

@@ -11,6 +11,7 @@ import { AuthContext } from "../context/AuthContext";
 import { useWeeklyPoll } from "../hooks/useWeeklyPoll";
 import { Screen } from "../layout/Screen";
 import { Section } from "../layout/Section";
+import { typography } from "../theme/typography";
 import { useTrendingDiscussions } from "../hooks/useTrendingDiscussions";
 import { useDiscussionVote } from "../hooks/useDiscussionVote";
 import { getGreeting } from "../utils/greeting";
@@ -57,20 +58,17 @@ export default function HomeScreen() {
       title="OurSay"
       subtitle="Your community. Your voice. Take part in this week's public opinion poll."
     >
-      {/* Greeting */}
-      <Text
-        variant="labelLarge"
-        style={{
-          color: theme.colors.onSurfaceVariant,
-          marginBottom: 12,
-        }}
-      >
-        {greeting}
-      </Text>
 
       <Section label="Featured This Week">
         {pollLoading ? (
-          <Text style={{ color: theme.colors.onSurfaceVariant }}>Loading…</Text>
+          <Text
+            style={[
+              typography.body,
+              { color: theme.colors.onSurfaceVariant}
+            ]}
+          >
+            Loading…
+          </Text>
         ) : (
           weeklyPoll && (
             <WeeklyPollCard
@@ -90,7 +88,7 @@ export default function HomeScreen() {
       </Section>
 
       {/* Trending Section */}
-      <Section label="Trending Discussions" subtitle="Top conversations happening right now">
+      <Section label="Trending Discussions">
         <FlatList
           data={trending}
           horizontal

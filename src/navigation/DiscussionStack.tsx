@@ -35,19 +35,18 @@ export default function DiscussionStack() {
       <Stack.Screen
         name="DiscussionCategories"
         component={DiscussionCategoriesScreen}
+        options={{ title: "Discussion Categories" }}
       />
       <Stack.Screen
         name="DiscussionsList"
         component={DiscussionsListScreen}
-        options={({ route }) => ({
-          title: route.params?.title ?? "Discussions",
-        })}
+        options={{ title: "Discussions" }}
       />
 
       <Stack.Screen
         name="DiscussionDetail"
         component={DiscussionDetailScreen}
-        options={({ route }) => ({ title: route.params.title })}
+          options={{ title: "Thread" }}
       />
     </Stack.Navigator>
   );

@@ -17,17 +17,33 @@ export default function AppNavigator() {
 
   return (
     <Tab.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: theme.colors.background },
-        tabBarStyle: { backgroundColor: theme.colors.surface },
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
-      }}
+    screenOptions={{
+    headerStyle: {
+      height: 56,
+      backgroundColor: theme.colors.background,
+    },
+    headerTitleStyle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: theme.colors.onBackground,
+    },
+    headerShadowVisible: false,
+    tabBarStyle: {
+      backgroundColor: theme.colors.surface,
+      borderTopWidth: 0,
+      height: 64,
+      paddingBottom: 6,
+    },
+    tabBarActiveTintColor: theme.colors.primary,
+    tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
+    
+  }}
     >
       <Tab.Screen
         name="Home"
         component={HomeScreen}
         options={{
+          headerShown: true,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="home-outline" color={color} size={size} />
           ),

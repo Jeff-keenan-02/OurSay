@@ -89,10 +89,13 @@ export function Screen({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-  },
+container: {
+  flex: 1,
+  paddingHorizontal: 20,
+  paddingTop: 32,        // More breathing room under iPhone dynamic island
+  paddingBottom: 20,
+  gap: 8,                // Adds small spacing between title + subtitle
+},
   scrollContent: {
     paddingBottom: 40,
   },

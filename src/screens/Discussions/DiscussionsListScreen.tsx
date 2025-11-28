@@ -31,7 +31,7 @@ export default function DiscussionsListScreen() {
   const { vote } = useDiscussionVote(API, user, setDiscussions);
 
   const openDiscussion = (id: number) => {
-    navigation.navigate("DiscussionDetail", { id, title });
+    navigation.navigate("DiscussionDetail", { id });
   };
 
   const handleVote = (id: number, direction: "up" | "down") => {
