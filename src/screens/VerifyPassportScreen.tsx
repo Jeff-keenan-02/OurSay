@@ -9,9 +9,7 @@ import {
   Avatar,
   useTheme,
 } from "react-native-paper";
-
 import { AuthContext } from "../context/AuthContext";
-import { globalStyles } from "../styles/globalStyles"; // make sure this path matches your project
 import { usePassportVerification } from "../hooks/verify/usePassportVerification";
 import { Screen } from "../layout/Screen";
 import { Section } from "../layout/Section";
