@@ -1,12 +1,14 @@
 import React, { useContext } from "react";
 import { StyleSheet } from "react-native";
 import { AuthContext } from "../context/AuthContext";
+import { useThemeMode } from "../context/ThemeModeContext";
 
 import {
   Text,
   Card,
   Button,
   List,
+  Switch,
   Avatar,
   Divider,
   useTheme,
@@ -19,6 +21,9 @@ export default function SettingsScreen() {
   const theme = useTheme();
   const { logout, user } = useContext(AuthContext);
 
+  const { mode, setMode } = useThemeMode();
+  const isDark = mode === "dark";
+
   return (
     <Screen
       title=""
@@ -27,19 +32,14 @@ export default function SettingsScreen() {
       {/* --- USER CARD --- */}
       <Section label="Your Account">
         <Card
-          mode="elevated"
-          style={styles.card}
-          theme={{ colors: { surface: theme.colors.surface } }}
         >
           <Card.Title
             title={`Logged in as ${user?.username}`}
-            titleStyle={[styles.cardTitle, { color: theme.colors.onSurface }]}
             left={(props) => (
               <Avatar.Icon
                 {...props}
                 icon="account"
                 size={48}
-                color={theme.colors.onPrimary}
                 style={styles.avatar}
               />
             )}
@@ -72,7 +72,18 @@ export default function SettingsScreen() {
           )}
         />
         
+              <List.Item
+        title="Dark Mode"
+        description={mode === "system" ? "Follow system" : isDark ? "On" : "Off"}
+        right={() => (
+          <Switch
+            value={isDark}
+            onValueChange={(value) => setMode(value ? "dark" : "light")}
+          />
+        )}
+      />
       </Section>
+
 
       {/* --- SIGN OUT --- */}
       <Section>

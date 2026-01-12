@@ -6,9 +6,22 @@ export  function useTrendingDiscussions(API: string) {
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
 
   const loadDiscussions = async () => {
-    const res = await fetch(`${API}/trendingdiscussions`);
-    const data = await res.json();
-    setDiscussions(data);
+    try {
+      const res = await fetch(`${API}/trendingdiscussions`);
+      const data = await res.json();
+
+      if (Array.isArray(data)) {
+        setDiscussions(data);
+      } else if (data && Array.isArray((data as any).rows)) {
+        setDiscussions((data as any).rows);
+      } else {
+        console.warn("useTrendingDiscussions: unexpected response shape", data);
+        setDiscussions([]);
+      }
+    } catch (err) {
+      console.error("Failed to load trending discussions:", err);
+      setDiscussions([]);
+    }
   };
 
   useEffect(() => {

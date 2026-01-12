@@ -1,4 +1,4 @@
-import { MD3DarkTheme, configureFonts } from 'react-native-paper';
+import { MD3DarkTheme, MD3LightTheme, configureFonts } from 'react-native-paper';
 
 
 const fontConfig = {
@@ -39,4 +39,19 @@ export const neoDarkTheme = {
   },
   // Roundness of buttons/cards
   roundness: 12, 
+};
+
+export const neoLightTheme = {
+  ...MD3LightTheme,
+  colors: {
+    ...MD3LightTheme.colors,
+    background: "#f6f7fb",
+    surface: "#ffffff",
+    primary: "#2563eb",
+    secondary: "#059669",
+    outline: "#d1d5db",
+    onBackground: "#111827",
+    onSurface: "#111827",
+    error: "#b91c1c",
+  },
 };
