@@ -1,10 +1,10 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import VerifyPassportScreen from "../../screens/Verify/VerifyPassportScreen";
-import { useTheme } from "react-native-paper"; 
+import { IconButton, useTheme } from "react-native-paper"; 
 
 const Stack = createNativeStackNavigator();
 
-export default function VerifyStack() {
+export default function VerifyStack({navigation}: any) {
   const theme = useTheme(); // <---Get the Neo Dark colors
   return (
     <Stack.Navigator
@@ -27,6 +27,12 @@ export default function VerifyStack() {
         component={VerifyPassportScreen}
         options={{
           title: "Verification",
+          headerLeft: () => (
+            <IconButton
+              icon="menu"
+              onPress={() => navigation.openDrawer()}
+            />
+          ),
         }}
       />
     </Stack.Navigator>

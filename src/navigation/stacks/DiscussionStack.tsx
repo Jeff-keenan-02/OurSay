@@ -1,6 +1,6 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useTheme } from "react-native-paper"; 
+import { IconButton, useTheme } from "react-native-paper"; 
 
 import DiscussionsListScreen from "../../screens/Discussions/DiscussionsListScreen";
 import DiscussionDetailScreen from "../../screens/Discussions/DiscussionDetailScreen";
@@ -10,13 +10,12 @@ import { DiscussionStackParams } from "../types/DiscussionStackTypes";
 
 const Stack = createNativeStackNavigator<DiscussionStackParams>();
 
-export default function DiscussionStack() {
+export default function DiscussionStack({navigation}: any) {
   const theme = useTheme(); // <---Get the Neo Dark colors
 
   return (
     <Stack.Navigator
       screenOptions={{
-
         headerStyle: {
           backgroundColor: theme.colors.background, // Matches screen background
         },
@@ -31,7 +30,14 @@ export default function DiscussionStack() {
       <Stack.Screen
         name="DiscussionCategories"
         component={DiscussionCategoriesScreen}
-        options={{ title: "Categories" }}
+        options={{ title: "Categories",
+        headerLeft: () => (
+          <IconButton
+            icon="menu"
+            onPress={() => navigation.getParent()?.openDrawer()}
+          />
+        ),
+         }}
       />
       <Stack.Screen
         name="DiscussionsList"

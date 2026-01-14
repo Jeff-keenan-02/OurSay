@@ -7,6 +7,7 @@ import PollStack from "./stacks/PollStack";
 import HomeStack from "./stacks/HomeStack";
 import VerifyStack from "./stacks/VerifyStack";
 import SettingsStack from "./stacks/SettingsStack";
+import PetitionStack from "./stacks/PetitionStack";
 
 
 
@@ -86,12 +87,16 @@ export default function AppNavigator() {
       />
 
       <Tab.Screen
-        name="Settings"
-        component={SettingsStack}
+        name="Petitions"
+        component={PetitionStack}
         options={{
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="cog-outline" color={color} size={size} />
+            <MaterialCommunityIcons
+              name="file-document-outline"
+              color={color}
+              size={size}
+            />
           ),
         }}
       />

@@ -1,11 +1,13 @@
+import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import SettingsScreen from "../../screens/Settings/SettingsScreen";
-import { IconButton, useTheme } from "react-native-paper"; 
+import { IconButton, useTheme } from "react-native-paper";
+
+import PetitionListScreen from "../../screens/Petitions/PetitionListScreen";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 
 const Stack = createNativeStackNavigator();
 
-export default function SettingsStack() {
+export default function PetitionStack() {
   const theme = useTheme();
   const navigation = useNavigation();
 
@@ -13,22 +15,22 @@ export default function SettingsStack() {
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: theme.colors.background, 
+          backgroundColor: theme.colors.background,
         },
         headerTintColor: theme.colors.onBackground,
         headerTitleStyle: {
           fontWeight: "bold",
         },
-
-        contentStyle: { backgroundColor: theme.colors.background },
+        contentStyle: {
+          backgroundColor: theme.colors.background,
+        },
       }}
     >
       <Stack.Screen
-        name="SettingsMain"
-        component={SettingsScreen}
-        options={{
-          title: "Settings",
-          headerLeft: () => (
+        name="PetitionList"
+        component={PetitionListScreen}
+        options={{ title: "Petitions",
+                      headerLeft: () => (
             <IconButton
               icon="menu"
               onPress={() => navigation.dispatch(DrawerActions.openDrawer())}

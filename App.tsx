@@ -7,6 +7,8 @@ import { AuthProvider } from "./src/context/AuthContext";
 import { ThemeModeProvider, useThemeMode } from "./src/context/ThemeModeContext";
 import MainNavigator from "./src/navigation/MainNavigator";
 
+
+
 function AppInner() {
   const { theme } = useThemeMode();
   return (

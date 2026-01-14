@@ -1,12 +1,14 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import HomeScreen from "../../screens/Home/HomeScreen";
-import { useTheme } from "react-native-paper"; 
+import { IconButton, useTheme } from "react-native-paper"; 
 import DiscussionCategoriesScreen from "../../screens/Discussions/discussionCategoriesScreen";
 const Stack = createNativeStackNavigator();
 
-export default function HomeStack() {
+export default function HomeStack({navigation}: any) {
 const theme = useTheme();
+
   return (
+    
 <Stack.Navigator
       screenOptions={{
         headerShadowVisible: false,     // removes the faint white line
@@ -28,6 +30,12 @@ const theme = useTheme();
         component={HomeScreen}
         options={{
         title: "Home",
+        headerLeft: () => (
+          <IconButton
+            icon="menu"
+            onPress={() => navigation.getParent()?.openDrawer()}
+          />
+        ),
 
         }}
       />

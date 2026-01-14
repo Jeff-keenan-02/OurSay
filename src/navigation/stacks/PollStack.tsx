@@ -1,13 +1,13 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import { useTheme } from "react-native-paper";
+import { IconButton, useTheme } from "react-native-paper";
 import PollTopicsScreen from "../../screens/Polls/PollTopicsScreen";
 import SwipePollScreen from "../../screens/Polls/SwipePollScreen";
 
 const Stack = createNativeStackNavigator();
 
-export default function PollStack() {
+export default function PollStack({navigation}: any) {
   const theme = useTheme();
 
   return (
@@ -21,7 +21,15 @@ export default function PollStack() {
       <Stack.Screen
         name="PollTopics"
         component={PollTopicsScreen}
-        options={{ title: "Poll Topics" }}
+        options={{ title: "Poll Topics",
+        headerLeft: () => (
+          <IconButton
+            icon="menu"
+            onPress={() => navigation.getParent()?.openDrawer()}
+          />
+        ),
+
+         }}
       />
 
       <Stack.Screen
