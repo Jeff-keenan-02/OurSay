@@ -2,13 +2,11 @@ import React, { useContext } from "react";
 import { View, StyleSheet, FlatList, ScrollView, TouchableOpacity } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
-
 import { DiscussionCategory } from "../../types/DiscussionCategory";
 import DiscussionCardTrending from "../../components/Discussion/DisscussionCardTrending";
-
-import { useDiscussionCategories } from "../../hooks/useDiscussionCategories";
-import { useTrendingDiscussions } from "../../hooks/useTrendingDiscussions";
-import { useDiscussionVote } from "../../hooks/useDiscussionVote";
+import { useDiscussionCategories } from "../../hooks/discussions/useDiscussionCategories";
+import { useTrendingDiscussions } from "../../hooks/discussions/useTrendingDiscussions";
+import { useDiscussionVote } from "../../hooks/discussions/useDiscussionVote";
 import { AuthContext } from "../../context/AuthContext";
 import { Section } from "../../layout/Section";
 import { Screen } from "../../layout/Screen";

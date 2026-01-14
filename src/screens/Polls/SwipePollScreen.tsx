@@ -4,9 +4,9 @@ import { View, StyleSheet, Alert } from "react-native";
 import { ProgressBar, Text, useTheme } from "react-native-paper";
 import { AuthContext } from "../../context/AuthContext";
 import SwipeDeck from "../../components/SwipeDeck/SwipeDeck";
-import { usePollQuestions } from "../../hooks/usePollQuestions";
-import { usePollProgress } from "../../hooks/usePollProgress";
-import { usePollVote } from "../../hooks/usePollVote";
+import { usePollProgress } from "../../hooks/polls/usePollProgress";
+import { usePollVote } from "../../hooks/polls/usePollVote";
+import { usePollQuestions } from "../../hooks/polls/usePollQuestions";
 
 export default function SwipePollScreen({ route, navigation }: any) {
   const { topicId, title } = route.params;

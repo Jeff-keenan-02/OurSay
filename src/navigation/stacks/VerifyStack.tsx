@@ -1,5 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import VerifyPassportScreen from "../../screens/VerifyPassportScreen";
+import VerifyPassportScreen from "../../screens/Verify/VerifyPassportScreen";
 import { useTheme } from "react-native-paper"; 
 
 const Stack = createNativeStackNavigator();

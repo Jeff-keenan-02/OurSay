@@ -2,21 +2,16 @@ import React, { useContext, useCallback } from "react";
 import { FlatList } from "react-native";
 import { Text, useTheme, Divider } from "react-native-paper";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-
-import WeeklyPollCard from "../components/PollTopics/WeeklyPollCard";
-
-import DiscussionCardTrending from "../components/Discussion/DisscussionCardTrending"
-
-import { AuthContext } from "../context/AuthContext";
-import { useWeeklyPoll } from "../hooks/useWeeklyPoll";
-import { Screen } from "../layout/Screen";
-import { Section } from "../layout/Section";
-import { typography } from "../theme/typography";
-import { useTrendingDiscussions } from "../hooks/useTrendingDiscussions";
-import { useDiscussionVote } from "../hooks/useDiscussionVote";
-import { getGreeting } from "../utils/greeting";
-
-
+import WeeklyPollCard from "../../components/PollTopics/WeeklyPollCard";
+import DiscussionCardTrending from "../../components/Discussion/DisscussionCardTrending"
+import { AuthContext } from "../../context/AuthContext";
+import { useWeeklyPoll } from "../../hooks/polls/useWeeklyPoll";
+import { Screen } from "../../layout/Screen";
+import { Section } from "../../layout/Section";
+import { typography } from "../../theme/typography";
+import { useTrendingDiscussions } from "../../hooks/discussions/useTrendingDiscussions";
+import { useDiscussionVote } from "../../hooks/discussions/useDiscussionVote";
+import { getGreeting } from "../../utils/greeting";
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();

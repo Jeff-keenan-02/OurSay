@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { PollTopic } from "../types/Poll";
+import { PollTopic } from "../../types/Poll";
 
 export function usePollTopics(API: string, user: any) {
   const [topics, setTopics] = useState<PollTopic[]>([]);

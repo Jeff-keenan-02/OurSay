@@ -2,10 +2,6 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { IconButton, useTheme } from "react-native-paper";
-
-import HomeScreen from "../screens/HomeScreen";
-import VerifyPassportScreen from "../screens/VerifyPassportScreen";
-import SettingsScreen from "../screens/SettingsScreen";
 import DiscussionStack from "./stacks/DiscussionStack";
 import PollStack from "./stacks/PollStack";
 import HomeStack from "./stacks/HomeStack";

@@ -9,12 +9,13 @@ import {
   Avatar,
   useTheme,
 } from "react-native-paper";
-import { AuthContext } from "../context/AuthContext";
-import { usePassportVerification } from "../hooks/verify/usePassportVerification";
-import { Screen } from "../layout/Screen";
-import { Section } from "../layout/Section";
-import { spacing } from "../theme/spacing";
-import { typography } from "../theme/typography";
+import { AuthContext } from "../../context/AuthContext";
+import { usePassportVerification } from "../../hooks/verify/usePassportVerification";
+import { Screen } from "../../layout/Screen";
+import { Section } from "../../layout/Section";
+import { typography } from "../../theme/typography";
+import { spacing } from "../../theme/spacing";
+
 
 export default function VerifyPassportScreen() {
   const theme = useTheme();
@@ -152,3 +153,4 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
 });
+

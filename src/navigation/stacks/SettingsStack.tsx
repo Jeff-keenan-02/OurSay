@@ -1,5 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import SettingsScreen from "../../screens/SettingsScreen";
+import SettingsScreen from "../../screens/Settings/SettingsScreen";
 import { useTheme } from "react-native-paper"; 
 
 const Stack = createNativeStackNavigator();

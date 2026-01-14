@@ -1,5 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import HomeScreen from "../../screens/HomeScreen";
+import HomeScreen from "../../screens/Home/HomeScreen";
 import { useTheme } from "react-native-paper"; 
 import DiscussionCategoriesScreen from "../../screens/Discussions/discussionCategoriesScreen";
 const Stack = createNativeStackNavigator();

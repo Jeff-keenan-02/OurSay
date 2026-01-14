@@ -2,18 +2,13 @@ import React, { useContext, useCallback } from "react";
 import { FlatList, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
-
 import { AuthContext } from "../../context/AuthContext";
 import WeeklyPollCard from "../../components/PollTopics/WeeklyPollCard";
 import TopicCard from "../../components/PollTopics/TopicCard";
-
-import { useWeeklyPoll } from "../../hooks/useWeeklyPoll";
-import { usePollTopics } from "../../hooks/usePollTopics";
-
+import { useWeeklyPoll } from "../../hooks/polls/useWeeklyPoll";
+import { usePollTopics } from "../../hooks/polls/usePollTopics";
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
-import { spacing } from "../../theme/spacing";
-import { typography } from "../../theme/typography";
 import { PollTopic } from "../../types/Poll";
 
 export default function PollTopicsScreen() {

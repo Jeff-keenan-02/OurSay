@@ -3,16 +3,13 @@ import { View, FlatList, Alert } from "react-native";
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import { Text, useTheme } from "react-native-paper";
 import { AuthContext } from "../../context/AuthContext";
-import { globalStyles } from "../../styles/globalStyles";
 import DiscussionCard from "../../components/Discussion/DisscussionCard";
-import { useDiscussionVote } from "../../hooks/useDiscussionVote";
-import { useCategoryDiscussions } from "../../hooks/useCategoryDiscussions";
+import { useDiscussionVote } from "../../hooks/discussions/useDiscussionVote";
 import { Discussion } from "../../types/Discussion";
-
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { DiscussionStackParams } from "../../navigation/types/DiscussionStackTypes";
-
+import { useCategoryDiscussions } from "../../hooks/discussions/useCategoryDiscussions";
 
 export default function DiscussionsListScreen() {
   const theme = useTheme();

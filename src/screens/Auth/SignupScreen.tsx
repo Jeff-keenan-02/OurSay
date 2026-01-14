@@ -1,18 +1,9 @@
 import React, { useState, useContext } from "react";
-import { View, StyleSheet } from "react-native";
 import { AuthContext } from "../../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
-import { globalStyles } from "../../styles/globalStyles";
 import { useTheme } from "react-native-paper";
 import { useSignup } from "../../hooks/auth/useSignup";
 
-import {
-  Text,
-  TextInput,
-  Button,
-  Card,
-  Avatar,
-} from "react-native-paper";
 import AuthForm from "../../components/auth/AuthForm";
 
 export default function SignupScreen() {

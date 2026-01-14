@@ -22,7 +22,6 @@ export function Section({ label, subtitle, children }: SectionProps) {
           style={[
             typography.header,
             styles.label,
-            { color: theme.colors.onBackground }
           ]}
         >
           {label}

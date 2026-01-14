@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { StyleSheet } from "react-native";
-import { AuthContext } from "../context/AuthContext";
-import { useThemeMode } from "../context/ThemeModeContext";
+import { AuthContext } from "../../context/AuthContext";
+import { useThemeMode } from "../../context/ThemeModeContext";
 
 import {
   Text,
@@ -10,12 +10,11 @@ import {
   List,
   Switch,
   Avatar,
-  Divider,
   useTheme,
 } from "react-native-paper";
 
-import { Screen } from "../layout/Screen";
-import { Section } from "../layout/Section";
+import { Screen } from "../../layout/Screen";
+import { Section } from "../../layout/Section";
 
 export default function SettingsScreen() {
   const theme = useTheme();
@@ -23,28 +22,22 @@ export default function SettingsScreen() {
 
   const { mode, setMode } = useThemeMode();
   const isDark = mode === "dark";
+  const themeLabel = mode === "system" ? "System" : isDark ? "Dark" : "Light";
 
   return (
-    <Screen
-      title=""
-      subtitle="Manage your account and preferences."
-    >
+    <Screen>
       {/* --- USER CARD --- */}
       <Section label="Your Account">
-        <Card
-        >
-          <Card.Title
+        <List.Item
             title={`Logged in as ${user?.username}`}
             left={(props) => (
-              <Avatar.Icon
+              <List.Icon
                 {...props}
                 icon="account"
-                size={48}
                 style={styles.avatar}
               />
             )}
           />
-        </Card>
       </Section>
 
       {/* --- ACCOUNT DETAILS --- */}
@@ -66,24 +59,16 @@ export default function SettingsScreen() {
       <Section label="Appearance">
         <List.Item
           title="Theme"
-          description="Neo Dark"
+          description={themeLabel}
           left={(props) => (
             <List.Icon {...props} color="#90caf9" icon="palette" />
           )}
         />
-        
-              <List.Item
-        title="Dark Mode"
-        description={mode === "system" ? "Follow system" : isDark ? "On" : "Off"}
-        right={() => (
-          <Switch
-            value={isDark}
-            onValueChange={(value) => setMode(value ? "dark" : "light")}
-          />
-        )}
-      />
+        <Switch
+              value={isDark}
+              onValueChange={(value) => setMode(value ? "dark" : "light")}
+            />
       </Section>
-
 
       {/* --- SIGN OUT --- */}
       <Section>
