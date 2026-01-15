@@ -33,9 +33,6 @@ export const neoDarkTheme = {
     
     // BORDERS
     outline: '#475569',    // Subtle borders
-    elevation: {
-        level1: '#1E293B',
-    }
   },
   // Roundness of buttons/cards
   roundness: 12, 
@@ -43,15 +40,38 @@ export const neoDarkTheme = {
 
 export const neoLightTheme = {
   ...MD3LightTheme,
+  fonts: configureFonts({ config: fontConfig }),
+
   colors: {
     ...MD3LightTheme.colors,
-    background: "#f6f7fb",
-    surface: "#ffffff",
-    primary: "#2563eb",
-    secondary: "#059669",
-    outline: "#d1d5db",
-    onBackground: "#111827",
-    onSurface: "#111827",
-    error: "#b91c1c",
+
+    // BACKGROUNDS
+    background: "#F8FAFC",        // Soft off-white (not pure white)
+    surface: "#FFFFFF",           // Cards
+    surfaceVariant: "#E5E7EB",    // Inputs, subtle containers
+
+    // PRIMARY (same brand accent as dark mode)
+    primary: "#2DD4BF",           // Consistent civic teal
+    onPrimary: "#042F2E",
+
+    // SECONDARY (supporting accent)
+    secondary: "#38BDF8",
+    onSecondary: "#0C4A6E",
+
+    // TEXT
+    onBackground: "#0F172A",      // Deep blue-grey (not black)
+    onSurface: "#1E293B",
+    onSurfaceVariant: "#475569",  // Muted metadata
+
+    // STATES
+    error: "#DC2626",
+    success: "#16A34A",
+
+    // BORDERS / DIVIDERS
+    outline: "#CBD5E1",
+
+
   },
+
+  roundness: 12,
 };

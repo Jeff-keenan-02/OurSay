@@ -1,7 +1,7 @@
+// src/layout/AppHeader.tsx
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, useTheme } from "react-native-paper";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { typography } from "../theme/typography";
 import { spacing } from "../theme/spacing";
 
@@ -14,48 +14,50 @@ export function AppHeader({ title, subtitle }: Props) {
   const theme = useTheme();
 
   return (
-      <View style={[styles.wrapper, { borderBottomColor: theme.colors.outlineVariant }]}>
+    <View
+      style={[
+        styles.wrapper,
+        { borderBottomColor: theme.colors.outline },
+      ]}
+    >
+      <Text
+        variant={typography.screenTitle}
+        style={[
+          styles.title,
+          { color: theme.colors.onBackground },
+        ]}
+      >
+        {title}
+      </Text>
+
+      {subtitle && (
         <Text
+          variant={typography.body}
           style={[
-            typography.screenTitle,
-            styles.title,
-            { color: theme.colors.onBackground }
+            styles.subtitle,
+            { color: theme.colors.onSurfaceVariant },
           ]}
         >
-          {title}
+          {subtitle}
         </Text>
-
-        {subtitle && (
-          <Text
-            style={[
-              typography.body,
-              styles.subtitle,
-              { color: theme.colors.onSurfaceVariant }
-            ]}
-          >
-            {subtitle}
-          </Text>
-        )}
-      </View>
-
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-
   wrapper: {
-    paddingTop: 10,
-    paddingBottom: 30,
-    paddingHorizontal: 0,
-    borderBottomWidth: 0,  // Thin iOS-style divider
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.lg,
+  borderBottomWidth: StyleSheet.hairlineWidth,
   },
   title: {
     textAlign: "center",
     marginBottom: spacing.xs,
+      letterSpacing: 0.3,
   },
   subtitle: {
     textAlign: "center",
-    paddingHorizontal: 20,
-    lineHeight: 20,
+    paddingHorizontal: spacing.lg,
   },
 });

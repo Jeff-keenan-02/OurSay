@@ -5,6 +5,7 @@ import { Text, useTheme } from "react-native-paper";
 import { typography } from "../theme/typography";
 import { spacing } from "../theme/spacing";
 
+
 interface SectionProps {
   label?: string;
   subtitle?: string;
@@ -19,10 +20,8 @@ export function Section({ label, subtitle, children }: SectionProps) {
       {/* Section Label */}
       {label && (
         <Text
-          style={[
-            typography.header,
-            styles.label,
-          ]}
+          variant={typography.sectionTitle}
+          style={{ marginBottom: spacing.xs }}
         >
           {label}
         </Text>
@@ -31,10 +30,10 @@ export function Section({ label, subtitle, children }: SectionProps) {
       {/* Optional Subtitle */}
       {subtitle && (
         <Text
+          variant={typography.body}
           style={[
-            typography.body,
             styles.subtitle,
-            { color: theme.colors.onSurfaceVariant }
+            { color: theme.colors.onSurfaceVariant },
           ]}
         >
           {subtitle}
@@ -49,19 +48,14 @@ export function Section({ label, subtitle, children }: SectionProps) {
 
 const styles = StyleSheet.create({
   section: {
-    marginBottom: spacing.xxl, // 32–40px
-  },
-
-  label: {
-    marginBottom: spacing.xs,  // 6–8px
+    marginBottom: spacing.lg,
   },
 
   subtitle: {
-    marginBottom: spacing.lg,  // 16–20px 
+    marginBottom: spacing.lg,
   },
-  
+
   content: {
-    marginTop: spacing.lg,
-    gap: 10, // keep consistent spacing between children
+    gap: spacing.sm,
   },
 });

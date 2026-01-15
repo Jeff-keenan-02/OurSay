@@ -57,10 +57,7 @@ export default function HomeScreen() {
       <Section label="Featured This Week">
         {pollLoading ? (
           <Text
-            style={[
-              typography.body,
-              { color: theme.colors.onSurfaceVariant}
-            ]}
+          variant="bodyMedium"
           >
             Loading…
           </Text>

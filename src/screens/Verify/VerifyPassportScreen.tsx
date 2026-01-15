@@ -13,7 +13,6 @@ import { AuthContext } from "../../context/AuthContext";
 import { usePassportVerification } from "../../hooks/verify/usePassportVerification";
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
-import { typography } from "../../theme/typography";
 import { spacing } from "../../theme/spacing";
 
 
@@ -67,8 +66,8 @@ export default function VerifyPassportScreen() {
 
             {/* Card Title */}
             <Text
+              variant="titleMedium"
               style={[
-                typography.title,
                 styles.cardTitle,
                 { color: theme.colors.onSurface }
               ]}
@@ -77,8 +76,8 @@ export default function VerifyPassportScreen() {
             </Text>
 
             <Text
+              variant="bodyMedium"
               style={[
-                typography.body,
                 styles.cardSubtitle,
                 { color: theme.colors.onSurfaceVariant }
               ]}

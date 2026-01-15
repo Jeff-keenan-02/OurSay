@@ -2,8 +2,8 @@
 import React from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
 import { Text, useTheme } from "react-native-paper";
-import { globalStyles } from "../styles/globalStyles";
 import { AppHeader } from "./AppHeader";
+import { spacing } from "../theme/spacing";
 
 interface ScreenProps {
   title?: string;
@@ -31,7 +31,7 @@ export function Screen({
         ]}
         contentContainerStyle={[
           styles.scrollContent,
-          center ? globalStyles.screenCenter : null, // ⬅️ center INSIDE scroll
+          center && { justifyContent: "center", alignItems: "center" }
         ]}
       >
         {/* Unified App Header */}
@@ -49,7 +49,7 @@ export function Screen({
       style={[
         styles.container,
         { backgroundColor: theme.colors.background },
-        center ? globalStyles.screenCenter : null, // ⬅️ center whole screen
+        center && { justifyContent: "center", alignItems: "center" }
       ]}
     >
       {/* Unified App Header */}
@@ -61,14 +61,13 @@ export function Screen({
 }
 
 const styles = StyleSheet.create({
-container: {
-  flex: 1,
-  paddingHorizontal: 10,
-  paddingTop: 0,
-  paddingBottom: 20,
-  gap: 8,
-},
+  container: {
+    flex: 1,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.lg,
+    gap: spacing.sm,
+  },
   scrollContent: {
-    paddingBottom: 0,
+    paddingBottom: spacing.lg,
   },
 });

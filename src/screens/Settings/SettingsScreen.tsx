@@ -75,7 +75,7 @@ export default function SettingsScreen() {
         <Button
           mode="contained"
           onPress={logout}
-          buttonColor="#b54949"
+          buttonColor={theme.colors.error}
         >
           Sign Out
         </Button>

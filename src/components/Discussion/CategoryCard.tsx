@@ -2,15 +2,21 @@ import React from "react";
 import { TouchableOpacity, StyleSheet, View } from "react-native";
 import { Text, useTheme, Avatar } from "react-native-paper";
 import { typography } from "../../theme/typography";
+import { spacing } from "../../theme/spacing";
 
 type Props = {
   title: string;
- description?: string | null;
+  description?: string | null;
   icon?: string;
   onPress: () => void;
 };
 
-export function CategoryCard({ title, description, icon = "folder", onPress }: Props) {
+export function CategoryCard({
+  title,
+  description,
+  icon = "folder",
+  onPress,
+}: Props) {
   const theme = useTheme();
 
   return (
@@ -18,16 +24,16 @@ export function CategoryCard({ title, description, icon = "folder", onPress }: P
       <View
         style={[
           styles.card,
-          { backgroundColor: theme.colors.surface }
+          { backgroundColor: theme.colors.surface },
         ]}
       >
-        {/* Optional leading icon */}
+        {/* Leading icon */}
         <Avatar.Icon
           size={40}
           icon={icon}
           style={{
             backgroundColor: theme.colors.primaryContainer,
-            marginRight: 12,
+            marginRight: spacing.md,
           }}
           color={theme.colors.onPrimaryContainer}
         />
@@ -35,20 +41,19 @@ export function CategoryCard({ title, description, icon = "folder", onPress }: P
         {/* Text Section */}
         <View style={{ flex: 1 }}>
           <Text
-            style={[
-              typography.title,
-              { color: theme.colors.onSurface }
-            ]}
+            variant={typography.sectionTitle}
+            style={{ color: theme.colors.onSurface }}
           >
             {title}
           </Text>
 
           {description && (
             <Text
-              style={[
-                typography.body,
-                { color: theme.colors.onSurfaceVariant, marginTop: 4 }
-              ]}
+              variant={typography.body}
+              style={{
+                color: theme.colors.onSurfaceVariant,
+                marginTop: spacing.xs,
+              }}
             >
               {description}
             </Text>
@@ -62,7 +67,7 @@ export function CategoryCard({ title, description, icon = "folder", onPress }: P
 const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
-    padding: 16,
+    padding: spacing.md,
     borderRadius: 16,
     alignItems: "center",
     elevation: 2,

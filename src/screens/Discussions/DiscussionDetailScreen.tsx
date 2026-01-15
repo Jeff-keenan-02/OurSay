@@ -10,12 +10,13 @@ import {
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useTheme, Text, Card, TextInput, Button, Divider } from "react-native-paper";
 import { AuthContext } from "../../context/AuthContext";
-import { globalStyles } from "../../styles/globalStyles";
 import { useDiscussion } from "../../hooks/discussions/useDiscussion";
 import { usePostComment } from "../../hooks/comments/usePostComment";
 import { StickyCommentBar } from "../../components/Discussion/StickyCommentBar";
 import { CommentCard } from "../../components/Discussion/CommentCard";
 import { DiscussionHeader } from "../../components/Discussion/DiscussionHeader";
+import { typography } from "../../theme/typography";
+import { Screen } from "../../layout/Screen";
 
 type RootStackParamList = {
   DiscussionDetail: { id: number };
@@ -50,9 +51,11 @@ export default function DiscussionDetailScreen() {
 
   if (loading || !discussion) {
     return (
-      <View style={globalStyles.screen}>
-        <Text style={{ color: theme.colors.onBackground }}>Loading…</Text>
-      </View>
+      <Screen center>
+        <Text variant={typography.body}>
+          Loading…
+        </Text>
+      </Screen>
     );
   }
 

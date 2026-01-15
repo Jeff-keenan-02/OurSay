@@ -5,7 +5,6 @@ import { useFocusEffect } from "@react-navigation/native";
 
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
-import { typography } from "../../theme/typography";
 import { AuthContext } from "../../context/AuthContext";
 
 /**
@@ -56,8 +55,8 @@ export default function AnalyticsScreen() {
       {/* Privacy Note */}
       <Section label="Privacy Notice">
         <Text
+        variant="titleMedium"
           style={[
-            typography.body,
             { color: theme.colors.onSurfaceVariant }
           ]}
         >
@@ -84,8 +83,8 @@ function StatRow({ label, value }: { label: string; value: number }) {
       }}
     >
       <Text
+      variant="bodyMedium"
         style={[
-          typography.body,
           { color: theme.colors.onSurfaceVariant }
         ]}
       >
@@ -93,8 +92,8 @@ function StatRow({ label, value }: { label: string; value: number }) {
       </Text>
 
       <Text
+        variant="bodyMedium"
         style={[
-          typography.subtitle,
           { color: theme.colors.onBackground }
         ]}
       >

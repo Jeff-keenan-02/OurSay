@@ -4,7 +4,6 @@ import { Text, useTheme, Button, Divider } from "react-native-paper";
 
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
-import { typography } from "../../theme/typography";
 
 const MOCK_PETITIONS = [
   {
@@ -43,13 +42,13 @@ export default function PetitionListScreen() {
           ItemSeparatorComponent={() => <Divider />}
           renderItem={({ item }) => (
             <View style={{ paddingVertical: 12 }}>
-              <Text style={typography.subtitle}>
+              <Text variant="titleMedium">
                 {item.title}
               </Text>
 
               <Text
+                variant="bodyMedium"
                 style={[
-                  typography.body,
                   { color: theme.colors.onSurfaceVariant, marginVertical: 4 },
                 ]}
               >
@@ -57,8 +56,8 @@ export default function PetitionListScreen() {
               </Text>
 
               <Text
+                    variant="bodyMedium"
                 style={[
-                  typography.small,
                   { color: theme.colors.primary },
                 ]}
               >
