@@ -14,12 +14,13 @@ import { usePassportVerification } from "../../hooks/verify/usePassportVerificat
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { spacing } from "../../theme/spacing";
+import { useNavigation } from "@react-navigation/native";
 
-
-export default function VerifyPassportScreen() {
+export default function PassportCaptureScreen(){
   const theme = useTheme();
   const { user, login } = useContext(AuthContext);
   const API = "http://localhost:3000";
+  const navigation = useNavigation();
 
   const {
     photo,
