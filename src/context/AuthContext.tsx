@@ -4,7 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 type User = {
   id: number;
   username: string;
-  identity_token?: string | null; // optional field for verification status
+  verification_level: number;
 };
 
 type AuthContextType = {
@@ -22,7 +22,6 @@ export const AuthContext = createContext<AuthContextType>({
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  // Restore saved login on app launch
   useEffect(() => {
     const loadUser = async () => {
       const stored = await AsyncStorage.getItem("user");
@@ -31,7 +30,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loadUser();
   }, []);
 
-  
   const login = async (userData: User) => {
     setUser(userData);
     await AsyncStorage.setItem("user", JSON.stringify(userData));

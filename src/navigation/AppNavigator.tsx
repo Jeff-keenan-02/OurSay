@@ -8,6 +8,7 @@ import HomeStack from "./stacks/HomeStack";
 import VerifyStack from "./stacks/VerifyStack";
 import SettingsStack from "./stacks/SettingsStack";
 import PetitionStack from "./stacks/PetitionStack";
+import AnalyticsStack from "./stacks/AnalyticsStack";
 
 
 
@@ -98,6 +99,24 @@ export default function AppNavigator() {
               size={size}
             />
           ),
+        }}
+      />
+
+      <Tab.Screen
+        name="Analytics"
+        component={AnalyticsStack}
+        options={{
+          headerShown: false,
+          tabBarItemStyle: { display: 'none' }, // ✅ removes space
+        }}
+      />
+
+      <Tab.Screen
+        name="Settings"
+        component={SettingsStack}
+        options={{
+          headerShown: false,
+          tabBarItemStyle: { display: 'none' }, // ✅ removes space
         }}
       />
     </Tab.Navigator>

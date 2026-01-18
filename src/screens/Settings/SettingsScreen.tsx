@@ -44,12 +44,12 @@ export default function SettingsScreen() {
       <Section label="Account Details">
         <List.Item
           title="Verification Status"
-          description={user?.identity_token ? "Verified User" : "Not Verified"}
+          description={user?.verification_level ? "Verified User" : "Not Verified"}
           left={(props) => (
             <List.Icon
               {...props}
-              color={user?.identity_token ? "#4caf50" : "#ff9800"}
-              icon={user?.identity_token ? "shield-check" : "shield-alert"}
+              color={user?.verification_level ? "#4caf50" : "#ff9800"}
+              icon={user?.verification_level ? "shield-check" : "shield-alert"}
             />
           )}
         />

@@ -1,7 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import HomeScreen from "../../screens/Home/HomeScreen";
 import { IconButton, useTheme } from "react-native-paper"; 
-import DiscussionCategoriesScreen from "../../screens/Discussions/discussionCategoriesScreen";
+import DiscussionCategoriesScreen from "../../screens/Discussions/DiscussionCategoriesScreen";
 const Stack = createNativeStackNavigator();
 
 export default function HomeStack({navigation}: any) {

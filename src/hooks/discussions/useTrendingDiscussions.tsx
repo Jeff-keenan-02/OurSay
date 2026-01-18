@@ -6,7 +6,7 @@ export  function useTrendingDiscussions(API: string) {
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
 
   const loadDiscussions = async () => {
-    const res = await fetch(`${API}/trendingdiscussions`);
+    const res = await fetch(`${API}/discussions/trending`);
     const data = await res.json();
     setDiscussions(data);
   };

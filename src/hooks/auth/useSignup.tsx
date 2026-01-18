@@ -9,7 +9,7 @@ export function useSignup(API: string) {
     setErrorMsg("");
 
     try {
-      const res = await fetch(`${API}/signup`, {
+      const res = await fetch(`${API}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),

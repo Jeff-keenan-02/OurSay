@@ -9,7 +9,7 @@ import { useWeeklyPoll } from "../../hooks/polls/useWeeklyPoll";
 import { usePollTopics } from "../../hooks/polls/usePollTopics";
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
-import { PollTopic } from "../../types/Poll";
+import { PollTopic } from "../../types/PollTopic";
 
 export default function PollTopicsScreen() {
   const theme = useTheme();

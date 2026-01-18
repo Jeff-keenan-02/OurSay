@@ -1,6 +1,7 @@
 //useDisscusionCategoreis.tsx 
 import { useState, useEffect } from "react";
-import { DiscussionCategory } from "../types/DiscussionCategory";
+import { DiscussionCategory } from "../../types/DiscussionCategory";
+
 
 export function useDiscussionCategories(API: string) {
   const [categories, setCategories] = useState<DiscussionCategory[]>([]);
@@ -8,7 +9,7 @@ export function useDiscussionCategories(API: string) {
 
   const loadCategories = async () => {
     try {
-      const res = await fetch(`${API}/discussion-categories`);
+      const res = await fetch(`${API}/discussions/categories`);
       const data = await res.json();
       setCategories(data);
     } catch (e) {

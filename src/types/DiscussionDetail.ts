@@ -3,7 +3,6 @@ export type DiscussionDetail = {
   title: string;
   body: string;
   created_at: string;
-  username?: string | null;
   comments: {
     id: number;
     body: string;

@@ -25,17 +25,11 @@ export default function CustomDrawerContent(props: any) {
       <Divider />
 
       <DrawerItem
-        label="Home"
-        onPress={() => {
-          props.navigation.navigate("Home", { screen: "Home" });
-          props.navigation.closeDrawer();
-        }}
-      />
-
-      <DrawerItem
         label="Analytics"
         onPress={() => {
-          props.navigation.navigate("Analytics");
+          props.navigation.navigate("Main", {
+            screen: "Analytics",
+          });
           props.navigation.closeDrawer();
         }}
       />
@@ -43,10 +37,12 @@ export default function CustomDrawerContent(props: any) {
       <DrawerItem
         label="Settings"
         onPress={() => {
-          props.navigation.navigate("Settings");
+          props.navigation.navigate("Main", {
+            screen: "Settings",
+          });
           props.navigation.closeDrawer();
         }}
-      />
+/>
 
       <Divider />
 

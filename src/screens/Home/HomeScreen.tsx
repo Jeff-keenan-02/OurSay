@@ -8,7 +8,6 @@ import { AuthContext } from "../../context/AuthContext";
 import { useWeeklyPoll } from "../../hooks/polls/useWeeklyPoll";
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
-import { typography } from "../../theme/typography";
 import { useTrendingDiscussions } from "../../hooks/discussions/useTrendingDiscussions";
 import { useDiscussionVote } from "../../hooks/discussions/useDiscussionVote";
 import { getGreeting } from "../../utils/greeting";

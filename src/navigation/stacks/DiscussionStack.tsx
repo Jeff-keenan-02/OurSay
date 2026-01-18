@@ -4,7 +4,7 @@ import { IconButton, useTheme } from "react-native-paper";
 
 import DiscussionsListScreen from "../../screens/Discussions/DiscussionsListScreen";
 import DiscussionDetailScreen from "../../screens/Discussions/DiscussionDetailScreen";
-import DiscussionCategoriesScreen from "../../screens/Discussions/discussionCategoriesScreen";
+import DiscussionCategoriesScreen from "../../screens/Discussions/DiscussionCategoriesScreen";
 import { DiscussionStackParams } from "../types/DiscussionStackTypes";
 
 

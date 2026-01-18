@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { DiscussionDetail } from "../types/DiscussionDetail";
+
 import { useFocusEffect } from "@react-navigation/native";
+import { DiscussionDetail } from "../../types/DiscussionDetail";
 
 export function useDiscussion(API: string, id: number) {
   const [discussion, setDiscussion] = useState<DiscussionDetail | null>(null);

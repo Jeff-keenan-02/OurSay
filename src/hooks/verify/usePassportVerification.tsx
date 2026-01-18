@@ -1,20 +1,9 @@
-// hooks/verify/usePassportVerification.ts
 import { useState } from "react";
 import { Alert } from "react-native";
 import * as ImagePicker from "react-native-image-picker";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-type PhotoAsset = {
-  uri: string;
-  type?: string;
-  fileName?: string;
-};
-
-type User = {
-  id: number;
-  username: string;
-  identity_token?: string | null;
-};
+import { PhotoAsset } from "../../types/Media";
+import { User } from "../../types/User";
+import { VerificationResponse } from "../../types/Verification";
 
 type UsePassportVerificationResult = {
   photo: PhotoAsset | null;
@@ -27,95 +16,64 @@ type UsePassportVerificationResult = {
 export function usePassportVerification(
   API: string,
   user: User | null,
-  login: (user: User) => void
+  updateUser: (partial: Partial<User>) => void
 ): UsePassportVerificationResult {
   const [photo, setPhoto] = useState<PhotoAsset | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Pick an image from gallery
   const choosePhoto = () => {
-    ImagePicker.launchImageLibrary(
-      { mediaType: "photo" },
-      (response) => {
-        if (response.didCancel) return;
+    ImagePicker.launchImageLibrary({ mediaType: "photo" }, (response) => {
+      const asset = response.assets?.[0];
+      if (!asset?.uri) return;
 
-        const asset = response?.assets?.[0];
-        if (asset?.uri) {
-          setPhoto({
-            uri: asset.uri,
-            type: asset.type,
-            fileName: asset.fileName,
-          });
-        }
-      }
-    );
+      setPhoto({
+        uri: asset.uri,
+        type: asset.type,
+        fileName: asset.fileName,
+      });
+    });
   };
 
-  const clearPhoto = () => {
-    setPhoto(null);
-  };
+  const clearPhoto = () => setPhoto(null);
 
   const uploadPassport = async () => {
-    if (!photo || !photo.uri) {
-      Alert.alert("Please choose a passport image first.");
-      return;
-    }
-
-    if (!user || user.id == null) {
-      Alert.alert("No authenticated user — please sign in and try again.");
+    if (!photo || !user) {
+      Alert.alert("Missing photo or user");
       return;
     }
 
     setLoading(true);
 
     try {
-      // Normalise iOS URI shape if needed
-      let fixedUri = photo.uri;
-      if (!fixedUri.startsWith("file://")) {
-        fixedUri = fixedUri.replace("ph://", "file://");
-      }
-
-      const data = new FormData();
-      data.append("file", {
-        uri: fixedUri,
+      const form = new FormData();
+      form.append("file", {
+        uri: photo.uri,
         type: photo.type ?? "image/jpeg",
         name: photo.fileName ?? "passport.jpg",
       } as any);
 
-      data.append("userId", user.id.toString());
+      form.append("userId", user.id.toString());
 
-      const response = await fetch(`${API}/verify-passport`, {
+      const res = await fetch(`${API}/verify-passport`, {
         method: "POST",
-        body: data,
+        body: form,
       });
 
-      const json = await response.json();
-      console.log("VERIFY RESPONSE:", json);
+      const data: VerificationResponse = await res.json();
 
-      if (response.ok && json.verified) {
-        Alert.alert("✅ Identity verified");
-
-        // Clear cached user so it doesn’t conflict with updated one
-        await AsyncStorage.removeItem("user");
-
-        const updatedUser: User = {
-          id: user.id,
-          username: user.username,
-          identity_token: json.identity_token?.toString(),
-        };
-
-        // Update AuthContext with fresh user
-        await login(updatedUser);
-
-      } else {
-        Alert.alert(
-          "Verification failed.",
-          json.error ? String(json.error) : "Unknown error"
-        );
+      if (!res.ok || !data.verified) {
+        Alert.alert("Verification failed");
+        return;
       }
+
+      // ✅ Update user state ONLY with verification level
+      updateUser({ verification_level: data.level });
+
+      Alert.alert("✅ Passport verified");
+      clearPhoto();
     } catch (err) {
-      console.error("UPLOAD ERROR:", err);
-      Alert.alert("Network Error", "Unable to send image.");
+      console.error(err);
+      Alert.alert("Network error");
     } finally {
       setLoading(false);
     }

@@ -1,51 +1,37 @@
 import React from "react";
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { Card, Text, ProgressBar, useTheme } from "react-native-paper";
+import { PollTopic } from "../../types/PollTopic";
 
-/**
- * Props definition for WeeklyPollCard.
- * This ensures:
- *  - The card gets the poll data it needs (title, description, progress).
- *  - The parent screen can decide what happens when the card is clicked (onPress).
- *
- * Component props = clean separation from app logic.
- */
 type Props = {
-  poll: {
-    id: number;
-    title: string;
-    description: string;
-    total_polls: number;
-    completed_polls: number;
-  };
+  poll: PollTopic;
   onPress: () => void;
 };
 
 export default function WeeklyPollCard({ poll, onPress }: Props) {
-  const theme = useTheme(); // gets the app’s theme — consistent light/dark mode colors
+  const theme = useTheme();
 
-
-  //Calculate progress percentage for the progress bar.
-  const progress = poll.total_polls === 0 ? 0 : poll.completed_polls / poll.total_polls;
+  const progress =
+    poll.total_polls === 0
+      ? 0
+      : poll.completed_polls / poll.total_polls;
 
   return (
     <TouchableOpacity onPress={onPress}>
       <Card
         style={[
           styles.card,
-          // Use theme color so the card always matches the app’s design system
-          { backgroundColor: theme.colors.surfaceVariant }
+          { backgroundColor: theme.colors.surfaceVariant },
         ]}
       >
-        {/* Card header with the main and subtitle text */}
         <Card.Title
-          title="Weekly Public Opinion Poll"      // static title (always the same)
+          title="Weekly Public Opinion Poll"
           titleStyle={{
             color: theme.colors.primary,
             fontSize: 18,
             fontWeight: "700",
           }}
-          subtitle={poll.title}                   // dynamic title for this week's poll
+          subtitle={poll.title}
           subtitleStyle={{
             color: theme.colors.onSurfaceVariant,
             fontSize: 16,
@@ -54,24 +40,23 @@ export default function WeeklyPollCard({ poll, onPress }: Props) {
         />
 
         <Card.Content>
-          {/* Poll description */}
-          <Text
-            style={{
-              color: theme.colors.onSurfaceVariant,
-              marginBottom: 10,
-            }}
-          >
-            {poll.description}
-          </Text>
+          {poll.description && (
+            <Text
+              style={{
+                color: theme.colors.onSurfaceVariant,
+                marginBottom: 10,
+              }}
+            >
+              {poll.description}
+            </Text>
+          )}
 
-          {/* Progress bar showing how many questions the user answered */}
           <ProgressBar
             progress={progress}
             color={theme.colors.primary}
             style={{ height: 8, borderRadius: 6 }}
           />
 
-          {/* Completed questions label */}
           <Text
             style={{
               color: theme.colors.onSurfaceVariant,
@@ -88,10 +73,10 @@ export default function WeeklyPollCard({ poll, onPress }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    width: "100%",          
+    width: "100%",
     borderRadius: 18,
     paddingVertical: 14,
-    paddingHorizontal: 14,   
-    elevation: 2,     
+    paddingHorizontal: 14,
+    elevation: 2,
   },
 });

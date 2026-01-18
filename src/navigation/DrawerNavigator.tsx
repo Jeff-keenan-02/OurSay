@@ -23,12 +23,11 @@ export default function DrawerNavigator() {
         },
       }}
     >
-      {/* Main app (tabs) */}
-      <Drawer.Screen name="Home" component={AppNavigator} />
-
-      {/* Drawer-only screens */}
-      <Drawer.Screen name="Analytics" component={AnalyticsStack} />
-      <Drawer.Screen name="Settings" component={SettingsStack} />
+      {/* MAIN APP (tabs always visible) */}
+      <Drawer.Screen
+        name="Main"
+        component={AppNavigator}
+      />
     </Drawer.Navigator>
   );
 }

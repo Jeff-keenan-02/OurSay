@@ -10,7 +10,7 @@ export function useLogin(API: string) {
     setErrorMsg("");
 
     try {
-      const res = await fetch(`${API}/login`, {
+      const res = await fetch(`${API}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
