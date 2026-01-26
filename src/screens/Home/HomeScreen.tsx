@@ -11,6 +11,7 @@ import { Section } from "../../layout/Section";
 import { useTrendingDiscussions } from "../../hooks/discussions/useTrendingDiscussions";
 import { useDiscussionVote } from "../../hooks/discussions/useDiscussionVote";
 import { getGreeting } from "../../utils/greeting";
+import { usePollProgress } from "../../hooks/polls/usePollProgress";
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
@@ -27,8 +28,15 @@ export default function HomeScreen() {
   // Hook to vote
   const { vote } = useDiscussionVote(API, user, setDiscussions);
 
+
+
+
   //Hook to get the weekly poll
   const { weeklyPoll, loading: pollLoading, loadWeeklyPoll } = useWeeklyPoll(API, user); 
+
+  // Hook to load the Poll progress 
+  // const {status, index} = usePollProgress(API, topicId, user, poll, navigation):
+
 
   const greeting = getGreeting(user?.username);
 
@@ -95,7 +103,7 @@ export default function HomeScreen() {
           keyExtractor={(item) => item.id.toString()}
         />
       </Section>
-    </Screen>
+    </Screen> 
   );
 }
 

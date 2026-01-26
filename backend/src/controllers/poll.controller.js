@@ -57,11 +57,36 @@ exports.votePoll = async (req, res) => {
       ON CONFLICT DO NOTHING
     `, [userId, pollId]);
 
+    // 5️⃣ update topic progress (AUTHORITATIVE)
+    await pool.query(`
+      INSERT INTO poll_topic_progress (user_id, topic_id, status, completed_polls)
+      SELECT
+        $1,
+        p.topic_id,
+        CASE
+          WHEN COUNT(pp.poll_id) = COUNT(p.id) THEN 2
+          ELSE 1
+        END AS status,
+        COUNT(pp.poll_id) AS completed_polls
+      FROM polls p
+      LEFT JOIN poll_participation pp
+        ON pp.poll_id = p.id AND pp.user_id = $1
+      WHERE p.topic_id = (
+        SELECT topic_id FROM polls WHERE id = $2
+      )
+      GROUP BY p.topic_id
+      ON CONFLICT (user_id, topic_id)
+      DO UPDATE SET
+        status = EXCLUDED.status,
+        completed_polls = EXCLUDED.completed_polls,
+        updated_at = NOW();
+    `, [userId, pollId]);
+
     return res.json({ success: true });
 
   } catch (err) {
     console.error('Vote failed:', err);
-    return res.status(500).json({ error: 'Vote failed' });
+    return res.status(500).json({ error: err.message });
   }
 };
 

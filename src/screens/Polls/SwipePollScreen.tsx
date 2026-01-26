@@ -4,78 +4,77 @@ import { View, StyleSheet, Alert } from "react-native";
 import { ProgressBar, Text, useTheme } from "react-native-paper";
 import { AuthContext } from "../../context/AuthContext";
 import SwipeDeck from "../../components/SwipeDeck/SwipeDeck";
-import { usePollProgress } from "../../hooks/polls/usePollProgress";
-import { usePollVote } from "../../hooks/polls/usePollVote";
+
 import { usePollQuestions } from "../../hooks/polls/usePollQuestions";
+import { usePollVote } from "../../hooks/polls/usePollVote";
+import { usePollProgress } from "../../hooks/polls/usePollProgress";
 
 export default function SwipePollScreen({ route, navigation }: any) {
   const { topicId, title } = route.params;
-
   const { user } = useContext(AuthContext);
   const theme = useTheme();
   const API = "http://localhost:3000";
 
-// Load all poll questions for this topic
-// - Fetches /polls-by-topic/:topicId
-// - Returns an array of poll cards (yes/no questions)
-const { polls } = usePollQuestions(API, topicId);
+  const { polls } = usePollQuestions(API, topicId);
 
+  // authoritative backend progress
+  const { status, index: backendIndex } = usePollProgress(API, topicId, user, polls, navigation);
 
-// Manage poll progress (status + current question index)
-// - status = 0 (not started), 1 (in progress), 2 (completed)
-// - index = the current poll card the user should be on
-// - setIndex = update question index after a swipe
-// - setStatus = update status (used by the vote hook)
-const { status, index, setIndex, setStatus } = usePollProgress(API, topicId, user, polls, navigation);
+  // local UI index
+  const [uiIndex, setUiIndex] = useState(0);
 
+  // sync UI once backend index is known
+  useEffect(() => {
+    setUiIndex(backendIndex);
+  }, [backendIndex]);
 
-// Handle voting logic
-// - Saves user's vote (POST /polls/:id/vote)
-// - Recalculates topic progress in DB (/poll-topic-progress/update)
-// - Retrieves updated progress
-// - Calls setIndex + setStatus to sync UI
-const { vote } = usePollVote(API, topicId, user, setIndex, setStatus);
+  const { vote } = usePollVote(API, topicId, user);
 
-
+  useEffect(() => {
+    if (status === 2) {
+      Alert.alert(
+        "You have already completed this poll.",
+        [{ text: "OK", onPress: () => navigation.goBack() }]
+      );
+    }
+  }, [status]);
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      
-      {/* Header */}
       <View style={styles.headerBox}>
         <Text style={styles.headerLabel}>You are voting on:</Text>
         <Text style={styles.headerTitle}>{title}</Text>
       </View>
 
-      {/* Progress Bar */}
       <ProgressBar
-        progress={polls.length ? index / polls.length : 0}
+        progress={polls.length ? uiIndex / polls.length : 0}
         color="#4caf50"
         style={styles.topProgress}
       />
 
       <Text style={styles.progressLabel}>
-        {Math.min(index, polls.length)} / {polls.length} questions
+        {Math.min(uiIndex, polls.length)} / {polls.length} questions
       </Text>
 
-      {/* Swipe Component */}
       <SwipeDeck
         cards={polls}
-        currentIndex={index}
-        onSwipeYes={(i: number) => {
-          vote(polls[i].id, "yes");
-          setIndex(i + 1);
-        }}
-        onSwipeNo={(i: number) => {
-          vote(polls[i].id, "no");
-          setIndex(i + 1);
-        }}
-        onSwipeAllDone={() => {
-          setIndex(polls.length);
-          setTimeout(() => navigation.goBack(), 400);
-        }}
-      />
+        currentIndex={uiIndex}
+        onSwipeYes={(i) => {
+          const poll = polls[i];
+          if (!poll) return;
 
+          vote(poll.id, "yes");   // backend
+          setUiIndex(i + 1);      // ✅ UI moves immediately
+        }}
+        onSwipeNo={(i) => {
+          const poll = polls[i];
+          if (!poll) return;
+
+          vote(poll.id, "no");
+          setUiIndex(i + 1);
+        }}
+        onSwipeAllDone={() => navigation.goBack()}
+      />
     </View>
   );
 }

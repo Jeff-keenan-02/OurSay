@@ -11,6 +11,7 @@ import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { PollTopic } from "../../types/PollTopic";
 
+
 export default function PollTopicsScreen() {
   const theme = useTheme();
   const navigation = useNavigation<any>();

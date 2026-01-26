@@ -11,10 +11,7 @@ type Props = {
 export default function WeeklyPollCard({ poll, onPress }: Props) {
   const theme = useTheme();
 
-  const progress =
-    poll.total_polls === 0
-      ? 0
-      : poll.completed_polls / poll.total_polls;
+  const progress = poll.total_polls === 0 ? 0 : poll.completed_polls / poll.total_polls;
 
   return (
     <TouchableOpacity onPress={onPress}>
