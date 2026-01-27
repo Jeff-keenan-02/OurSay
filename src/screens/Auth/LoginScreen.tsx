@@ -3,11 +3,12 @@ import { AuthContext } from "../../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { useLogin } from "../../hooks/auth/useLogin";
 import AuthForm from "../../components/auth/AuthForm";
+import { API_BASE_URL } from "../../config/api";
 
 export default function LoginScreen() {
   const navigation: any = useNavigation();
 
-  const API = "http://localhost:3000";
+  const API = API_BASE_URL;
 
   const { loginRequest, loading, errorMsg } = useLogin(API);
   const { login } = useContext(AuthContext);

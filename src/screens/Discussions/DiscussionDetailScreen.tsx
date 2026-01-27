@@ -17,6 +17,7 @@ import { CommentCard } from "../../components/Discussion/CommentCard";
 import { DiscussionHeader } from "../../components/Discussion/DiscussionHeader";
 import { typography } from "../../theme/typography";
 import { Screen } from "../../layout/Screen";
+import { API_BASE_URL } from "../../config/api";
 
 type RootStackParamList = {
   DiscussionDetail: { id: number };
@@ -30,7 +31,7 @@ export default function DiscussionDetailScreen() {
   const route = useRoute<RouteProp<RootStackParamList, "DiscussionDetail">>();
   const { id } = route.params;
 
-  const API = "http://localhost:3000";
+  const API = API_BASE_URL;
 
   //HOOK → handles loading the discussion + refreshing on focus
   const { discussion, loading, loadDiscussion } = useDiscussion(API, id);
@@ -73,7 +74,6 @@ export default function DiscussionDetailScreen() {
             <DiscussionHeader
               title={discussion.title}
               body={discussion.body}
-              username={discussion.username}
               created_at={discussion.created_at}
             />
           }

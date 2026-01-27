@@ -11,13 +11,14 @@ import { AuthContext } from "../../context/AuthContext";
 import { Section } from "../../layout/Section";
 import { Screen } from "../../layout/Screen";
 import { CategoryCard } from "../../components/Discussion/CategoryCard";
+import { API_BASE_URL } from "../../config/api";
 
 export default function DiscussionCategoriesScreen() {
   const theme = useTheme();
   const navigation: any = useNavigation();
   const { user } = useContext(AuthContext);
 
-  const API = "http://localhost:3000";
+  const API = API_BASE_URL;
 
   // hook for categories
   const { categories, loading } = useDiscussionCategories(API);

@@ -5,13 +5,14 @@ import { useTheme } from "react-native-paper";
 import { useSignup } from "../../hooks/auth/useSignup";
 
 import AuthForm from "../../components/auth/AuthForm";
+import { API_BASE_URL } from "../../config/api";
 
 export default function SignupScreen() {
   const navigation: any = useNavigation();
   const { login } = useContext(AuthContext);
   const theme = useTheme();
 
-  const API = "http://localhost:3000";
+  const API = API_BASE_URL;
   const { signupRequest, loading, errorMsg } = useSignup(API);
 
   const [username, setUsername] = useState("");

@@ -12,12 +12,14 @@ import { useTrendingDiscussions } from "../../hooks/discussions/useTrendingDiscu
 import { useDiscussionVote } from "../../hooks/discussions/useDiscussionVote";
 import { getGreeting } from "../../utils/greeting";
 import { usePollProgress } from "../../hooks/polls/usePollProgress";
+import { API_BASE_URL } from "../../config/api";
+
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const theme = useTheme();
   const { user } = useContext(AuthContext);
-  const API = "http://localhost:3000";
+  const API = API_BASE_URL;
 
   // Hook to get trending topics
   const { discussions, setDiscussions, loadDiscussions } = useTrendingDiscussions(API);
@@ -34,8 +36,6 @@ export default function HomeScreen() {
   //Hook to get the weekly poll
   const { weeklyPoll, loading: pollLoading, loadWeeklyPoll } = useWeeklyPoll(API, user); 
 
-  // Hook to load the Poll progress 
-  // const {status, index} = usePollProgress(API, topicId, user, poll, navigation):
 
 
   const greeting = getGreeting(user?.username);

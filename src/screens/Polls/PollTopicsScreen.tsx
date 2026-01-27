@@ -10,15 +10,16 @@ import { usePollTopics } from "../../hooks/polls/usePollTopics";
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { PollTopic } from "../../types/PollTopic";
+import { API_BASE_URL } from "../../config/api";
 
 
 export default function PollTopicsScreen() {
   const theme = useTheme();
   const navigation = useNavigation<any>();
   const { user } = useContext(AuthContext);
-  const API = "http://localhost:3000";
+  const API = API_BASE_URL;
 
-  const { topics, loadTopics } = usePollTopics(API, user);
+  const { topics, loadTopics, loading } = usePollTopics(API, user);
   const { weeklyPoll, loadWeeklyPoll } = useWeeklyPoll(API, user);
 
   // Reload data when screen focuses
@@ -31,6 +32,7 @@ export default function PollTopicsScreen() {
   );
 
   const openTopic = (topic: PollTopic) => {
+    
     navigation.navigate("Polls", {
       screen: "SwipePoll",
       params: {

@@ -10,23 +10,24 @@ import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { DiscussionStackParams } from "../../navigation/types/DiscussionStackTypes";
 import { useCategoryDiscussions } from "../../hooks/discussions/useCategoryDiscussions";
+import { API_BASE_URL } from "../../config/api";
 
 export default function DiscussionsListScreen() {
   const theme = useTheme();
   const navigation = useNavigation<any>();
   const { user } = useContext(AuthContext);
 
-  const API = "http://localhost:3000";
+  const API = API_BASE_URL;
 
   // ✅ Strongly-typed route params
   const route = useRoute<RouteProp<DiscussionStackParams, "DiscussionsList">>();
   const { categoryId, title } = route.params;
 
   // ✅ Load only discussions from this category
-  const { discussions, loading, setDiscussions, loadDiscussions } = useCategoryDiscussions(API, categoryId);
+  const { discussions, loading, loadDiscussions } = useCategoryDiscussions(API, categoryId);
 
-  // ✅ Voting hook updates the same discussions state
-  const { vote } = useDiscussionVote(API, user, setDiscussions);
+  // ✅ Voting hook updates the discussions
+  const { vote } = useDiscussionVote(API, user, discussions);
 
   const openDiscussion = (id: number) => {
     navigation.navigate("DiscussionDetail", { id });

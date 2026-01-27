@@ -8,12 +8,13 @@ import SwipeDeck from "../../components/SwipeDeck/SwipeDeck";
 import { usePollQuestions } from "../../hooks/polls/usePollQuestions";
 import { usePollVote } from "../../hooks/polls/usePollVote";
 import { usePollProgress } from "../../hooks/polls/usePollProgress";
+import { API_BASE_URL } from "../../config/api";
 
 export default function SwipePollScreen({ route, navigation }: any) {
   const { topicId, title } = route.params;
   const { user } = useContext(AuthContext);
   const theme = useTheme();
-  const API = "http://localhost:3000";
+  const API = API_BASE_URL;
 
   const { polls } = usePollQuestions(API, topicId);
 
@@ -29,15 +30,6 @@ export default function SwipePollScreen({ route, navigation }: any) {
   }, [backendIndex]);
 
   const { vote } = usePollVote(API, topicId, user);
-
-  useEffect(() => {
-    if (status === 2) {
-      Alert.alert(
-        "You have already completed this poll.",
-        [{ text: "OK", onPress: () => navigation.goBack() }]
-      );
-    }
-  }, [status]);
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
