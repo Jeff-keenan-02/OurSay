@@ -1,22 +1,27 @@
 import React, { createContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { VerificationTier } from "../types/VerificationTier";
+
 
 type User = {
   id: number;
   username: string;
-  verification_level: number;
+  verification_level: VerificationTier;
 };
 
 type AuthContextType = {
   user: User | null;
   login: (user: User) => void;
   logout: () => void;
+  // Incremental updates
+  updateUser: (partial: Partial<User>) => void;
 };
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   login: () => {},
   logout: () => {},
+  updateUser: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -40,8 +45,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await AsyncStorage.removeItem("user");
   };
 
+  const updateUser = (partial: Partial<User>) => {
+    setUser((prev) => (prev ? { ...prev, ...partial } : prev));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

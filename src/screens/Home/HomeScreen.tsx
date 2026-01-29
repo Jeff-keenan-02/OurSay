@@ -14,29 +14,23 @@ import { getGreeting } from "../../utils/greeting";
 import { usePollProgress } from "../../hooks/polls/usePollProgress";
 import { API_BASE_URL } from "../../config/api";
 
-
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const theme = useTheme();
   const { user } = useContext(AuthContext);
   const API = API_BASE_URL;
-
+  
   // Hook to get trending topics
   const { discussions, setDiscussions, loadDiscussions } = useTrendingDiscussions(API);
 
-    // Top 3 trending prevent errors
+  // Top 3 trending prevent errors
   const trending = discussions.slice(0, 3);
 
   // Hook to vote
   const { vote } = useDiscussionVote(API, user, setDiscussions);
 
-
-
-
   //Hook to get the weekly poll
   const { weeklyPoll, loading: pollLoading, loadWeeklyPoll } = useWeeklyPoll(API, user); 
-
-
 
   const greeting = getGreeting(user?.username);
 
@@ -58,7 +52,7 @@ export default function HomeScreen() {
     <Screen
       scroll
       title="OurSay"
-      subtitle="Your community. Your voice. Take part in this week's public opinion poll."
+      subtitle=" Take part in this week's public opinion poll."
     >
 
       <Section label="Featured This Week">
@@ -106,4 +100,3 @@ export default function HomeScreen() {
     </Screen> 
   );
 }
-

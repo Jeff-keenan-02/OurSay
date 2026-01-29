@@ -15,19 +15,20 @@ import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { spacing } from "../../theme/spacing";
 import { useNavigation } from "@react-navigation/native";
+import { API_BASE_URL } from "../../config/api";
 
 export default function PassportCaptureScreen(){
   const theme = useTheme();
-  const { user, login } = useContext(AuthContext);
-  const API = "http://localhost:3000";
+  const { user, updateUser } = useContext(AuthContext);
+  const API = API_BASE_URL;
   const navigation = useNavigation();
 
   const {
     photo,
     loading,
-    choosePhoto,
+    capturePassport,
     uploadPassport,
-  } = usePassportVerification(API, user, login);
+  } = usePassportVerification(API, user, updateUser);
 
    return (
     <Screen
@@ -98,10 +99,10 @@ export default function PassportCaptureScreen(){
             {!loading && (
               <Button
                 mode="contained"
-                onPress={photo ? uploadPassport : choosePhoto}
+                onPress={photo ? uploadPassport : capturePassport}
                 style={styles.button}
               >
-                {photo ? "Upload & Verify" : "Choose Passport Photo"}
+                {photo ? "Upload & Verify" : "Capture Passport Photo"}
               </Button>
             )}
 

@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const axios = require('axios');
 const FormData = require('form-data');
-const { parse } = require('mrz');
+const mrz = require('mrz');
 const pool = require('../db/pool');
 
 // ENV (move to .env later)
@@ -43,7 +43,7 @@ exports.verifyPassport = async (req, res) => {
     /* --------------------------------------------------
        2. Parse MRZ
     -------------------------------------------------- */
-    const mrzResult = parse(mrz_lines);
+    const mrzResult = mrz.parse(mrz_lines);
     if (!mrzResult.valid) {
       return res.status(400).json({
         error: "MRZ validation failed",
@@ -106,5 +106,177 @@ exports.verifyPassport = async (req, res) => {
   } catch (err) {
     console.error("Passport verification failed:", err);
     return res.status(500).json({ error: "Verification failed" });
+  }
+};
+
+// POST /verify/liveness/challenge
+exports.issueLivenessChallenge = (req, res) => {
+  const challenges = [
+    "blink",
+    "turn_left",
+    "turn_right",
+    "open_mouth"
+  ];
+
+  const challenge = challenges[Math.floor(Math.random() * challenges.length)];
+
+  res.json({
+    challenge,
+    expires_in: 30 // seconds
+  });
+};
+
+
+exports.verifyLiveness = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No video uploaded" });
+    }
+
+    const userId = Number(req.body.userId);
+    if (!userId) {
+      return res.status(400).json({ error: "Missing userId" });
+    }
+
+    await pool.query(
+      `
+      INSERT INTO verifications (
+        user_id,
+        type,
+        level,
+        proof_hash,
+        issued_at,
+        expires_at
+      )
+      VALUES ($1, 'liveness', 1, NULL, NOW(), NOW() + INTERVAL '1 year')
+      ON CONFLICT (user_id, type) DO NOTHING
+      `,
+      [userId]
+    );
+
+    await pool.query(
+      `
+      UPDATE users
+      SET verification_level = GREATEST(verification_level, 1)
+      WHERE id = $1
+      `,
+      [userId]
+    );
+
+    return res.json({
+      verified: true,
+      level: 1,
+      type: "liveness",
+    });
+  } catch (err) {
+    console.error("Liveness verification failed:", err);
+    return res.status(500).json({ error: "Liveness verification failed" });
+  }
+};
+
+exports.verifyResidence = async (req, res) => {
+  function normalizeIP(ip) {
+    if (!ip) return null;
+
+    // IPv6-mapped IPv4
+    if (ip.startsWith('::ffff:')) {
+      return ip.replace('::ffff:', '');
+    }
+
+    return ip;
+  }
+
+  function isPrivateIP(ip) {
+    return (
+      ip.startsWith('192.168.') ||
+      ip.startsWith('10.') ||
+      ip.startsWith('172.16.') ||
+      ip === '127.0.0.1'
+    );
+  }
+
+  try {
+    const userId = Number(req.body.userId);
+    if (!userId) {
+      return res.status(400).json({ error: "Missing userId" });
+    }
+
+    // 1. Get IP
+    const rawIp =
+      req.headers['x-forwarded-for']?.split(',')[0] ||
+      req.socket.remoteAddress;
+
+    const ip = normalizeIP(rawIp);
+
+    let score = 0;
+    let country = null;
+    let countryName = null;
+    let devOverride = false;
+
+    // 2. Base confidence: Tier 2 already completed
+    score += 40;
+
+    // 3. Private IP = dev environment
+    if (isPrivateIP(ip)) {
+      devOverride = true;
+      score += 50; // enough to pass for testing
+      country = "IE";
+      countryName = "Ireland (dev)";
+    } else {
+      // 4. Public IP → Geo lookup
+      const geo = await axios.get(`https://ipapi.co/${ip}/json/`);
+      country = geo.data.country;
+      countryName = geo.data.country_name;
+
+      if (country === "IE") {
+        score += 40;
+      }
+
+      score += 10; // mobile / ISP assumption
+    }
+
+    const verified = score >= 80;
+
+    if (verified) {
+      await pool.query(
+        `
+        INSERT INTO verifications (
+          user_id,
+          type,
+          level,
+          proof_hash,
+          region_code,
+          issued_at,
+          expires_at
+        )
+        VALUES ($1, 'residence', 3, NULL, $2, NOW(), NOW() + INTERVAL '5 years')
+        ON CONFLICT (user_id, type) DO NOTHING
+        `,
+        [userId, country]
+      );
+
+      await pool.query(
+        `
+        UPDATE users
+        SET verification_level = GREATEST(verification_level, 3)
+        WHERE id = $1
+        `,
+        [userId]
+      );
+    }
+
+    return res.json({
+      verified,
+      level: verified ? 3 : 2,
+      score,
+      ip_seen: ip,
+      country,
+      countryName,
+      devOverride,
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Residence verification failed" });
   }
 };

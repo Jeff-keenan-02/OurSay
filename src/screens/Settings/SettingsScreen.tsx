@@ -5,54 +5,71 @@ import { useThemeMode } from "../../context/ThemeModeContext";
 
 import {
   Text,
-  Card,
   Button,
   List,
   Switch,
-  Avatar,
   useTheme,
 } from "react-native-paper";
 
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 
+import {
+  VERIFICATION_TIERS,
+  VerificationTier,
+} from "../../types/VerificationTier";
+
 export default function SettingsScreen() {
   const theme = useTheme();
   const { logout, user } = useContext(AuthContext);
-
   const { mode, setMode } = useThemeMode();
+
   const isDark = mode === "dark";
-  const themeLabel = mode === "system" ? "System" : isDark ? "Dark" : "Light";
+  const themeLabel =
+    mode === "system" ? "System" : isDark ? "Dark" : "Light";
+
+  // ✅ SINGLE source of truth
+  const level: VerificationTier = user?.verification_level ?? 0;
+  const tier = VERIFICATION_TIERS[level];
 
   return (
     <Screen>
-      {/* --- USER CARD --- */}
+      {/* --- USER --- */}
       <Section label="Your Account">
         <List.Item
-            title={`Logged in as ${user?.username}`}
-            left={(props) => (
-              <List.Icon
-                {...props}
-                icon="account"
-                style={styles.avatar}
-              />
-            )}
-          />
+          title={`Logged in as ${user?.username}`}
+          left={(props) => (
+            <List.Icon {...props} icon="account" />
+          )}
+        />
       </Section>
 
-      {/* --- ACCOUNT DETAILS --- */}
-      <Section label="Account Details">
+      {/* --- VERIFICATION --- */}
+      <Section label="Verification">
         <List.Item
-          title="Verification Status"
-          description={user?.verification_level ? "Verified User" : "Not Verified"}
+          title={tier.label}
+          description={tier.description}
           left={(props) => (
             <List.Icon
               {...props}
-              color={user?.verification_level ? "#4caf50" : "#ff9800"}
-              icon={user?.verification_level ? "shield-check" : "shield-alert"}
+              icon={tier.icon}
+              color={tier.color}
             />
           )}
         />
+
+        {tier.next && (
+          <Text
+            style={{
+              marginTop: 6,
+              marginLeft: 56,
+              color: theme.colors.onSurfaceVariant,
+              fontSize: 13,
+            }}
+          >
+            Next step: {tier.next}
+          </Text>
+        )}
       </Section>
 
       {/* --- APPEARANCE --- */}
@@ -61,13 +78,15 @@ export default function SettingsScreen() {
           title="Theme"
           description={themeLabel}
           left={(props) => (
-            <List.Icon {...props} color="#90caf9" icon="palette" />
+            <List.Icon {...props} icon="palette" />
           )}
         />
         <Switch
-              value={isDark}
-              onValueChange={(value) => setMode(value ? "dark" : "light")}
-            />
+          value={isDark}
+          onValueChange={(value) =>
+            setMode(value ? "dark" : "light")
+          }
+        />
       </Section>
 
       {/* --- SIGN OUT --- */}
@@ -83,23 +102,3 @@ export default function SettingsScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    borderRadius: 18,
-    paddingVertical: 10,
-    marginBottom: 10,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  avatar: {
-    backgroundColor: "#3949ab",
-  },
-  username: {
-    fontSize: 17,
-    marginTop: 8,
-    marginLeft: 16,
-  },
-});
