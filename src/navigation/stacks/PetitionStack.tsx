@@ -5,7 +5,11 @@ import { IconButton, useTheme } from "react-native-paper";
 import PetitionListScreen from "../../screens/Petitions/PetitionListScreen";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 
-const Stack = createNativeStackNavigator();
+import { PetitionStackParamList } from "../types/PetitionStackParamList";
+import PetitionDetailScreen from "../../screens/Petitions/PetitionDetailScreen";
+import PetitionCategoryScreen from "../../screens/Petitions/PetitionCategoriesScreen";
+
+const Stack = createNativeStackNavigator<PetitionStackParamList>();
 
 export default function PetitionStack() {
   const theme = useTheme();
@@ -27,9 +31,9 @@ export default function PetitionStack() {
       }}
     >
       <Stack.Screen
-        name="PetitionList"
-        component={PetitionListScreen}
-        options={{ title: "Petitions",
+        name="PetitionCategory"
+        component={PetitionCategoryScreen}
+        options={{ title: "Petitions Categories",
                       headerLeft: () => (
             <IconButton
               icon="menu"
@@ -37,6 +41,18 @@ export default function PetitionStack() {
             />
           ),
         }}
+      />
+
+      <Stack.Screen
+        name="PetitionList"
+        component={PetitionListScreen}
+        options={{ title: "All Petitions" }}
+      />
+
+      <Stack.Screen
+        name="PetitionDetail"
+        component={PetitionDetailScreen}
+        options={{ title: "Petition" }}
       />
     </Stack.Navigator>
   );

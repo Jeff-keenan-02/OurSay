@@ -1,60 +1,56 @@
 import React, { useEffect, useState } from "react";
 import { FlatList, View } from "react-native";
 import { Text, Button, Divider, useTheme } from "react-native-paper";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { API_BASE_URL } from "../../config/api";
 
-export default function PetitionListScreen() {
+export default function PetitionCategoryScreen() {
   const theme = useTheme();
   const navigation = useNavigation<any>();
-  const route = useRoute<any>();
-  const { categoryId, categoryTitle } = route.params;
-
-  const [petitions, setPetitions] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-
   useEffect(() => {
-    fetch(`${API_BASE_URL}/petitions/category/${categoryId}`)
+    fetch(`${API_BASE_URL}/petitions/categories`)
       .then((res) => res.json())
-      .then(setPetitions)
+      .then(setCategories)
       .finally(() => setLoading(false));
-  }, [categoryId]);
+  }, []);
+
+  if (loading) {
+    return <Screen title="Petitions"><Text>Loading…</Text></Screen>;
+  }
 
   return (
-    <Screen title={categoryTitle}>
-      <Section label="Active Petitions">
+    <Screen title="Petition Categories">
+      <Section>
         <FlatList
-          data={petitions}
+          data={categories}
           keyExtractor={(item) => item.id.toString()}
           ItemSeparatorComponent={() => <Divider />}
           renderItem={({ item }) => (
             <View style={{ paddingVertical: 12 }}>
               <Text variant="titleMedium">{item.title}</Text>
-
               <Text
-                variant="bodyMedium"
+                variant="bodySmall"
                 style={{ color: theme.colors.onSurfaceVariant }}
               >
                 {item.description}
-              </Text>
-
-              <Text style={{ color: theme.colors.primary }}>
-                {item.signatures} signatures
               </Text>
 
               <Button
                 mode="outlined"
                 style={{ marginTop: 8 }}
                 onPress={() =>
-                  navigation.navigate("PetitionDetail", {
-                    petitionId: item.id,
+                  navigation.navigate("PetitionList", {
+                    categoryId: item.id,
+                    categoryTitle: item.title,
                   })
                 }
               >
-                View Petition
+                View Petitions
               </Button>
             </View>
           )}
