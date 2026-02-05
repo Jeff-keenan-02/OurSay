@@ -43,6 +43,13 @@ export default function CustomDrawerContent(props: any) {
           props.navigation.closeDrawer();
         }}
 />
+      <DrawerItem
+            label="Verify Identity"
+            onPress={() => {
+              props.navigation.navigate("Main", { screen: "Verify" });
+              props.navigation.closeDrawer();
+            }}
+          />
 
       <Divider />
 

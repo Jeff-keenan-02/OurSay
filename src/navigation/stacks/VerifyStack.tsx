@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { IconButton, useTheme } from "react-native-paper";
 
+
 import VerificationLevelsScreen from "../../screens/Verify/VerificationLevelsScreen";
 
 import PassportIntroScreen from "../../screens/Verify/PassportIntroScreen";
@@ -11,6 +12,9 @@ import LivenessCaptureScreen from "../../screens/Verify/LivenessCaptureScreen";
 
 import ResidenceIntroScreen from "../../screens/Verify/ResidenceIntroScreen";
 import ResidenceCaptureScreen from "../../screens/Verify/ResidenceCaptureScreen";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
+import { tierHeaderRight } from "../headerOptions";
 
 
 
@@ -32,10 +36,19 @@ const Stack = createNativeStackNavigator<VerifyStackParamList>();
 
 export default function VerifyStack({ navigation }: any) {
   const theme = useTheme();
+  const { user } = useContext(AuthContext);
 
   return (
     <Stack.Navigator
       screenOptions={{
+    
+            ...(user
+        ? tierHeaderRight({
+            tier: user.verification_level,
+            onPress: () =>
+              navigation.navigate("Main", { screen: "Verify" }),
+          })
+        : {}),
         headerStyle: {
           backgroundColor: theme.colors.background,
         },

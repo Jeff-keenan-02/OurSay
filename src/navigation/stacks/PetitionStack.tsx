@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { IconButton, useTheme } from "react-native-paper";
 
@@ -8,16 +8,26 @@ import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { PetitionStackParamList } from "../types/PetitionStackParamList";
 import PetitionDetailScreen from "../../screens/Petitions/PetitionDetailScreen";
 import PetitionCategoryScreen from "../../screens/Petitions/PetitionCategoriesScreen";
+import { AuthContext } from "../../context/AuthContext";
+import { tierHeaderRight } from "../headerOptions";
 
 const Stack = createNativeStackNavigator<PetitionStackParamList>();
 
 export default function PetitionStack() {
   const theme = useTheme();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
+  const { user } = useContext(AuthContext);
 
   return (
     <Stack.Navigator
       screenOptions={{
+      ...(user
+    ? tierHeaderRight({
+        tier: user.verification_level,
+        onPress: () =>
+          navigation.navigate("Main", { screen: "Verify" }),
+      })
+    : {}),
         headerStyle: {
           backgroundColor: theme.colors.background,
         },

@@ -1,3 +1,5 @@
+import { VerificationTier } from "./VerificationTier";
+
 export type DiscussionDetail = {
   id: number;
   title: string;
@@ -8,5 +10,6 @@ export type DiscussionDetail = {
     body: string;
     created_at: string;
     username: string | null;
+    verification_tier: VerificationTier;
   }[];
 };

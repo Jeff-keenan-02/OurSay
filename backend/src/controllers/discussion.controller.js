@@ -87,7 +87,8 @@ exports.getDiscussion = async (req, res) => {
         c.id,
         c.body,
         c.created_at,
-        u.username
+        u.username,
+        c.verification_tier
       FROM comments c
       LEFT JOIN users u ON u.id = c.user_id
       WHERE c.discussion_id = $1
@@ -157,16 +158,22 @@ exports.postComment = async (req, res) => {
     return res.status(400).json({ error: 'Comment body is required' });
   }
 
-  const user = userId || 1; // TEMP until auth context is finished
-
   try {
+    // 🔐 get user's current verification tier
+    const userResult = await pool.query(
+      `SELECT verification_level FROM users WHERE id = $1`,
+      [userId]
+    );
+
+    const verificationTier = userResult.rows[0]?.verification_level ?? 0;
+
     const result = await pool.query(
       `
-      INSERT INTO comments (discussion_id, user_id, body)
-      VALUES ($1, $2, $3)
-      RETURNING id, body, created_at
+      INSERT INTO comments (discussion_id, user_id, body, verification_tier)
+      VALUES ($1, $2, $3, $4)
+      RETURNING id, body, created_at, verification_tier
       `,
-      [id, user, body.trim()]
+      [id, userId, body.trim(), verificationTier]
     );
 
     res.status(201).json(result.rows[0]);

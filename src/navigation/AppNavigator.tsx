@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useContext } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import { IconButton, useTheme } from "react-native-paper";
+import {useTheme } from "react-native-paper";
 import DiscussionStack from "./stacks/DiscussionStack";
 import PollStack from "./stacks/PollStack";
 import HomeStack from "./stacks/HomeStack";
@@ -9,13 +9,16 @@ import VerifyStack from "./stacks/VerifyStack";
 import SettingsStack from "./stacks/SettingsStack";
 import PetitionStack from "./stacks/PetitionStack";
 import AnalyticsStack from "./stacks/AnalyticsStack";
-
+import CreateStack from "./stacks/CreateStack";
+import { AuthContext } from "../context/AuthContext";
 
 
 const Tab = createBottomTabNavigator();
 
 export default function AppNavigator() {
   const theme = useTheme(); 
+  const { user } = useContext(AuthContext);
+  const isTier3 = user?.verification_level === 3;
 
   return (
       <Tab.Navigator
@@ -69,14 +72,34 @@ export default function AppNavigator() {
         component={VerifyStack}
         options={{
           headerShown: false,
-          title:"",
+          tabBarItemStyle: { display: isTier3 ? "none" : "flex" },
           tabBarLabel: "Verify ID",
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="shield-check-outline" color={color} size={size} />
+            <MaterialCommunityIcons
+              name="shield-check-outline"
+              color={color}
+              size={size}
+            />
           ),
         }}
       />
-      
+
+      <Tab.Screen
+        name="Create"
+        component={CreateStack}
+        options={{
+          headerShown: false,
+          tabBarItemStyle: { display: isTier3 ? "flex" : "none" },
+          tabBarLabel: "Create",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name="plus-circle-outline"
+              color={color}
+              size={size}
+            />
+          ),
+        }}
+      />
       <Tab.Screen
         name="Polls"
         component={PollStack}

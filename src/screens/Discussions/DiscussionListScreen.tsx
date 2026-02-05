@@ -10,7 +10,7 @@ import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { DiscussionStackParams } from "../../navigation/types/DiscussionStackTypes";
 import { useCategoryDiscussions } from "../../hooks/discussions/useCategoryDiscussions";
-import { API_BASE_URL } from "../../config/api";
+
 
 export default function DiscussionsListScreen() {
   const theme = useTheme();

@@ -90,6 +90,7 @@ export default function DiscussionDetailScreen() {
             <CommentCard
               username={item.username}
               body={item.body}
+              verificationTier={item.verification_tier}
               created_at={item.created_at}
             />
           )}

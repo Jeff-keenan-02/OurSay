@@ -1,4 +1,5 @@
-// The ONLY valid verification states in the system
+// src/types/VerificationTier.ts
+
 export type VerificationTier = 0 | 1 | 2 | 3;
 
 export type TierInfo = {
@@ -11,31 +12,34 @@ export type TierInfo = {
 
 export const VERIFICATION_TIERS: Record<VerificationTier, TierInfo> = {
   0: {
-    label: "Tier 0 — Unverified",
+    label: "Unverified",
     description: "No verification completed",
     icon: "shield-outline",
-    color: "#9e9e9e",
+    color: "#9e9e9e", // neutral grey
     next: "Complete liveness check",
   },
+
   1: {
-    label: "Tier 1 — Liveness verified",
+    label: "Bronze verified",
     description: "Human presence confirmed",
-    icon: "account-check",
-    color: "#2196f3",
+    icon: "medal-outline",
+    color: "#cd7f32", // bronze
     next: "Verify passport",
   },
+
   2: {
-    label: "Tier 2 — Identity verified",
-    description: "Passport successfully verified",
-    icon: "passport",
-    color: "#4caf50",
+    label: "Silver verified",
+    description: "Identity verified",
+    icon: "medal",
+    color: "#c0c0c0", // silver
     next: "Confirm residence",
   },
+
   3: {
-    label: "Tier 3 — Residence verified",
-    description: "High confidence Irish residency",
-    icon: "home-check",
-    color: "#2e7d32",
+    label: "Gold verified",
+    description: "Fully verified citizen",
+    icon: "medal",
+    color: "#ffd700", // gold
     next: null,
   },
 };

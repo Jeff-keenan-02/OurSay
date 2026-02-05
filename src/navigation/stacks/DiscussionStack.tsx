@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { IconButton, useTheme } from "react-native-paper"; 
 
@@ -7,16 +7,25 @@ import DiscussionDetailScreen from "../../screens/Discussions/DiscussionDetailSc
 
 import { DiscussionStackParams } from "../types/DiscussionStackTypes";
 import DiscussionCategoriesScreen from "../../screens/Discussions/DiscussionCategoriesScreen";
+import { tierHeaderRight } from "../headerOptions";
+import { AuthContext } from "../../context/AuthContext";
 
 
 const Stack = createNativeStackNavigator<DiscussionStackParams>();
 
 export default function DiscussionStack({navigation}: any) {
   const theme = useTheme(); // <---Get the Neo Dark colors
-
+  const { user } = useContext(AuthContext); // <---Get user info for conditional header button
   return (
     <Stack.Navigator
       screenOptions={{
+      ...(user
+      ? tierHeaderRight({
+          tier: user.verification_level,
+          onPress: () =>
+            navigation.navigate("Main", { screen: "Verify" }),
+        })
+      : {}),
         headerStyle: {
           backgroundColor: theme.colors.background, // Matches screen background
         },

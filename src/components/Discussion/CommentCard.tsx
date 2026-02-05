@@ -2,14 +2,17 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { timeAgo } from "../../utils/timeAgo";
+import { VerificationTier } from "../../types/VerificationTier";
+import { TierBadge } from "../Verification/TierBadge";
 
 interface Props {
   username?: string | null;
   body: string;
   created_at: string;
+  verificationTier: VerificationTier;
 }
 
-export function CommentCard({ username, body, created_at }: Props) {
+export function CommentCard({ username, body, created_at, verificationTier }: Props) {
   const theme = useTheme();
 
   return (
@@ -24,13 +27,15 @@ export function CommentCard({ username, body, created_at }: Props) {
     >
       <View style={styles.headerRow}>
         <Text
-          style={[styles.username, { color: theme.colors.primary }]}
-        >
+          style={[styles.username, { color: theme.colors.primary }]}>
           {username ?? "Anonymous"}
+          <TierBadge
+          tier={verificationTier}
+          onPress={() => {}}/>
         </Text>
+        
         <Text
-          style={[styles.time, { color: theme.colors.onSurfaceVariant }]}
-        >
+          style={[styles.time, { color: theme.colors.onSurfaceVariant }]}>
           {timeAgo(created_at)}
         </Text>
       </View>
