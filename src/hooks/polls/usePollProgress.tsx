@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Alert } from "react-native";
+import { API_BASE_URL } from "../../config/api";
 
 export function usePollProgress(
-  API: string,
   topicId: number,
   user: { id: number } | null,
   polls: any[],
@@ -10,7 +10,7 @@ export function usePollProgress(
 ) {
   const [status, setStatus] = useState<0 | 1 | 2>(0);
   const [index, setIndex] = useState(0);
-
+  const API = API_BASE_URL;
   const reload = async () => {
     if (!user) return;
 
@@ -22,11 +22,6 @@ export function usePollProgress(
 
     setStatus(data.status);
     setIndex(data.completed_polls);
-
-    if (data.status === 2) {
-      Alert.alert("Poll completed");
-      navigation.goBack();
-    }
   };
 
   useEffect(() => {

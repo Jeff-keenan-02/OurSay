@@ -2,11 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 
 import { useFocusEffect } from "@react-navigation/native";
 import { DiscussionDetail } from "../../types/DiscussionDetail";
+import { API_BASE_URL } from "../../config/api";
 
-export function useDiscussion(API: string, id: number) {
+export function useDiscussion(id: number) {
   const [discussion, setDiscussion] = useState<DiscussionDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
+    const API = API_BASE_URL;
+    
   const loadDiscussion = useCallback(async () => {
     try {
       const res = await fetch(`${API}/discussions/${id}`);

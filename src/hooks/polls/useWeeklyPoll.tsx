@@ -1,13 +1,14 @@
 import { useState, useCallback } from "react";
 import { User } from "../../types/User";
 import { PollTopic } from "../../types/PollTopic";
+import { API_BASE_URL } from "../../config/api";
 
 
-export function useWeeklyPoll(API: string, user: User | null) {
+export function useWeeklyPoll(user: User | null) {
   const [weeklyPoll, setWeeklyPoll] = useState<PollTopic | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const API = API_BASE_URL;
   const loadWeeklyPoll = useCallback(async () => {
     if (!user) {
       setWeeklyPoll(null);

@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { API_BASE_URL } from "../../config/api";
 
-export function useSignup(API: string) {
+export function useSignup() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
+    const API = API_BASE_URL;
+    
   const signupRequest = async (username: string, password: string) => {
     setLoading(true);
     setErrorMsg("");

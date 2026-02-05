@@ -5,6 +5,12 @@ import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { AuthContext } from "../../context/AuthContext";
 import { API_BASE_URL } from "../../config/api";
+import { permissions } from "../../utils/permissions";
+import {
+  VerificationTier,
+  VERIFICATION_TIERS,
+} from "../../types/VerificationTier";
+import { Petition } from "../../types/Petition";
 
 export default function PetitionDetailScreen() {
   const theme = useTheme();
@@ -12,7 +18,7 @@ export default function PetitionDetailScreen() {
   const route = useRoute<any>();
   const { petitionId } = route.params;
 
-  const [petition, setPetition] = useState<any>(null);
+  const [petition, setPetition] = useState<Petition | null>(null);
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/petitions/${petitionId}`)
@@ -21,11 +27,25 @@ export default function PetitionDetailScreen() {
   }, [petitionId]);
 
   if (!petition) {
-    return <Screen title="Petition"><Text>Loading…</Text></Screen>;
+    return (
+      <Screen title="Petition">
+        <Text>Loading…</Text>
+      </Screen>
+    );
   }
 
-  const userTier = user?.verification_level ?? 0;
-  const canSign = userTier >= petition.required_verification_level;
+  const userTier: VerificationTier =
+    user?.verification_level ?? 0;
+
+  const requiredTier: VerificationTier =
+    petition.required_verification_level;
+
+  const canSign = permissions.canSignPetition(
+    userTier,
+    requiredTier
+  );
+
+  const requiredTierInfo = VERIFICATION_TIERS[requiredTier];
 
   const signPetition = async () => {
     await fetch(`${API_BASE_URL}/petitions/${petitionId}/sign`, {
@@ -42,7 +62,10 @@ export default function PetitionDetailScreen() {
 
         <Text
           variant="bodyMedium"
-          style={{ color: theme.colors.onSurfaceVariant, marginVertical: 16 }}
+          style={{
+            color: theme.colors.onSurfaceVariant,
+            marginVertical: 16,
+          }}
         >
           {petition.description}
         </Text>
@@ -57,7 +80,7 @@ export default function PetitionDetailScreen() {
           variant="bodySmall"
           style={{ color: theme.colors.onSurfaceVariant }}
         >
-          Requires Tier {petition.required_verification_level}
+          Requires {requiredTierInfo.label}
         </Text>
 
         <Button
@@ -70,8 +93,11 @@ export default function PetitionDetailScreen() {
         </Button>
 
         {!canSign && (
-          <Text style={{ color: theme.colors.error, marginTop: 8 }}>
-            Complete verification to sign this petition.
+          <Text
+            variant="bodySmall"
+            style={{ color: theme.colors.error, marginTop: 8 }}
+          >
+            {requiredTierInfo.next}
           </Text>
         )}
       </Section>

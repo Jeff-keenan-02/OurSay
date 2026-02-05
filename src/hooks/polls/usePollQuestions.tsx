@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import { API_BASE_URL } from "../../config/api";
 
-export function usePollQuestions(API: string, topicId: number) {
+export function usePollQuestions(topicId: number) {
   const [polls, setPolls] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const API = API_BASE_URL;
+  
   useEffect(() => {
     if (!topicId) return;
 

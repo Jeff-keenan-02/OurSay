@@ -6,9 +6,18 @@ interface Props {
   value: string;
   onChange: (v: string) => void;
   onSubmit: () => void;
+
+  disabled?: boolean;
+  placeholder?: string;
 }
 
-export function StickyCommentBar({ value, onChange, onSubmit }: Props) {
+export function StickyCommentBar({
+  value,
+  onChange,
+  onSubmit,
+  disabled = false,
+  placeholder = "Write a comment…",
+}: Props) {
   const theme = useTheme();
 
   return (
@@ -25,14 +34,21 @@ export function StickyCommentBar({ value, onChange, onSubmit }: Props) {
         mode="flat"
         value={value}
         onChangeText={onChange}
-        placeholder="Write a comment…"
+        placeholder={placeholder}
+        editable={!disabled}
         placeholderTextColor={theme.colors.onSurfaceVariant}
         style={[
           styles.input,
           { backgroundColor: theme.colors.background },
         ]}
       />
-      <Button mode="contained" onPress={onSubmit} style={styles.button}>
+
+      <Button
+        mode="contained"
+        onPress={onSubmit}
+        disabled={disabled}
+        style={styles.button}
+      >
         Post
       </Button>
     </View>

@@ -1,5 +1,8 @@
+import { API_BASE_URL } from "../../config/api";
+
 // hooks/useDiscussionVote.ts
-export function useDiscussionVote(API: string, user: any, setDiscussions: any) {
+export function useDiscussionVote(user: any, setDiscussions: any) {
+    const API = API_BASE_URL;
   const vote = async (id: number, direction: "up" | "down") => {
     if (!user) throw new Error("Not logged in");
 

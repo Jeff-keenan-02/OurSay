@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { Discussion } from "../../types/Discussion";
 import { useFocusEffect } from "@react-navigation/native";
+import { API_BASE_URL } from "../../config/api";
 
-export  function useTrendingDiscussions(API: string) {
+export  function useTrendingDiscussions() {
+    const API = API_BASE_URL;
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
 
   const loadDiscussions = async () => {

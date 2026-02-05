@@ -1,12 +1,14 @@
 import { useState, useCallback, useEffect } from "react";
 import { PollTopic } from "../../types/PollTopic";
 import { User } from "../../types/User";
+import { API_BASE_URL } from "../../config/api";
 
-export function usePollTopics(API: string, user: User | null) {
+export function usePollTopics(user: User | null) {
   const [topics, setTopics] = useState<PollTopic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const API = API_BASE_URL;
+  
   const loadTopics = useCallback(async () => {
     if (!user) return;
 

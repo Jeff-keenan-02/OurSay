@@ -21,16 +21,16 @@ export default function DiscussionCategoriesScreen() {
   const API = API_BASE_URL;
 
   // hook for categories
-  const { categories, loading } = useDiscussionCategories(API);
+  const { categories, loading } = useDiscussionCategories();
 
   //hook for trending discussions
-  const { discussions, setDiscussions } = useTrendingDiscussions(API);
+  const { discussions, setDiscussions } = useTrendingDiscussions();
 
   // Top 3 trending prevent errors
   const trending = discussions.slice(0, 3);
 
   //hook upvoting or downvoting
-  const { vote } = useDiscussionVote(API, user, setDiscussions);
+  const { vote } = useDiscussionVote (user, setDiscussions);
 
 
 

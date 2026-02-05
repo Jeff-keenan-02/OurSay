@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { Discussion } from "../../types/Discussion";
+import { API_BASE_URL } from "../../config/api";
 
 
 export function useCategoryDiscussions(
-  API: string,
   categoryId: number | null
 ) {
+    const API = API_BASE_URL;
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

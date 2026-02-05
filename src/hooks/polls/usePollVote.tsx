@@ -1,10 +1,11 @@
+import { API_BASE_URL } from "../../config/api";
 import { User } from "../../types/User";
 
 export function usePollVote(
-  API: string,
   topicId: number,
   user: User | null,
 ) {
+  const API = API_BASE_URL;
   const vote = async (pollId: number, choice: "yes" | "no") => {
     if (!user) return;
 

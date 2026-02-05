@@ -1,14 +1,12 @@
 import React, { useContext, useState } from "react";
 import {
-  View,
-  StyleSheet,
   FlatList,
   KeyboardAvoidingView,
   Platform,
   Alert,
 } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { useTheme, Text, Card, TextInput, Button, Divider } from "react-native-paper";
+import { useTheme, Text} from "react-native-paper";
 import { AuthContext } from "../../context/AuthContext";
 import { useDiscussion } from "../../hooks/discussions/useDiscussion";
 import { usePostComment } from "../../hooks/comments/usePostComment";
@@ -17,7 +15,8 @@ import { CommentCard } from "../../components/Discussion/CommentCard";
 import { DiscussionHeader } from "../../components/Discussion/DiscussionHeader";
 import { typography } from "../../theme/typography";
 import { Screen } from "../../layout/Screen";
-import { API_BASE_URL } from "../../config/api";
+import { permissions } from "../../utils/permissions";
+import { VerificationTier } from "../../types/VerificationTier";
 
 type RootStackParamList = {
   DiscussionDetail: { id: number };
@@ -31,23 +30,33 @@ export default function DiscussionDetailScreen() {
   const route = useRoute<RouteProp<RootStackParamList, "DiscussionDetail">>();
   const { id } = route.params;
 
-  const API = API_BASE_URL;
+
+
+  const userTier: VerificationTier = user?.verification_level ?? 0;
+  const canComment = permissions.canComment(userTier);
 
   //HOOK → handles loading the discussion + refreshing on focus
-  const { discussion, loading, loadDiscussion } = useDiscussion(API, id);
+  const { discussion, loading, loadDiscussion } = useDiscussion(id);
   
   // Auto-refresh after comment
-  const { postComment } = usePostComment(API, id, () => { setNewComment(""); loadDiscussion(); });
+  const { postComment } = usePostComment(id, () => { setNewComment(""); loadDiscussion(); });
 
   const [newComment, setNewComment] = useState("");
 
   const submitComment = () => {
     if (!user) {
-      Alert.alert("You must be logged in to comment.");
-      return; 
-  }
+    return;
+    }
+
+    if (!canComment) {
+      return;
+    }
+
+    if (!newComment.trim()) {
+      return;
+    }
   
-  postComment(newComment, user.id);
+    postComment(newComment, user.id);
 };
 
   if (loading || !discussion) {
@@ -91,6 +100,12 @@ export default function DiscussionDetailScreen() {
         value={newComment}
         onChange={setNewComment}
         onSubmit={submitComment}
+        disabled={!canComment}
+        placeholder={
+          canComment
+            ? "Write a comment…"
+            : "Verify your account to comment"
+        }
       />
     </>
   );

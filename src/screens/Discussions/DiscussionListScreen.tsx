@@ -17,17 +17,16 @@ export default function DiscussionsListScreen() {
   const navigation = useNavigation<any>();
   const { user } = useContext(AuthContext);
 
-  const API = API_BASE_URL;
 
   // ✅ Strongly-typed route params
   const route = useRoute<RouteProp<DiscussionStackParams, "DiscussionsList">>();
   const { categoryId, title } = route.params;
 
   // ✅ Load only discussions from this category
-  const { discussions, loading, loadDiscussions } = useCategoryDiscussions(API, categoryId);
+  const { discussions, loading, loadDiscussions } = useCategoryDiscussions(categoryId);
 
   // ✅ Voting hook updates the discussions
-  const { vote } = useDiscussionVote(API, user, discussions);
+  const { vote } = useDiscussionVote(user, discussions);
 
   const openDiscussion = (id: number) => {
     navigation.navigate("DiscussionDetail", { id });

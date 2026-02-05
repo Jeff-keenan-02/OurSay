@@ -52,16 +52,6 @@ export default function AppNavigator() {
           ),
         }}
       />
-      <Tab.Screen
-        name="Polls"
-        component={PollStack}
-        options={{
-          headerShown: false,
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="ballot-outline" color={color} size={size} />
-          ),
-        }}
-      />
 
       <Tab.Screen
         name="Discussions"
@@ -83,6 +73,17 @@ export default function AppNavigator() {
           tabBarLabel: "Verify ID",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="shield-check-outline" color={color} size={size} />
+          ),
+        }}
+      />
+      
+      <Tab.Screen
+        name="Polls"
+        component={PollStack}
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="ballot-outline" color={color} size={size} />
           ),
         }}
       />

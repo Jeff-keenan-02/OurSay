@@ -1,9 +1,12 @@
 // src/hooks/auth/useLogin.ts
 import { useState } from "react";
+import { API_BASE_URL } from "../../config/api";
 
-export function useLogin(API: string) {
+export function useLogin() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+    const API = API_BASE_URL;
 
   const loginRequest = async (username: string, password: string) => {
     setLoading(true);

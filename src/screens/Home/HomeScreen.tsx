@@ -11,28 +11,43 @@ import { Section } from "../../layout/Section";
 import { useTrendingDiscussions } from "../../hooks/discussions/useTrendingDiscussions";
 import { useDiscussionVote } from "../../hooks/discussions/useDiscussionVote";
 import { getGreeting } from "../../utils/greeting";
-import { usePollProgress } from "../../hooks/polls/usePollProgress";
-import { API_BASE_URL } from "../../config/api";
+import { CommonActions } from "@react-navigation/native";
+import { canOpenPoll } from "../../utils/pollAccess";
+
+
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const theme = useTheme();
   const { user } = useContext(AuthContext);
-  const API = API_BASE_URL;
+
   
   // Hook to get trending topics
-  const { discussions, setDiscussions, loadDiscussions } = useTrendingDiscussions(API);
+  const { discussions, setDiscussions, loadDiscussions } = useTrendingDiscussions();
 
   // Top 3 trending prevent errors
   const trending = discussions.slice(0, 3);
 
   // Hook to vote
-  const { vote } = useDiscussionVote(API, user, setDiscussions);
+  const { vote } = useDiscussionVote(user, setDiscussions);
 
   //Hook to get the weekly poll
-  const { weeklyPoll, loading: pollLoading, loadWeeklyPoll } = useWeeklyPoll(API, user); 
+  const { weeklyPoll, loading: pollLoading, loadWeeklyPoll } = useWeeklyPoll(user); 
 
   const greeting = getGreeting(user?.username);
+
+const openWeeklyPollFromHome = () => {
+  if (!weeklyPoll) return;
+  if (!canOpenPoll(weeklyPoll, user)) return;
+
+  navigation.navigate("Polls", {
+    screen: "SwipePoll",
+    params: {
+      topicId: weeklyPoll.id,
+      title: weeklyPoll.title,
+    },
+  });
+};
 
   const openDiscussion = (id: number, title: string) => {
     navigation.navigate("Discussions", {
@@ -66,15 +81,7 @@ export default function HomeScreen() {
           weeklyPoll && (
             <WeeklyPollCard
               poll={weeklyPoll}
-              onPress={() =>
-                navigation.navigate("Polls", {
-                  screen: "SwipePoll",
-                  params: {
-                    topicId: weeklyPoll.id,
-                    title: weeklyPoll.title,
-                  },
-                })
-              }
+              onPress={openWeeklyPollFromHome}
             />
           )
         )}

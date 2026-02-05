@@ -3,17 +3,16 @@ import { AuthContext } from "../../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { useTheme } from "react-native-paper";
 import { useSignup } from "../../hooks/auth/useSignup";
-
 import AuthForm from "../../components/auth/AuthForm";
-import { API_BASE_URL } from "../../config/api";
+
 
 export default function SignupScreen() {
   const navigation: any = useNavigation();
   const { login } = useContext(AuthContext);
   const theme = useTheme();
 
-  const API = API_BASE_URL;
-  const { signupRequest, loading, errorMsg } = useSignup(API);
+
+  const { signupRequest, loading, errorMsg } = useSignup();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");

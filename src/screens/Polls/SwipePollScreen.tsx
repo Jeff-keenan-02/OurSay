@@ -8,18 +8,18 @@ import SwipeDeck from "../../components/SwipeDeck/SwipeDeck";
 import { usePollQuestions } from "../../hooks/polls/usePollQuestions";
 import { usePollVote } from "../../hooks/polls/usePollVote";
 import { usePollProgress } from "../../hooks/polls/usePollProgress";
-import { API_BASE_URL } from "../../config/api";
+
 
 export default function SwipePollScreen({ route, navigation }: any) {
   const { topicId, title } = route.params;
   const { user } = useContext(AuthContext);
   const theme = useTheme();
-  const API = API_BASE_URL;
 
-  const { polls } = usePollQuestions(API, topicId);
+
+  const { polls } = usePollQuestions(topicId);
 
   // authoritative backend progress
-  const { status, index: backendIndex } = usePollProgress(API, topicId, user, polls, navigation);
+  const { status, index: backendIndex } = usePollProgress(topicId, user, polls, navigation);
 
   // local UI index
   const [uiIndex, setUiIndex] = useState(0);
@@ -29,7 +29,7 @@ export default function SwipePollScreen({ route, navigation }: any) {
     setUiIndex(backendIndex);
   }, [backendIndex]);
 
-  const { vote } = usePollVote(API, topicId, user);
+  const { vote } = usePollVote(topicId, user);
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>

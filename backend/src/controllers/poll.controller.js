@@ -171,7 +171,11 @@ exports.getWeeklyPoll = async (req, res) => {
         pt.description,
         COUNT(p.id) AS total_polls,
         COALESCE(pp.completed_polls, 0) AS completed_polls,
-        0 AS status,
+        CASE
+          WHEN COALESCE(pp.completed_polls, 0) = 0 THEN 0
+          WHEN COALESCE(pp.completed_polls, 0) < COUNT(p.id) THEN 1
+          ELSE 2
+        END AS status,
         TRUE AS is_weekly
       FROM poll_topics pt
       LEFT JOIN polls p ON p.topic_id = pt.id

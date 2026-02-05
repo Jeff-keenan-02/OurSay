@@ -1,11 +1,13 @@
 //useDisscusionCategoreis.tsx 
 import { useState, useEffect } from "react";
 import { DiscussionCategory } from "../../types/DiscussionCategory";
+import { API_BASE_URL } from "../../config/api";
 
 
-export function useDiscussionCategories(API: string) {
+export function useDiscussionCategories() {
   const [categories, setCategories] = useState<DiscussionCategory[]>([]);
   const [loading, setLoading] = useState(true);
+    const API = API_BASE_URL;
 
   const loadCategories = async () => {
     try {

@@ -1,5 +1,5 @@
 import React, { useContext, useCallback } from "react";
-import { FlatList, View } from "react-native";
+import { Alert, FlatList, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { AuthContext } from "../../context/AuthContext";
@@ -10,18 +10,29 @@ import { usePollTopics } from "../../hooks/polls/usePollTopics";
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { PollTopic } from "../../types/PollTopic";
-import { API_BASE_URL } from "../../config/api";
+import { canOpenPoll } from "../../utils/pollAccess";
 
 
 export default function PollTopicsScreen() {
   const theme = useTheme();
   const navigation = useNavigation<any>();
   const { user } = useContext(AuthContext);
-  const API = API_BASE_URL;
 
-  const { topics, loadTopics, loading } = usePollTopics(API, user);
-  const { weeklyPoll, loadWeeklyPoll } = useWeeklyPoll(API, user);
 
+  const { topics, loadTopics, loading } = usePollTopics(user);
+  const { weeklyPoll, loadWeeklyPoll } = useWeeklyPoll(user);
+
+ const openTopic = (topic: PollTopic) => {
+  if (!canOpenPoll(topic, user)) return;
+
+  navigation.navigate("Polls", {
+    screen: "SwipePoll",
+    params: {
+      topicId: topic.id,
+      title: topic.title,
+    },
+  });
+};
   // Reload data when screen focuses
   useFocusEffect(
     useCallback(() => {
@@ -30,17 +41,6 @@ export default function PollTopicsScreen() {
       loadWeeklyPoll();
     }, [user])
   );
-
-  const openTopic = (topic: PollTopic) => {
-    
-    navigation.navigate("Polls", {
-      screen: "SwipePoll",
-      params: {
-        topicId: topic.id,
-        title: topic.title,
-      },
-    });
-  };
 
   return (
     <Screen
