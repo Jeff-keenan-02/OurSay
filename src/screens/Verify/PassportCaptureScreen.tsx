@@ -16,6 +16,7 @@ import { Section } from "../../layout/Section";
 import { spacing } from "../../theme/spacing";
 import { useNavigation } from "@react-navigation/native";
 import { API_BASE_URL } from "../../config/api";
+import { BackRow } from "../../components/navigation/BackRow";
 
 export default function PassportCaptureScreen(){
   const theme = useTheme();
@@ -31,6 +32,8 @@ export default function PassportCaptureScreen(){
   } = usePassportVerification(API, user, updateUser);
 
    return (
+    <>
+    <BackRow/>
     <Screen
       scroll
       title="Verify Identity"
@@ -113,6 +116,7 @@ export default function PassportCaptureScreen(){
         </Card>
       </Section>
     </Screen>
+    </>
   );
 }
 

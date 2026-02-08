@@ -23,17 +23,6 @@ export default function AppNavigator() {
   return (
       <Tab.Navigator
       screenOptions={{
-        // --- Native Header Styling ---
-        headerStyle: {
-          backgroundColor: theme.colors.background,
-          height: 60,                    // Clean height like Stack
-        },
-        headerTitleStyle: {
-          fontSize: 20,
-          fontWeight: "700",
-          color: theme.colors.onBackground,
-        },
-
         // --- Bottom Tab Bar Styling ---
         tabBarStyle: {
           backgroundColor: theme.colors.surface,

@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { API_BASE_URL } from "../../config/api";
 
-export function usePostComment( discussionId: number, onSuccess?: () => void) {
+export function usePostComment(discussionId: number, onSuccess?: () => void) {
     const API = API_BASE_URL;
   const postComment = useCallback(
     async (text: string, userId: number) => {

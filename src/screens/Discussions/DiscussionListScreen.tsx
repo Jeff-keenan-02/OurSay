@@ -10,6 +10,7 @@ import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { DiscussionStackParams } from "../../navigation/types/DiscussionStackTypes";
 import { useCategoryDiscussions } from "../../hooks/discussions/useCategoryDiscussions";
+import { BackRow } from "../../components/navigation/BackRow";
 
 
 export default function DiscussionsListScreen() {
@@ -44,7 +45,10 @@ export default function DiscussionsListScreen() {
   );
 
   return (
+<>     
+<BackRow/>
     <Screen
+
       scroll
       title={title}
       subtitle="See what people are saying in this category."
@@ -76,5 +80,6 @@ export default function DiscussionsListScreen() {
         )}
       </Section>
     </Screen>
+    </>
     );
 }

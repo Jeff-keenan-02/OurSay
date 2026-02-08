@@ -6,7 +6,7 @@ export function useLogin() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-    const API = API_BASE_URL;
+  const API = API_BASE_URL;
 
   const loginRequest = async (username: string, password: string) => {
     setLoading(true);

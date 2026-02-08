@@ -5,6 +5,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { API_BASE_URL } from "../../config/api";
+import { BackRow } from "../../components/navigation/BackRow";
 
 export default function PetitionListScreen() {
   const theme = useTheme();
@@ -24,6 +25,9 @@ export default function PetitionListScreen() {
   }, [categoryId]);
 
   return (
+    <>
+    <BackRow/>
+  
     <Screen title={categoryTitle}>
       <Section label="Active Petitions">
         <FlatList
@@ -61,5 +65,6 @@ export default function PetitionListScreen() {
         />
       </Section>
     </Screen>
+  </>
   );
 }

@@ -6,6 +6,7 @@ import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { AuthContext } from "../../context/AuthContext";
 import { API_BASE_URL } from "../../config/api";
+import { BackRow } from "../../components/navigation/BackRow";
 
 export default function ResidenceCaptureScreen() {
   const { user, updateUser } = useContext(AuthContext);
@@ -47,6 +48,8 @@ export default function ResidenceCaptureScreen() {
   };
 
   return (
+    <>
+    <BackRow/>
     <Screen
       title="Residence Verification"
       subtitle="Contextual verification using network signals"
@@ -98,6 +101,7 @@ export default function ResidenceCaptureScreen() {
         </Card>
       </Section>
     </Screen>
+    </>
   );
 }
 

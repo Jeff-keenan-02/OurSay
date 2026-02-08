@@ -11,6 +11,11 @@ import { AuthProvider } from "./src/context/AuthContext";
 import { ThemeModeProvider, useThemeMode } from "./src/context/ThemeModeContext";
 import MainNavigator from "./src/navigation/MainNavigator";
 
+/**
+ * AppInner handles the logic that requires access to ThemeContext.
+ * We separate this from the root App component because a component 
+ * cannot consume a context provided by itself.
+ */
 function AppInner() {
   const { theme } = useThemeMode();
 
@@ -39,13 +44,18 @@ function AppInner() {
     <PaperProvider theme={theme}>
       <NavigationContainer theme={navigationTheme}>
         <AuthProvider>
-          <MainNavigator />
+          <MainNavigator/>
         </AuthProvider>
       </NavigationContainer>
     </PaperProvider>
   );
 }
 
+/**
+ * Root App component.
+ * We wrap everything in SafeAreaProvider and ThemeModeProvider here 
+ * so that all child components (including AppInner) have access to them.
+ */
 export default function App() {
   return (
     <SafeAreaProvider>

@@ -21,13 +21,12 @@ export default function CustomDrawerContent(props: any) {
           {user && 'verified' in user && user.verified ? "Verified Citizen ✓" : "Unverified User"}
         </Text>
       </View>
-
       <Divider />
 
       <DrawerItem
         label="Analytics"
         onPress={() => {
-          props.navigation.navigate("Main", {
+          props.navigation.navigate("Tabs", {
             screen: "Analytics",
           });
           props.navigation.closeDrawer();
@@ -37,16 +36,16 @@ export default function CustomDrawerContent(props: any) {
       <DrawerItem
         label="Settings"
         onPress={() => {
-          props.navigation.navigate("Main", {
+          props.navigation.navigate("Tabs", {
             screen: "Settings",
           });
           props.navigation.closeDrawer();
         }}
-/>
+      />
       <DrawerItem
             label="Verify Identity"
             onPress={() => {
-              props.navigation.navigate("Main", { screen: "Verify" });
+              props.navigation.navigate("Tabs", { screen: "Verify" });
               props.navigation.closeDrawer();
             }}
           />

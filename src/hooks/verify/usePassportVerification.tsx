@@ -3,7 +3,7 @@ import { Alert, Platform } from "react-native";
 import * as ImagePicker from "react-native-image-picker";
 import { PhotoAsset } from "../../types/Media";
 import { User } from "../../types/User";
-import { VerificationResponse } from "../../types/Verification";
+import { VerificationResponse } from "../../types/VerificationType";
 
 type UsePassportVerificationResult = {
   photo: PhotoAsset | null;

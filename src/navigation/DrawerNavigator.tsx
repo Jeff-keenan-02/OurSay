@@ -1,9 +1,11 @@
-import React, { useContext } from "react";
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import { useTheme } from "react-native-paper";
+import { IconButton } from "react-native-paper";
 import AppNavigator from "./AppNavigator";
 import CustomDrawerContent from "./CustomDrawerContent";
+import { useTheme } from "react-native-paper";
+import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import { TierBadge } from "../components/Verification/TierBadge";
 
 const Drawer = createDrawerNavigator();
 
@@ -13,15 +15,32 @@ export default function DrawerNavigator() {
 
   return (
     <Drawer.Navigator
-      drawerContent={(props) => <CustomDrawerContent {...props} />}
-      screenOptions={{
-        headerShown: false,
-      }}
+      drawerContent={CustomDrawerContent}
+      screenOptions={({ navigation }) => ({
+        headerStyle: { backgroundColor: theme.colors.background },
+
+        headerLeft: () => (
+          <IconButton
+            icon="menu"
+            onPress={() => navigation.openDrawer()}
+          />
+        ),
+
+        headerRight: () =>
+          user ? (
+            <TierBadge
+              tier={user.verification_level}
+              onPress={() =>
+                navigation.navigate("Tabs", { screen: "Verify" })
+              }
+            />
+          ) : null,
+      })}
     >
-      {/* MAIN APP (tabs always visible) */}
       <Drawer.Screen
-        name="Main"
+        name="Tabs"
         component={AppNavigator}
+        options={{ title: "OurSay" }}
       />
     </Drawer.Navigator>
   );

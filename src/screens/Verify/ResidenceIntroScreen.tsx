@@ -4,12 +4,15 @@ import { Button, Text, Card, useTheme } from "react-native-paper";
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { useNavigation } from "@react-navigation/native";
+import { BackRow } from "../../components/navigation/BackRow";
 
 export default function ResidenceIntroScreen() {
   const theme = useTheme();
   const navigation = useNavigation<any>();
 
   return (
+    <>
+    <BackRow/>
     <Screen title="Proof of Residence" subtitle="Confirm where you live">
       <Section>
         <Card style={{ backgroundColor: theme.colors.surface }}>
@@ -31,5 +34,6 @@ export default function ResidenceIntroScreen() {
         </Card>
       </Section>
     </Screen>
+    </>
   );
 }

@@ -8,6 +8,7 @@ import { Section } from "../../layout/Section";
 import { API_BASE_URL } from "../../config/api";
 import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
+import { BackRow } from "../../components/navigation/BackRow";
 
 const CHALLENGES = [
   "Blink twice",
@@ -99,6 +100,8 @@ export default function LivenessCaptureScreen() {
   };
 
   return (
+    <>
+    <BackRow/>
     <Screen title="Liveness Check">
       <Section>
         <Text variant="titleMedium">Please perform:</Text>
@@ -128,6 +131,7 @@ export default function LivenessCaptureScreen() {
         </Button>
       </Section>
     </Screen>
+    </>
   );
 }
 

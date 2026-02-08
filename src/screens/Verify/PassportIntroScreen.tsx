@@ -5,6 +5,7 @@ import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { spacing } from "../../theme/spacing";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
+import { BackRow } from "../../components/navigation/BackRow";
 
 
 export default function PassportIntroScreen() {
@@ -13,6 +14,8 @@ export default function PassportIntroScreen() {
 
 
   return (
+    <>
+    <BackRow/>
     <Screen
       scroll
       title="Citizen Verification"
@@ -45,5 +48,6 @@ export default function PassportIntroScreen() {
         </Button>
       </Section>
     </Screen>
+    </>
   );
 }

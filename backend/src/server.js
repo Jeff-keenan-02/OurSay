@@ -8,6 +8,7 @@ const pollRoutes = require('./routes/poll.routes');
 const petitionRoutes = require("./routes/petition.routes");
 
 
+
 const app = express();
 app.use(cors());
 app.use(express.json());

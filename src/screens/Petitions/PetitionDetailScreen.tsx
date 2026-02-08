@@ -11,6 +11,7 @@ import {
   VERIFICATION_TIERS,
 } from "../../types/VerificationTier";
 import { Petition } from "../../types/Petition";
+import { BackRow } from "../../components/navigation/BackRow";
 
 export default function PetitionDetailScreen() {
   const theme = useTheme();
@@ -56,6 +57,9 @@ export default function PetitionDetailScreen() {
   };
 
   return (
+    <>
+    <BackRow/>
+    
     <Screen title="Petition">
       <Section>
         <Text variant="headlineSmall">{petition.title}</Text>
@@ -102,5 +106,6 @@ export default function PetitionDetailScreen() {
         )}
       </Section>
     </Screen>
+    </>
   );
 }

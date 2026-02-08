@@ -66,7 +66,7 @@ const openWeeklyPollFromHome = () => {
   return (
     <Screen
       scroll
-      title="OurSay"
+      title={`${greeting}`}
       subtitle=" Take part in this week's public opinion poll."
     >
 

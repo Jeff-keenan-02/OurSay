@@ -4,12 +4,15 @@ import { Button, Text, Card, useTheme } from "react-native-paper";
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { useNavigation } from "@react-navigation/native";
+import { BackRow } from "../../components/navigation/BackRow";
 
 export default function LivenessIntroScreen() {
   const theme = useTheme();
   const navigation = useNavigation<any>();
 
   return (
+    <>
+    <BackRow/>
     <Screen title="Liveness Check" subtitle="Confirm you're a real person">
       <Section>
         <Card style={{ backgroundColor: theme.colors.surface }}>
@@ -31,5 +34,6 @@ export default function LivenessIntroScreen() {
         </Card>
       </Section>
     </Screen>
+    </>
   );
 }

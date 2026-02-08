@@ -8,6 +8,7 @@ import SwipeDeck from "../../components/SwipeDeck/SwipeDeck";
 import { usePollQuestions } from "../../hooks/polls/usePollQuestions";
 import { usePollVote } from "../../hooks/polls/usePollVote";
 import { usePollProgress } from "../../hooks/polls/usePollProgress";
+import { BackRow } from "../../components/navigation/BackRow";
 
 
 export default function SwipePollScreen({ route, navigation }: any) {
@@ -32,6 +33,8 @@ export default function SwipePollScreen({ route, navigation }: any) {
   const { vote } = usePollVote(topicId, user);
 
   return (
+    <>
+    <BackRow/>
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <View style={styles.headerBox}>
         <Text style={styles.headerLabel}>You are voting on:</Text>
@@ -68,6 +71,7 @@ export default function SwipePollScreen({ route, navigation }: any) {
         onSwipeAllDone={() => navigation.goBack()}
       />
     </View>
+    </>
   );
 }
 

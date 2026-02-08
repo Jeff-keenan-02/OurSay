@@ -17,6 +17,7 @@ import { typography } from "../../theme/typography";
 import { Screen } from "../../layout/Screen";
 import { permissions } from "../../utils/permissions";
 import { VerificationTier } from "../../types/VerificationTier";
+import { BackRow } from "../../components/navigation/BackRow";
 
 type RootStackParamList = {
   DiscussionDetail: { id: number };
@@ -71,6 +72,7 @@ export default function DiscussionDetailScreen() {
 
    return (
     <>
+    <BackRow/>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1, backgroundColor: theme.colors.background }}
