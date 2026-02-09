@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    container_name: oursay-postgres
+    environment:
+      POSTGRES_USER: oursay
+      POSTGRES_PASSWORD: RILEY2015
+      POSTGRES_DB: oursaydb
+    ports:
+      - "5431:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: oursay-backend
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: oursay
+      DB_PASSWORD: RILEY2015
+      DB_NAME: oursaydb
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:
