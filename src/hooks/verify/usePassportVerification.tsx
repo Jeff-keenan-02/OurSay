@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Alert, Platform } from "react-native";
 import * as ImagePicker from "react-native-image-picker";
-import { PhotoAsset } from "../../types/Media";
+import { PhotoAsset } from "../../types/Photo";
 import { User } from "../../types/User";
 import { VerificationResponse } from "../../types/VerificationType";
 
@@ -93,7 +93,7 @@ export function usePassportVerification(
       }
 
       // ✅ Update only verification state
-      updateUser({ verification_level: data.level });
+      updateUser({ verification_tier: data.level });
 
       Alert.alert("✅ Passport verified");
       clearPhoto();

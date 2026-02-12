@@ -1,17 +1,22 @@
 import React, { useContext, useCallback } from "react";
-import { Alert, FlatList, View } from "react-native";
+import { Alert, FlatList, StyleSheet, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { AuthContext } from "../../context/AuthContext";
-import WeeklyPollCard from "../../components/PollTopics/WeeklyPollCard";
-import TopicCard from "../../components/PollTopics/TopicCard";
 import { useWeeklyPoll } from "../../hooks/polls/useWeeklyPoll";
-import { usePollTopics } from "../../hooks/polls/usePollTopics";
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
-import { PollTopic } from "../../types/PollTopic";
-import { canOpenPoll } from "../../utils/pollAccess";
+import { WeeklyEngagementCard } from "../../components/common/WeeklyEngagementCard";
+import { TopicCard } from "../../components/common/TopicCard";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { Topic } from "../../types/Topic";
+import { useTopics } from "../../hooks/common/useTopics";
+import { mapWeeklyPollToCard } from "../../mappers/weeklyCardMapper";
+import { useTrendingPoll } from "../../hooks/polls/useTrendingPoll";
+import TrendingEngagementCard from "../../components/common/TrendingEngagementCard";
 
+
+const stack = createNativeStackNavigator();
 
 export default function PollTopicsScreen() {
   const theme = useTheme();
@@ -19,55 +24,107 @@ export default function PollTopicsScreen() {
   const { user } = useContext(AuthContext);
 
 
-  const { topics, loadTopics, loading } = usePollTopics(user);
-  const { weeklyPoll, loadWeeklyPoll } = useWeeklyPoll(user);
 
- const openTopic = (topic: PollTopic) => {
-  if (!canOpenPoll(topic, user)) return;
+const {
+  weeklyPoll,
+  loading: pollLoading,
+  reload: reloadWeeklyPoll
+} = useWeeklyPoll(user);
 
-  navigation.navigate("Polls", {
-    screen: "SwipePoll",
-    params: {
-      topicId: topic.id,
-      title: topic.title,
-    },
+   const weeklyPollUI = weeklyPoll
+    ? mapWeeklyPollToCard(weeklyPoll)
+    : null;
+    // hook for trending Poll
+    const { poll: trendingPoll, loading: trendingLoading } = useTrendingPoll();
+
+      // hook for topics
+      const { topics, loading: topicsLoading, } = useTopics();
+    
+
+const openTopic = (Topic: Topic) => {
+  navigation.navigate("PollGroups", {
+    topicId: Topic.id,
+    title: Topic.title,
   });
 };
   // Reload data when screen focuses
-  useFocusEffect(
-    useCallback(() => {
-      if (!user) return;
-      loadTopics();
-      loadWeeklyPoll();
-    }, [user])
-  );
+ useFocusEffect(
+  useCallback(() => {
+    reloadWeeklyPoll();
+  }, [reloadWeeklyPoll])
+);
 
   return (
-    <Screen
-      scroll
-   
-    >
+    <Screen scroll>
       {/* FEATURED WEEKLY POLL */}
-      <Section label="Featured this week">
-        {weeklyPoll ? (
-          <WeeklyPollCard poll={weeklyPoll} onPress={() => openTopic(weeklyPoll)} />
-        ) : (
-          <Text style={{ color: theme.colors.onSurfaceVariant }}>Loading weekly poll...</Text>
-        )}
-      </Section>
+         <Section label="Featured This Week">
+            {pollLoading ? (
+              <Text variant="bodyMedium">
+                Loading…
+              </Text>
+            ) : weeklyPollUI ? (
+              <WeeklyEngagementCard
+                data={weeklyPollUI}
+                onPress={() => openTopic(weeklyPoll!)}
+              />
+            ) : null}
+          </Section>
 
-      {/* ALL POLL TOPICS */}
-      <Section label="Topics">
-
-        <FlatList
-          data={topics.filter((t) => !t.is_weekly)}
-          keyExtractor={(item) => item.id.toString()}
-          scrollEnabled={false}
-          renderItem={({ item }) => (
-            <TopicCard topic={item} onPress={() => openTopic(item)} />
+        {/* 🔥 Trending Poll */}
+        <Section label="Trending Poll">
+          {trendingLoading ? (
+            <Text>Loading…</Text>
+          ) : trendingPoll ? (
+            <TrendingEngagementCard
+              data={trendingPoll}
+              onPress={() =>
+                navigation.navigate("SwipePoll", {
+                  groupId: trendingPoll.id,
+                  title: trendingPoll.title,
+                })
+              }
+            />
+          ) : (
+            <Text>No trending poll yet.</Text>
           )}
-        />
-      </Section>
-    </Screen>
-  );
-}
+        </Section>
+
+      {/* topics Section */}
+         <Section label="Browse by topic">
+           {topicsLoading ? (
+             <Text>Loading topics…</Text>
+           ) : (
+             <FlatList
+               data={topics}
+               scrollEnabled={false}
+               keyExtractor={(item) => item.id.toString()}
+               contentContainerStyle={{ gap: 12 }}
+               renderItem={({ item }) => (
+                 <TopicCard
+                   title={item.title}
+                   description={item.description}
+                   icon="dots-grid"
+                   onPress={() => openTopic(item)}
+                 />
+               )}
+             />
+           )}
+         </Section>
+       </Screen>
+     );
+   }
+   
+   const styles = StyleSheet.create({
+     TopicCard: {
+       padding: 16,
+       borderRadius: 14,
+     },
+     TopicTitle: {
+       fontSize: 18,
+       fontWeight: "600",
+     },
+     TopicDescription: {
+       fontSize: 14,
+       marginTop: 4,
+     },
+   });

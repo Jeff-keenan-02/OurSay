@@ -1,29 +1,61 @@
 const crypto = require("crypto");
 const pool = require("../db/pool");
 
+
 /* ------------------------------
-   GET all petition categories
+   GET trending by Petiton
 ------------------------------ */
-exports.getCategories = async (req, res) => {
+exports.getTrendingPetition = async (req, res) => {
   try {
-    const { rows } = await pool.query(`
-      SELECT id, title, description
-      FROM petition_categories
-      ORDER BY title
+    const result = await pool.query(`
+      SELECT
+        p.id,
+        p.title,
+        p.description,
+        p.signature_count AS signatures
+      FROM petitions p
+      ORDER BY p.signature_count DESC
+      LIMIT 1
     `);
 
-    res.json(rows);
+    res.json(result.rows[0] ?? null);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch categories" });
+    console.error("getTrendingPetition:", err);
+    res.status(500).json({ error: "Failed to load trending petition" });
   }
 };
 
 /* ------------------------------
-   GET petitions by category
+   GET weekly by Petition
 ------------------------------ */
-exports.getByCategory = async (req, res) => {
-  const categoryId = Number(req.params.id);
+
+exports.getWeeklyPetition = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        p.id,
+        p.title,
+        p.description,
+        p.signature_count AS signatures
+      FROM petitions p
+      JOIN topics t ON t.id = p.topic_id
+      WHERE t.is_weekly = true
+      ORDER BY p.created_at DESC
+      LIMIT 1
+    `);
+
+    res.json(result.rows[0] ?? null);
+  } catch (err) {
+    console.error("getWeeklyPetition:", err);
+    res.status(500).json({ error: "Failed to load weekly petition" });
+  }
+};
+
+/* ------------------------------
+   GET petitions by topic
+------------------------------ */
+exports.getPetitionsByTopic = async (req, res) => {
+  const topicId = Number(req.params.id);
 
   try {
     const { rows } = await pool.query(
@@ -32,15 +64,15 @@ exports.getByCategory = async (req, res) => {
         p.id,
         p.title,
         p.description,
-        p.required_verification_level,
+        p.required_verification_tier,
         COUNT(ps.id) AS signatures
       FROM petitions p
       LEFT JOIN petition_signatures ps ON ps.petition_id = p.id
-      WHERE p.category_id = $1
+      WHERE p.topic_id = $1
       GROUP BY p.id
       ORDER BY p.created_at DESC
       `,
-      [categoryId]
+      [topicId]
     );
 
     res.json(rows);
@@ -63,7 +95,7 @@ exports.getPetition = async (req, res) => {
         p.id,
         p.title,
         p.description,
-        p.required_verification_level,
+        p.required_verification_tier,
         COUNT(ps.id) AS signatures
       FROM petitions p
       LEFT JOIN petition_signatures ps ON ps.petition_id = p.id
@@ -96,9 +128,9 @@ exports.signPetition = async (req, res) => {
   }
 
   try {
-    // 1️⃣ Get user verification level
+    // 1️⃣ Get user verification tier
     const userResult = await pool.query(
-      `SELECT verification_level FROM users WHERE id = $1`,
+      `SELECT verification_tier FROM users WHERE id = $1`,
       [userId]
     );
 
@@ -108,7 +140,7 @@ exports.signPetition = async (req, res) => {
 
     // 2️⃣ Get petition requirement
     const petitionResult = await pool.query(
-      `SELECT required_verification_level FROM petitions WHERE id = $1`,
+      `SELECT required_verification_tier FROM petitions WHERE id = $1`,
       [petitionId]
     );
 
@@ -116,8 +148,8 @@ exports.signPetition = async (req, res) => {
       return res.status(404).json({ error: "Petition not found" });
     }
 
-    const userTier = userResult.rows[0].verification_level;
-    const requiredTier = petitionResult.rows[0].required_verification_level;
+    const userTier = userResult.rows[0].verification_tier;
+    const requiredTier = petitionResult.rows[0].required_verification_tier;
 
     if (userTier < requiredTier) {
       return res.status(403).json({

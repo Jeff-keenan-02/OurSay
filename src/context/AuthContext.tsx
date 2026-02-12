@@ -6,7 +6,7 @@ import { VerificationTier } from "../types/VerificationTier";
 type User = {
   id: number;
   username: string;
-  verification_level: VerificationTier;
+  verification_tier: VerificationTier;
 };
 
 type AuthContextType = {

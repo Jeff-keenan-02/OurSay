@@ -1,28 +1,38 @@
 const pool = require('../db/pool');
 
-/**
- * GET /discussions/categories
- * Returns all discussion categories
- */
-exports.getCategories = async (req, res) => {
+
+exports.getWeeklyDiscussion = async (req, res) => {
+
   try {
-    const result = await pool.query(
-      `SELECT id, title, description
-       FROM discussion_categories
-       ORDER BY id ASC`
-    );
-    res.json(result.rows);
+    const result = await pool.query(`
+    SELECT
+      d.id,
+      d.title,
+      d.body,
+      u.username AS created_by,
+      COUNT(c.id) AS comment_count
+    FROM discussions d
+    JOIN topics t ON t.id = d.topic_id
+    JOIN users u ON u.id = d.created_by
+    LEFT JOIN comments c ON c.discussion_id = d.id
+    WHERE t.is_weekly = true
+    GROUP BY d.id, u.username
+    ORDER BY d.created_at DESC
+    LIMIT 1;
+    `);
+
+    res.json(result.rows[0] ?? null);
   } catch (err) {
-    console.error('getCategories:', err);
-    res.status(500).json({ error: 'Failed to load categories' });
+    console.error(err);
+    res.status(500).json({ error: "Failed to load weekly discussion" });
   }
 };
 
 /**
- * GET /discussions/by-category/:categoryId
+ * GET /discussions/by-topic/:%topicId
  */
-exports.getByCategory = async (req, res) => {
-  const { categoryId } = req.params;
+exports.getDisscussionByTopic = async (req, res) => {
+  const { topicId } = req.params;
 
   try {
     const result = await pool.query(
@@ -48,15 +58,15 @@ exports.getByCategory = async (req, res) => {
         FROM comments
         GROUP BY discussion_id
       ) c ON c.discussion_id = d.id
-      WHERE d.category_id = $1
+      WHERE d.topic_id = $1
       ORDER BY d.created_at DESC
       `,
-      [categoryId]
+      [topicId]
     );
 
     res.json(result.rows);
   } catch (err) {
-    console.error('getByCategory:', err);
+    console.error('getByTopic:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -88,7 +98,7 @@ exports.getDiscussion = async (req, res) => {
         c.body,
         c.created_at,
         u.username,
-        c.verification_tier
+        u.verification_tier
       FROM comments c
       LEFT JOIN users u ON u.id = c.user_id
       WHERE c.discussion_id = $1
@@ -159,13 +169,13 @@ exports.postComment = async (req, res) => {
   }
 
   try {
-    // 🔐 get user's current verification tier
+    //  get user's current verification tier
     const userResult = await pool.query(
-      `SELECT verification_level FROM users WHERE id = $1`,
+      `SELECT verification_tier FROM users WHERE id = $1`,
       [userId]
     );
 
-    const verificationTier = userResult.rows[0]?.verification_level ?? 0;
+    const verificationTier = userResult.rows[0]?.verification_tier ?? 0;
 
     const result = await pool.query(
       `

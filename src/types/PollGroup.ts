@@ -1,4 +1,4 @@
-export type PollTopic = {
+export type PollGroup = {
   id: number;
   title: string;
   description: string | null;

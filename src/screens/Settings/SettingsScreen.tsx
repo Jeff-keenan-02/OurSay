@@ -29,7 +29,7 @@ export default function SettingsScreen() {
     mode === "system" ? "System" : isDark ? "Dark" : "Light";
 
   // ✅ SINGLE source of truth
-  const level: VerificationTier = user?.verification_level ?? 0;
+  const level: VerificationTier = user?.verification_tier ?? 0;
   const tier = VERIFICATION_TIERS[level];
 
   return (

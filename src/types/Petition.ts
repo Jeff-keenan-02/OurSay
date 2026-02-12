@@ -6,5 +6,5 @@ export type Petition = {
   title: string;
   description: string;
   signatures: number;
-  required_verification_level: VerificationTier;
+  required_verification_tier: VerificationTier;
 };

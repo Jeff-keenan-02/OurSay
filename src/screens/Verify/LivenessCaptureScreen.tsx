@@ -8,7 +8,7 @@ import { Section } from "../../layout/Section";
 import { API_BASE_URL } from "../../config/api";
 import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
-import { BackRow } from "../../components/navigation/BackRow";
+import { BackRow } from "../../components/common/BackRow";
 
 const CHALLENGES = [
   "Blink twice",
@@ -89,7 +89,7 @@ export default function LivenessCaptureScreen() {
 
   if (data.verified) {
     // 🔑 THIS is the missing piece
-    updateUser({ verification_level: data.level });
+    updateUser({ verification_tier: data.level });
     Alert.alert("✅ Liveness verified");
   } else {
     Alert.alert("Liveness failed");

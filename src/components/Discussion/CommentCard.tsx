@@ -3,7 +3,7 @@ import { View, StyleSheet } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { timeAgo } from "../../utils/timeAgo";
 import { VerificationTier } from "../../types/VerificationTier";
-import { TierBadge } from "../Verification/TierBadge";
+import { TierBadge } from "../common/TierBadge";
 
 interface Props {
   username?: string | null;

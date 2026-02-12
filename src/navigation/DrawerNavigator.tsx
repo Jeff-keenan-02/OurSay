@@ -5,7 +5,7 @@ import CustomDrawerContent from "./CustomDrawerContent";
 import { useTheme } from "react-native-paper";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { TierBadge } from "../components/Verification/TierBadge";
+import { TierBadge } from "../components/common/TierBadge";
 
 const Drawer = createDrawerNavigator();
 
@@ -29,7 +29,7 @@ export default function DrawerNavigator() {
         headerRight: () =>
           user ? (
             <TierBadge
-              tier={user.verification_level}
+              tier={user.verification_tier}
               onPress={() =>
                 navigation.navigate("Tabs", { screen: "Verify" })
               }

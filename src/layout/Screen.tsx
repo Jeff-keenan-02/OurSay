@@ -12,7 +12,6 @@ interface ScreenProps {
   center?: boolean;
   children: React.ReactNode;
 }
-
 export function Screen({
   title,
   subtitle,
@@ -22,6 +21,25 @@ export function Screen({
 }: ScreenProps) {
   const theme = useTheme();
 
+  const content = (
+    <>
+      {title && (
+        <View style={styles.headerWrapper}>
+          <AppHeader title={title} subtitle={subtitle} />
+        </View>
+      )}
+
+      <View
+        style={[
+          styles.content,
+          center && { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        {children}
+      </View>
+    </>
+  );
+
   if (scroll) {
     return (
       <ScrollView
@@ -29,45 +47,41 @@ export function Screen({
           styles.container,
           { backgroundColor: theme.colors.background },
         ]}
-        contentContainerStyle={[
-          styles.scrollContent,
-          center && { justifyContent: "center", alignItems: "center" }
-        ]}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
-        {/* Unified App Header */}
-        {title && <AppHeader title={title} subtitle={subtitle} />}
-
-
-        {children}
+        {content}
       </ScrollView>
     );
   }
 
-  // No scroll
   return (
     <View
       style={[
         styles.container,
         { backgroundColor: theme.colors.background },
-        center && { justifyContent: "center", alignItems: "center" }
       ]}
     >
-      {/* Unified App Header */}
-      {title && <AppHeader title={title} subtitle={subtitle} />}
-
-      {children}
+      {content}
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.lg,
-    gap: spacing.sm,
+    paddingTop: spacing.md,
   },
+
   scrollContent: {
     paddingBottom: spacing.lg,
+  },
+
+  headerWrapper: {
+    marginBottom: spacing.lg,
+  },
+
+  content: {
+    gap: spacing.lg,
   },
 });

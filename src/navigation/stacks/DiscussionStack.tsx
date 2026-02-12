@@ -1,8 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import {useTheme } from "react-native-paper"; 
 import DiscussionsListScreen from "../../screens/Discussions/DiscussionListScreen";
 import DiscussionDetailScreen from "../../screens/Discussions/DiscussionDetailScreen";
-import DiscussionCategoriesScreen from "../../screens/Discussions/DiscussionCategoriesScreen";
+import DiscussionHomeScreen from "../../screens/Discussions/DiscussionHomeScreen";
 
 
 
@@ -16,8 +15,8 @@ export default function DiscussionStack() {
       }}
     >
       <Stack.Screen
-        name="DiscussionCategories"
-        component={DiscussionCategoriesScreen}
+        name="DiscussionHome"
+        component={DiscussionHomeScreen}
       />
       <Stack.Screen
         name="DiscussionsList"

@@ -1,7 +1,6 @@
-// src/types/Poll.ts
 export type Poll = {
   id: number;
-  title: string;
-  description: string | null;
-  topic_id: number;
+  question: string;
+  description?: string | null;
+  required_verification_tier: number;
 };

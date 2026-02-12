@@ -6,7 +6,7 @@ import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { AuthContext } from "../../context/AuthContext";
 import { API_BASE_URL } from "../../config/api";
-import { BackRow } from "../../components/navigation/BackRow";
+import { BackRow } from "../../components/common/BackRow";
 
 export default function ResidenceCaptureScreen() {
   const { user, updateUser } = useContext(AuthContext);
@@ -37,7 +37,7 @@ export default function ResidenceCaptureScreen() {
       setResult(data);
 
       if (data.verified) {
-        updateUser({ verification_level: 3 });
+        updateUser({ verification_tier: 3 });
       }
 
     } catch (err) {

@@ -5,30 +5,30 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { API_BASE_URL } from "../../config/api";
-import { BackRow } from "../../components/navigation/BackRow";
+import { BackRow } from "../../components/common/BackRow";
 
 export default function PetitionListScreen() {
   const theme = useTheme();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { categoryId, categoryTitle } = route.params;
+  const { topicId, TopicTitle } = route.params;
 
   const [petitions, setPetitions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/petitions/category/${categoryId}`)
+    fetch(`${API_BASE_URL}/petitions/topics/${topicId}/petitions`)
       .then((res) => res.json())
       .then(setPetitions)
       .finally(() => setLoading(false));
-  }, [categoryId]);
+  }, [topicId]);
 
   return (
     <>
     <BackRow/>
   
-    <Screen title={categoryTitle}>
+    <Screen title={TopicTitle}>
       <Section label="Active Petitions">
         <FlatList
           data={petitions}

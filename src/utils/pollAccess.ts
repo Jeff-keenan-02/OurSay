@@ -1,9 +1,9 @@
 import { Alert } from "react-native";
-import { PollTopic } from "../types/PollTopic";
+import { PollGroup } from "../types/PollGroup";
 import { permissions } from "./permissions";
 
-export function canOpenPoll(topic: PollTopic, user: any): boolean {
-  const userTier = user?.verification_level ?? 0;
+export function canOpenPoll(topic: PollGroup, user: any): boolean {
+  const userTier = user?.verification_tier ?? 0;
   const requiredTier = 2;
 
   if (!permissions.canVotePoll(userTier, requiredTier)) {

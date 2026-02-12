@@ -91,14 +91,14 @@ exports.verifyPassport = async (req, res) => {
     await pool.query(
       `
       UPDATE users
-      SET verification_level = GREATEST(verification_level, 2)
+      SET verification_tier = GREATEST(verification_tier, 2)
       WHERE id = $1
       `,
       [userId]
     );
 
     return res.json({
-      verified: true,
+      success: true,
       level: 2,
       type: "passport",
     });
@@ -157,14 +157,14 @@ exports.verifyLiveness = async (req, res) => {
     await pool.query(
       `
       UPDATE users
-      SET verification_level = GREATEST(verification_level, 1)
+      SET verification_tier = GREATEST(verification_tier, 1)
       WHERE id = $1
       `,
       [userId]
     );
 
     return res.json({
-      verified: true,
+      success: true,
       level: 1,
       type: "liveness",
     });
@@ -258,7 +258,7 @@ exports.verifyResidence = async (req, res) => {
       await pool.query(
         `
         UPDATE users
-        SET verification_level = GREATEST(verification_level, 3)
+        SET verification_tier = GREATEST(verification_tier, 3)
         WHERE id = $1
         `,
         [userId]

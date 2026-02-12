@@ -11,7 +11,7 @@ import {
   VERIFICATION_TIERS,
 } from "../../types/VerificationTier";
 import { Petition } from "../../types/Petition";
-import { BackRow } from "../../components/navigation/BackRow";
+import { BackRow } from "../../components/common/BackRow";
 
 export default function PetitionDetailScreen() {
   const theme = useTheme();
@@ -36,10 +36,10 @@ export default function PetitionDetailScreen() {
   }
 
   const userTier: VerificationTier =
-    user?.verification_level ?? 0;
+    user?.verification_tier ?? 0;
 
   const requiredTier: VerificationTier =
-    petition.required_verification_level;
+    petition.required_verification_tier;
 
   const canSign = permissions.canSignPetition(
     userTier,

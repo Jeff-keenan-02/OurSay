@@ -2,8 +2,6 @@ import React, { useContext, useCallback } from "react";
 import { FlatList } from "react-native";
 import { Text, useTheme, Divider } from "react-native-paper";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import WeeklyPollCard from "../../components/PollTopics/WeeklyPollCard";
-import DiscussionCardTrending from "../../components/Discussion/DisscussionCardTrending"
 import { AuthContext } from "../../context/AuthContext";
 import { useWeeklyPoll } from "../../hooks/polls/useWeeklyPoll";
 import { Screen } from "../../layout/Screen";
@@ -11,30 +9,37 @@ import { Section } from "../../layout/Section";
 import { useTrendingDiscussions } from "../../hooks/discussions/useTrendingDiscussions";
 import { useDiscussionVote } from "../../hooks/discussions/useDiscussionVote";
 import { getGreeting } from "../../utils/greeting";
-import { CommonActions } from "@react-navigation/native";
 import { canOpenPoll } from "../../utils/pollAccess";
-
+import { mapWeeklyPollToCard } from "../../mappers/weeklyCardMapper";
+import { WeeklyEngagementCard } from "../../components/common/WeeklyEngagementCard";
+import TrendingEngagementCard from "../../components/common/TrendingEngagementCard";
 
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
-  const theme = useTheme();
   const { user } = useContext(AuthContext);
-
+  const greeting = getGreeting(user?.username);
   
-  // Hook to get trending topics
-  const { discussions, setDiscussions, loadDiscussions } = useTrendingDiscussions();
+
+  // Hook to get trending discussions
+  const { discussions, loading: discussionsLoading, refresh: refreshDiscussions } = useTrendingDiscussions();
 
   // Top 3 trending prevent errors
   const trending = discussions.slice(0, 3);
 
   // Hook to vote
-  const { vote } = useDiscussionVote(user, setDiscussions);
+  const { vote } = useDiscussionVote(user, refreshDiscussions);
 
   //Hook to get the weekly poll
-  const { weeklyPoll, loading: pollLoading, loadWeeklyPoll } = useWeeklyPoll(user); 
+const {
+  weeklyPoll,
+  loading: pollLoading,
+  reload: reloadWeeklyPoll
+} = useWeeklyPoll(user);
 
-  const greeting = getGreeting(user?.username);
+ const weeklyPollUI = weeklyPoll
+  ? mapWeeklyPollToCard(weeklyPoll)
+  : null;
 
 const openWeeklyPollFromHome = () => {
   if (!weeklyPoll) return;
@@ -43,7 +48,7 @@ const openWeeklyPollFromHome = () => {
   navigation.navigate("Polls", {
     screen: "SwipePoll",
     params: {
-      topicId: weeklyPoll.id,
+      groupId: weeklyPoll.id,
       title: weeklyPoll.title,
     },
   });
@@ -56,12 +61,12 @@ const openWeeklyPollFromHome = () => {
     });
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      loadWeeklyPoll();
-      loadDiscussions();
-    }, [])
-  );
+ useFocusEffect(
+  useCallback(() => {
+    reloadWeeklyPoll();
+    refreshDiscussions();
+  }, [reloadWeeklyPoll, refreshDiscussions])
+);
 
   return (
     <Screen
@@ -72,22 +77,18 @@ const openWeeklyPollFromHome = () => {
 
       <Section label="Featured This Week">
         {pollLoading ? (
-          <Text
-          variant="bodyMedium"
-          >
+          <Text variant="bodyMedium">
             Loading…
           </Text>
-        ) : (
-          weeklyPoll && (
-            <WeeklyPollCard
-              poll={weeklyPoll}
-              onPress={openWeeklyPollFromHome}
-            />
-          )
-        )}
+        ) : weeklyPollUI ? (
+          <WeeklyEngagementCard
+            data={weeklyPollUI}
+            onPress={openWeeklyPollFromHome}
+          />
+        ) : null}
       </Section>
 
-      {/* Trending Section */}
+      {/* Trending Section
       <Section label="Trending Discussions">
         <FlatList
           data={trending}
@@ -95,15 +96,15 @@ const openWeeklyPollFromHome = () => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ gap: 12, paddingRight: 16 }}
           renderItem={({ item }) => (
-            <DiscussionCardTrending
-              discussion={item}
+            <TrendingEngagementCard
+              data={item}
               onPress={() => openDiscussion(item.id, item.title)}
               onVote={vote}
             />
           )}
           keyExtractor={(item) => item.id.toString()}
         />
-      </Section>
+      </Section> */}
     </Screen> 
   );
 }

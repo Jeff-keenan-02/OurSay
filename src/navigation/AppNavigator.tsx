@@ -18,7 +18,7 @@ const Tab = createBottomTabNavigator();
 export default function AppNavigator() {
   const theme = useTheme(); 
   const { user } = useContext(AuthContext);
-  const isTier3 = user?.verification_level === 3;
+  const isTier3 = user?.verification_tier === 3;
 
   return (
       <Tab.Navigator

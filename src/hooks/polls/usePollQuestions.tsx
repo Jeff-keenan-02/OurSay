@@ -1,14 +1,29 @@
 import { useState, useEffect } from "react";
 import { API_BASE_URL } from "../../config/api";
+import { Poll } from "../../types/Poll";
 
-export function usePollQuestions(topicId: number) {
-  const [polls, setPolls] = useState<any[]>([]);
+/**
+ * usePollQuestions
+ *
+ * Fetches all individual poll questions belonging to a PollGroup.
+ *
+ * Used inside SwipePollScreen.
+ *
+ * Hierarchy:
+ * Topic → PollGroup → Poll
+ */
+
+export function usePollQuestions(groupId: number | null) {
+  const [polls, setPolls] = useState<Poll[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const API = API_BASE_URL;
-  
+
   useEffect(() => {
-    if (!topicId) return;
+    if (!groupId) {
+      setPolls([]);
+      setLoading(false);
+      return;
+    }
 
     const loadPolls = async () => {
       try {
@@ -16,14 +31,14 @@ export function usePollQuestions(topicId: number) {
         setError(null);
 
         const res = await fetch(
-          `${API}/poll/polls-by-topic/${topicId}`
+          `${API_BASE_URL}/poll/groups/${groupId}/polls`
         );
 
         if (!res.ok) {
           throw new Error("Failed to load polls");
         }
 
-        const data = await res.json();
+        const data: Poll[] = await res.json();
         setPolls(data);
 
       } catch (err) {
@@ -36,7 +51,7 @@ export function usePollQuestions(topicId: number) {
     };
 
     loadPolls();
-  }, [API, topicId]);
+  }, [groupId]);
 
   return { polls, loading, error };
 }

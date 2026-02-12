@@ -1,11 +1,10 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import PetitionListScreen from "../../screens/Petitions/PetitionListScreen";
-import { PetitionStackParamList } from "../types/PetitionStackParamList";
 import PetitionDetailScreen from "../../screens/Petitions/PetitionDetailScreen";
-import PetitionCategoryScreen from "../../screens/Petitions/PetitionCategoriesScreen";
+import PetitionHomeScreen from "../../screens/Petitions/PetitionHomeScreen";
 
 
-const Stack = createNativeStackNavigator<PetitionStackParamList>();
+const Stack = createNativeStackNavigator();
 
 export default function PetitionStack() {
 
@@ -18,8 +17,8 @@ export default function PetitionStack() {
       }}
     >
       <Stack.Screen
-        name="PetitionCategory"
-        component={PetitionCategoryScreen}
+        name="PetitionHome"
+        component={PetitionHomeScreen}
       />
 
       <Stack.Screen

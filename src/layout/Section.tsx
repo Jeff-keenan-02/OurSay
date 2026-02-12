@@ -11,23 +11,20 @@ interface SectionProps {
   subtitle?: string;
   children: React.ReactNode;
 }
-
 export function Section({ label, subtitle, children }: SectionProps) {
   const theme = useTheme();
 
   return (
     <View style={styles.section}>
-      {/* Section Label */}
       {label && (
         <Text
           variant={typography.sectionTitle}
-          style={{ marginBottom: spacing.xs }}
+          style={styles.label}
         >
           {label}
         </Text>
       )}
 
-      {/* Optional Subtitle */}
       {subtitle && (
         <Text
           variant={typography.body}
@@ -40,7 +37,6 @@ export function Section({ label, subtitle, children }: SectionProps) {
         </Text>
       )}
 
-      {/* Inner Content */}
       <View style={styles.content}>{children}</View>
     </View>
   );
@@ -48,14 +44,18 @@ export function Section({ label, subtitle, children }: SectionProps) {
 
 const styles = StyleSheet.create({
   section: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md, // more breathing between sections
+  },
+
+  label: {
+    marginBottom: spacing.md, // proper space before content
   },
 
   subtitle: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
 
   content: {
-    gap: spacing.sm,
+    gap: spacing.md, // slightly larger internal spacing
   },
 });

@@ -4,7 +4,7 @@ import { Button, Text, Card, useTheme } from "react-native-paper";
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { useNavigation } from "@react-navigation/native";
-import { BackRow } from "../../components/navigation/BackRow";
+import { BackRow } from "../../components/common/BackRow";
 
 export default function ResidenceIntroScreen() {
   const theme = useTheme();

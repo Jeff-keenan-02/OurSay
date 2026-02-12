@@ -2,11 +2,15 @@ const express = require("express");
 const router = express.Router();
 const controller = require("../controllers/petition.controller");
 
-// Categories
-router.get("/categories", controller.getCategories);
+
+// Weekly
+router.get("/weekly", controller.getWeeklyPetition);
+
+// Trending
+router.get("/trending", controller.getTrendingPetition);
 
 // Lists
-router.get("/category/:id", controller.getByCategory);
+router.get("/topics/:id", controller.getPetitionsByTopic);
 
 // Single petition
 router.get("/:id", controller.getPetition);

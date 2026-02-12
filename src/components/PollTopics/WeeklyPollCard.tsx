@@ -1,10 +1,10 @@
 import React from "react";
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { Card, Text, ProgressBar, useTheme } from "react-native-paper";
-import { PollTopic } from "../../types/PollTopic";
+import { PollGroup } from "../../types/PollGroup";
 
 type Props = {
-  poll: PollTopic;
+  poll: PollGroup;
   onPress: () => void;
 };
 

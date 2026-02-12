@@ -4,23 +4,22 @@ import { View, StyleSheet, Alert } from "react-native";
 import { ProgressBar, Text, useTheme } from "react-native-paper";
 import { AuthContext } from "../../context/AuthContext";
 import SwipeDeck from "../../components/SwipeDeck/SwipeDeck";
-
 import { usePollQuestions } from "../../hooks/polls/usePollQuestions";
 import { usePollVote } from "../../hooks/polls/usePollVote";
 import { usePollProgress } from "../../hooks/polls/usePollProgress";
-import { BackRow } from "../../components/navigation/BackRow";
+import { BackRow } from "../../components/common/BackRow";
 
 
 export default function SwipePollScreen({ route, navigation }: any) {
-  const { topicId, title } = route.params;
+  const { groupId, title } = route.params;
   const { user } = useContext(AuthContext);
   const theme = useTheme();
 
 
-  const { polls } = usePollQuestions(topicId);
+  const { polls } = usePollQuestions(groupId);
 
   // authoritative backend progress
-  const { status, index: backendIndex } = usePollProgress(topicId, user, polls, navigation);
+  const {index: backendIndex } = usePollProgress(groupId, user, polls);
 
   // local UI index
   const [uiIndex, setUiIndex] = useState(0);
@@ -30,7 +29,7 @@ export default function SwipePollScreen({ route, navigation }: any) {
     setUiIndex(backendIndex);
   }, [backendIndex]);
 
-  const { vote } = usePollVote(topicId, user);
+  const { vote } = usePollVote(user);
 
   return (
     <>

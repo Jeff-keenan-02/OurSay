@@ -11,7 +11,7 @@ type Props = {
   onPress: () => void;
 };
 
-export function CategoryCard({
+export function TopicCard({
   title,
   description,
   icon = "folder",

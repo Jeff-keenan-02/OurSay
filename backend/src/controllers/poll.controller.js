@@ -57,25 +57,25 @@ exports.votePoll = async (req, res) => {
       ON CONFLICT DO NOTHING
     `, [userId, pollId]);
 
-    // 5️⃣ update topic progress (AUTHORITATIVE)
+    // update GROUP progress
     await pool.query(`
-      INSERT INTO poll_topic_progress (user_id, topic_id, status, completed_polls)
+      INSERT INTO poll_group_progress (user_id, poll_group_id, status, completed_polls)
       SELECT
         $1,
-        p.topic_id,
+        p.poll_group_id,
         CASE
           WHEN COUNT(pp.poll_id) = COUNT(p.id) THEN 2
           ELSE 1
-        END AS status,
-        COUNT(pp.poll_id) AS completed_polls
+        END,
+        COUNT(pp.poll_id)
       FROM polls p
       LEFT JOIN poll_participation pp
         ON pp.poll_id = p.id AND pp.user_id = $1
-      WHERE p.topic_id = (
-        SELECT topic_id FROM polls WHERE id = $2
+      WHERE p.poll_group_id = (
+        SELECT poll_group_id FROM polls WHERE id = $2
       )
-      GROUP BY p.topic_id
-      ON CONFLICT (user_id, topic_id)
+      GROUP BY p.poll_group_id
+      ON CONFLICT (user_id, poll_group_id)
       DO UPDATE SET
         status = EXCLUDED.status,
         completed_polls = EXCLUDED.completed_polls,
@@ -91,19 +91,19 @@ exports.votePoll = async (req, res) => {
 };
 
 exports.getProgress = async (req, res) => {
-  const userId = parseInt(req.query.userId);
-  const topicId = parseInt(req.params.topicId);
+  const userId = Number(req.query.userId);
+  const pollGroupId = Number(req.params.pollGroupId);
 
   try {
     const progress = await pool.query(`
       SELECT status, completed_polls
-      FROM poll_topic_progress
-      WHERE user_id = $1 AND topic_id = $2
-    `, [userId, topicId]);
+      FROM poll_group_progress
+      WHERE user_id = $1 AND poll_group_id = $2
+    `, [userId, pollGroupId]);
 
     const total = await pool.query(`
-      SELECT COUNT(*) FROM polls WHERE topic_id = $1
-    `, [topicId]);
+      SELECT COUNT(*) FROM polls WHERE poll_group_id = $1
+    `, [pollGroupId]);
 
     res.json({
       status: progress.rows[0]?.status ?? 0,
@@ -111,7 +111,7 @@ exports.getProgress = async (req, res) => {
       total_polls: Number(total.rows[0].count)
     });
 
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to load progress' });
   }
 };
@@ -119,21 +119,21 @@ exports.getProgress = async (req, res) => {
 
 exports.updateProgress = async (req, res) => {
   const userId = parseInt(req.body.userId);
-  const topicId = parseInt(req.params.topicId);
+  const pollGroupId = parseInt(req.params.pollGroupId);
 
   try {
     const totalRes = await pool.query(`
-      SELECT COUNT(*) FROM polls WHERE topic_id = $1
-    `, [topicId]);
+      SELECT COUNT(*) FROM polls WHERE poll_group_id = $1
+    `, [pollGroupId]);
 
     const completedRes = await pool.query(`
       SELECT COUNT(*) 
       FROM poll_participation
       WHERE user_id = $1
       AND poll_id IN (
-        SELECT id FROM polls WHERE topic_id = $2
+        SELECT id FROM polls WHERE poll_group_id = $2
       )
-    `, [userId, topicId]);
+    `, [userId, pollGroupId]);
 
     const total = Number(totalRes.rows[0].count);
     const completed = Number(completedRes.rows[0].count);
@@ -143,14 +143,14 @@ exports.updateProgress = async (req, res) => {
       completed < total ? 1 : 2;
 
     await pool.query(`
-      INSERT INTO poll_topic_progress (user_id, topic_id, status, completed_polls)
+      INSERT INTO poll_group_progress (user_id, poll_group_id, status, completed_polls)
       VALUES ($1, $2, $3, $4)
-      ON CONFLICT (user_id, topic_id)
+      ON CONFLICT (user_id, poll_group_id)
       DO UPDATE SET
         status = EXCLUDED.status,
         completed_polls = EXCLUDED.completed_polls,
         updated_at = NOW()
-    `, [userId, topicId, status, completed]);
+    `, [userId, pollGroupId, status, completed]);
 
     res.json({ status, completed_polls: completed });
 
@@ -161,87 +161,121 @@ exports.updateProgress = async (req, res) => {
 
 
 exports.getWeeklyPoll = async (req, res) => {
-  const userId = parseInt(req.query.userId);
+  const userId = Number(req.query.userId);
 
   try {
     const result = await pool.query(`
       SELECT
-        pt.id,
-        pt.title,
-        pt.description,
+        pg.id,
+        pg.title,
+        t.title AS topic_title,
         COUNT(p.id) AS total_polls,
-        COALESCE(pp.completed_polls, 0) AS completed_polls,
+        COALESCE(pgp.completed_polls, 0) AS completed_polls,
         CASE
-          WHEN COALESCE(pp.completed_polls, 0) = 0 THEN 0
-          WHEN COALESCE(pp.completed_polls, 0) < COUNT(p.id) THEN 1
+          WHEN COALESCE(pgp.completed_polls, 0) = 0 THEN 0
+          WHEN COALESCE(pgp.completed_polls, 0) < COUNT(p.id) THEN 1
           ELSE 2
-        END AS status,
-        TRUE AS is_weekly
-      FROM poll_topics pt
-      LEFT JOIN polls p ON p.topic_id = pt.id
-      LEFT JOIN poll_topic_progress pp
-        ON pp.topic_id = pt.id AND pp.user_id = $1
-      WHERE pt.is_weekly = true
-      GROUP BY pt.id, pp.completed_polls
+        END AS status
+      FROM poll_groups pg
+      JOIN topics t ON t.id = pg.topic_id
+      LEFT JOIN polls p ON p.poll_group_id = pg.id
+      LEFT JOIN poll_group_progress pgp
+        ON pgp.poll_group_id = pg.id AND pgp.user_id = $1
+      WHERE pg.is_weekly = true
+      GROUP BY pg.id, t.title, pgp.completed_polls
       LIMIT 1;
     `, [userId]);
 
-    res.json(result.rows[0] || null);
-  } catch (err) {
-    console.error(err);
+    res.json(result.rows[0] ?? null);
+
+  } catch {
     res.status(500).json({ error: 'Failed to load weekly poll' });
   }
 };
 
+exports.getTrendingPoll = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        p.id,
+        p.question,
+        p.description,
+        COUNT(v.id) AS vote_count
+      FROM polls p
+      LEFT JOIN poll_votes v ON v.poll_id = p.id
+      GROUP BY p.id
+      ORDER BY vote_count DESC
+      LIMIT 1;
+    `);
 
-exports.getPollTopics = async (req, res) => {
-  const userId = parseInt(req.query.userId);
+    res.json(result.rows[0] ?? null);
+
+  } catch (err) {
+    console.error("getTrendingPoll:", err);
+    res.status(500).json({ error: "Failed to load trending poll" });
+  }
+};
+
+exports.getPollGroupsByTopic = async (req, res) => {
+  const userId = Number(req.query.userId);
+  const topicId = Number(req.params.topicId);
 
   try {
     const result = await pool.query(`
       SELECT
-        pt.id,
-        pt.title,
-        pt.description,
-        COUNT(p.id) AS total_polls,
-        COALESCE(pp.completed_polls, 0) AS completed_polls,
+        pg.id,
+        pg.title,
+
+        COUNT(DISTINCT p.id) AS total_polls,
+        COALESCE(pgp.completed_polls, 0) AS completed_polls,
+
         CASE
-          WHEN COALESCE(pp.completed_polls, 0) = 0 THEN 0
-          WHEN COALESCE(pp.completed_polls, 0) < COUNT(p.id) THEN 1
+          WHEN COALESCE(pgp.completed_polls, 0) = 0 THEN 0
+          WHEN COALESCE(pgp.completed_polls, 0) < COUNT(DISTINCT p.id) THEN 1
           ELSE 2
-        END AS status,
-        FALSE AS is_weekly
-      FROM poll_topics pt
-      LEFT JOIN polls p ON p.topic_id = pt.id
-      LEFT JOIN poll_topic_progress pp
-        ON pp.topic_id = pt.id AND pp.user_id = $1
-      WHERE pt.is_weekly = false
-      GROUP BY pt.id, pp.completed_polls
-      ORDER BY pt.id;
-    `, [userId]);
+        END AS status
+
+      FROM poll_groups pg
+      LEFT JOIN polls p ON p.poll_group_id = pg.id
+      LEFT JOIN poll_group_progress pgp
+        ON pgp.poll_group_id = pg.id AND pgp.user_id = $1
+
+      WHERE pg.topic_id = $2
+      GROUP BY pg.id, pg.title, pgp.completed_polls
+      ORDER BY pg.id;
+    `, [userId, topicId]);
 
     res.json(result.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to load topics' });
+    res.status(500).json({ error: 'Failed to load poll groups' });
   }
 };
 
 
 
-exports.getPollsByTopic = async (req, res) => {
-  const topicId = parseInt(req.params.topicId);
+exports.getPollsByGroup = async (req, res) => {
+  const pollGroupId = Number(req.params.pollGroupId);
 
   try {
-    const result = await pool.query(`
-      SELECT id, title, description
+    const result = await pool.query(
+      `
+      SELECT 
+        id,
+        question,
+        description,
+        required_verification_tier
       FROM polls
-      WHERE topic_id = $1
+      WHERE poll_group_id = $1
       ORDER BY id
-    `, [topicId]);
+      `,
+      [pollGroupId]
+    );
 
     res.json(result.rows);
+
   } catch (err) {
-    res.status(500).json({ error: 'Failed to load polls' });
+    console.error("getPollsByGroup:", err);
+    res.status(500).json({ error: "Failed to load polls" });
   }
 };

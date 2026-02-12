@@ -2,12 +2,11 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/discussion.controller');
 
-// Categories
-router.get('/categories', controller.getCategories);
-
 // Lists
 router.get('/trending', controller.getTrending);
-router.get('/by-category/:categoryId', controller.getByCategory);
+router.get('/by-topic/:topicId', controller.getDisscussionByTopic);
+
+router.get('/weekly', controller.getWeeklyDiscussion);
 
 // ⚠️ MUST be last
 router.get('/:id', controller.getDiscussion);

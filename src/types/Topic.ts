@@ -1,4 +1,4 @@
-export type DiscussionCategory = {
+export type Topic = {
   id: number;
   title: string;
   description: string | null;

@@ -47,15 +47,17 @@ export function AppHeader({ title, subtitle }: Props) {
 
 const styles = StyleSheet.create({
   wrapper: {
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.lg,
-  borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xl,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
+
   title: {
     textAlign: "center",
-    marginBottom: spacing.xs,
-      letterSpacing: 0.3,
+    marginBottom: spacing.sm,   // slightly more breathing
+    letterSpacing: 0.4,
   },
+
   subtitle: {
     textAlign: "center",
     paddingHorizontal: spacing.lg,

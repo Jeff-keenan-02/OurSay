@@ -3,15 +3,20 @@ import { View, FlatList, Alert } from "react-native";
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import { Text, useTheme } from "react-native-paper";
 import { AuthContext } from "../../context/AuthContext";
-import DiscussionCard from "../../components/Discussion/DisscussionCard";
 import { useDiscussionVote } from "../../hooks/discussions/useDiscussionVote";
-import { Discussion } from "../../types/Discussion";
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
-import { DiscussionStackParams } from "../../navigation/types/DiscussionStackTypes";
-import { useCategoryDiscussions } from "../../hooks/discussions/useCategoryDiscussions";
-import { BackRow } from "../../components/navigation/BackRow";
+import { useDiscussionByTopic } from "../../hooks/discussions/useDiscussionByTopic";
+import { BackRow } from "../../components/common/BackRow";
+import { useTrendingDiscussions } from "../../hooks/discussions/useTrendingDiscussions";
+import TrendingEngagementCard from "../../components/common/TrendingEngagementCard";
+import { mapDiscussionToTrending } from "../../mappers/trendingCardMapper";
 
+type DiscussionStackParams = {
+  DiscussionHome: undefined;
+  DiscussionsList: { topicId: number; title: string };
+  DiscussionDetail: { id: number; title: string };
+};
 
 export default function DiscussionsListScreen() {
   const theme = useTheme();
@@ -21,13 +26,12 @@ export default function DiscussionsListScreen() {
 
   // ✅ Strongly-typed route params
   const route = useRoute<RouteProp<DiscussionStackParams, "DiscussionsList">>();
-  const { categoryId, title } = route.params;
+  const { topicId, title } = route.params;
 
-  // ✅ Load only discussions from this category
-  const { discussions, loading, loadDiscussions } = useCategoryDiscussions(categoryId);
+  // ✅ Load only discussions from this topic
+  const { discussions, loading, loadDiscussions, setDiscussions } = useDiscussionByTopic(topicId);
 
-  // ✅ Voting hook updates the discussions
-  const { vote } = useDiscussionVote(user, discussions);
+  const { vote } = useDiscussionVote(user, setDiscussions);
 
   const openDiscussion = (id: number) => {
     navigation.navigate("DiscussionDetail", { id });
@@ -51,7 +55,7 @@ export default function DiscussionsListScreen() {
 
       scroll
       title={title}
-      subtitle="See what people are saying in this category."
+      subtitle="See what people are saying in this topic."
     >
       <Section>
         {loading ? (
@@ -65,13 +69,13 @@ export default function DiscussionsListScreen() {
             Loading discussions…
           </Text>
         ) : (
-          <FlatList<Discussion>
+          <FlatList<any>
             data={discussions}
             keyExtractor={(item) => item.id.toString()}
             scrollEnabled={false}
             renderItem={({ item }) => (
-              <DiscussionCard
-                discussion={item}
+              <TrendingEngagementCard
+                data={mapDiscussionToTrending(item)}
                 onPress={() => openDiscussion(item.id)}
                 onVote={handleVote}
               />

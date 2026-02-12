@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import PollTopicsScreen from "../../screens/Polls/PollTopicsScreen";
+import PollGroupsScreen from "../../screens/Polls/PollGroupsScreen";
 import SwipePollScreen from "../../screens/Polls/SwipePollScreen";
 
 
@@ -18,6 +19,12 @@ export default function PollStack() {
         name="PollTopics"
         component={PollTopicsScreen}
       />
+
+        <Stack.Screen
+        name="PollGroups"
+        component={PollGroupsScreen}
+      />
+
 
       <Stack.Screen
         name="SwipePoll"

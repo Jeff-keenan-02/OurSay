@@ -63,7 +63,7 @@ exports.login = async (req, res) => {
 
     const result = await pool.query(
       `
-      SELECT id, username, password_hash, verification_level
+      SELECT id, username, password_hash, verification_tier
       FROM users
       WHERE username = $1
       `,
@@ -86,7 +86,7 @@ exports.login = async (req, res) => {
       user: {
         id: user.id,
         username: user.username,
-        verification_level: user.verification_level,
+        verification_tier: user.verification_tier,
       },
     });
 
