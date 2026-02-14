@@ -1,54 +1,47 @@
 import React from "react";
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { Card, Text, ProgressBar, List, useTheme } from "react-native-paper";
+import { PollGroup } from "../../types/PollGroup";
 
 type Props = {
-  topic: {
-    id: number;
-    title: string;
-    description: string | null;
-    total_polls: number;
-    completed_polls: number;
-    status: number;
-  };
+  group: PollGroup;
   onPress: () => void;
 };
 
-export default function PollGroupCard({ topic, onPress }: Props) {
+export default function PollGroupCard({ group, onPress }: Props) {
   const theme = useTheme();
 
-  const { total_polls, completed_polls, status } = topic;
+  const { title,  status, progress, completed_polls, total_polls } = group;
 
   const isCompleted = status === 2;
   const inProgress = status === 1;
-  const notStarted = status === 0;
 
-  const progress =
-    total_polls === 0 ? 0 : completed_polls / total_polls;
+  const statusText =
+    status === 2
+      ? "Completed"
+      : status === 1
+      ? "In Progress"
+      : "Not Started";
 
-  const statusText = isCompleted
-    ? "Completed"
-    : inProgress
-    ? "In Progress"
-    : "Not Started";
+  const statusColor =
+    status === 2
+      ? "#4caf50"
+      : status === 1
+      ? "#ff9800"
+      : "#9e9e9e";
 
-  const statusColor = isCompleted
-    ? "#4caf50"
-    : inProgress
-    ? "#ff9800"
-    : "#9e9e9e";
-
-  const icon = isCompleted
-    ? "check-circle-outline"
-    : inProgress
-    ? "progress-clock"
-    : "checkbox-blank-circle-outline";
+  const icon =
+    status === 2
+      ? "check-circle-outline"
+      : status === 1
+      ? "progress-clock"
+      : "checkbox-blank-circle-outline";
 
   return (
     <TouchableOpacity onPress={onPress}>
       <Card style={[styles.card, { backgroundColor: theme.colors.surface }]}>
         <Card.Title
-          title={topic.title}
+          title={title}
           titleStyle={{
             color: theme.colors.onSurface,
             fontSize: 20,
@@ -60,19 +53,19 @@ export default function PollGroupCard({ topic, onPress }: Props) {
         />
 
         <Card.Content>
-          {topic.description && (
-            <Text style={{ color: theme.colors.onSurfaceVariant, marginBottom: 8 }}>
-              {topic.description}
-            </Text>
-          )}
-
+    
           <ProgressBar
             progress={progress}
             color={statusColor}
-            style={[styles.progress, { backgroundColor: notStarted ? "#333" : "#fff3" }]}
+            style={styles.progress}
           />
 
-          <Text style={{ color: theme.colors.onSurfaceVariant, marginTop: 4 }}>
+          <Text
+            style={{
+              color: theme.colors.onSurfaceVariant,
+              marginTop: 4,
+            }}
+          >
             {statusText} — {completed_polls}/{total_polls} polls
           </Text>
         </Card.Content>

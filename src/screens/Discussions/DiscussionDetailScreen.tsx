@@ -4,8 +4,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  View,
 } from "react-native";
-import { RouteProp, useRoute } from "@react-navigation/native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { useTheme, Text} from "react-native-paper";
 import { AuthContext } from "../../context/AuthContext";
 import { useDiscussion } from "../../hooks/discussions/useDiscussion";
@@ -17,6 +18,7 @@ import { permissions } from "../../utils/permissions";
 import { VerificationTier } from "../../types/VerificationTier";
 import { BackRow } from "../../components/common/BackRow";
 import { usePostComment } from "../../hooks/discussions/usePostComment";
+import { TierBadge } from "../../components/common/TierBadge";
 
 type RootStackParamList = {
   DiscussionDetail: { id: number };
@@ -27,6 +29,7 @@ type RootStackParamList = {
 export default function DiscussionDetailScreen() {
   const theme = useTheme();
   const { user } = useContext(AuthContext);
+  const navigation: any = useNavigation();
 
   const route = useRoute<RouteProp<RootStackParamList, "DiscussionDetail">>();
   const { id } = route.params;
@@ -84,39 +87,75 @@ export default function DiscussionDetailScreen() {
   keyExtractor={(item) => item.id.toString()}
   contentContainerStyle={{ paddingBottom: 140 }}
   
-  ListHeaderComponent={
-    <>
-      <Text
-        variant={typography.sectionTitle}
-        style={{
-          marginBottom: 8,
-          color: theme.colors.onSurface,
-        }}
-      >
-        {discussion.title}
-      </Text>
+ListHeaderComponent={
+  <>
+    <View
+      style={[
+        styles.headerCard,
+        {
+          backgroundColor: theme.colors.surface,
+          borderColor: theme.colors.outlineVariant,
+        },
+      ]}
+    >
+        {/* TITLE */}
+        <Text
+          variant={typography.sectionTitle}
+          style={{ color: theme.colors.onSurface }}
+        >
+          {discussion.title}
+        </Text>
 
-      <Text
-        variant={typography.body}
-        style={{
-          marginBottom: 20,
-          color: theme.colors.onSurfaceVariant,
-        }}
-      >
-        {discussion.body}
-      </Text>
+        {/* CREATOR ROW */}
+        <View style={{ 
+          flexDirection: "row",
+          alignItems: "center",
+          marginTop: 6,
+          gap: 8,
+        }}>
+          <Text
+            style={{
+              color: theme.colors.primary,   // 🔥 brings back blue accent
+              fontWeight: "600",
+            }}
+          >
+            Created by {discussion.created_by}
+          </Text>
+
+          <TierBadge
+            tier={discussion.verification_tier}
+            onPress={() =>
+              navigation.navigate("Tabs", { screen: "Verify" })
+            }
+          />
+        </View>
+
+ 
+
+        {/* BODY */}
+        <Text
+          variant={typography.body}
+          style={{
+            marginTop: 12,
+            color: theme.colors.onSurfaceVariant,
+            lineHeight: 22,
+          }}
+        >
+          {discussion.body}
+        </Text>
+      </View>
     </>
   }
 
-  renderItem={({ item }) => (
-    <CommentCard
-      username={item.username}
-      body={item.body}
-      verificationTier={item.verification_tier}
-      created_at={item.created_at}
-    />
-  )}
-/>
+        renderItem={({ item }) => (
+          <CommentCard
+            username={item.username}
+            body={item.body}
+            verificationTier={item.verification_tier}
+            created_at={item.created_at}
+          />
+        )}
+      />
       </KeyboardAvoidingView>
 
       <StickyCommentBar
@@ -133,3 +172,21 @@ export default function DiscussionDetailScreen() {
     </>
   );
 }
+const styles = {
+  headerCard: {
+    borderRadius: 18,
+    padding: 20,
+    marginHorizontal: 16,
+    marginTop: 10,
+    marginBottom: 20,
+    borderWidth: 1,
+  },
+
+  tierBadge: {
+    alignSelf: "flex-start",
+    marginTop: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+};

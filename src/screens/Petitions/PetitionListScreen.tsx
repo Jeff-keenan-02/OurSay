@@ -6,19 +6,20 @@ import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { API_BASE_URL } from "../../config/api";
 import { BackRow } from "../../components/common/BackRow";
+import TrendingEngagementCard from "../../components/common/TrendingEngagementCard";
 
 export default function PetitionListScreen() {
   const theme = useTheme();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { topicId, TopicTitle } = route.params;
+const { topicId, title } = route.params;
 
   const [petitions, setPetitions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/petitions/topics/${topicId}/petitions`)
+    fetch(`${API_BASE_URL}/petitions/topics/${topicId}`)
       .then((res) => res.json())
       .then(setPetitions)
       .finally(() => setLoading(false));
@@ -28,40 +29,30 @@ export default function PetitionListScreen() {
     <>
     <BackRow/>
   
-    <Screen title={TopicTitle}>
+    <Screen title={title}>
       <Section label="Active Petitions">
         <FlatList
           data={petitions}
           keyExtractor={(item) => item.id.toString()}
           ItemSeparatorComponent={() => <Divider />}
           renderItem={({ item }) => (
-            <View style={{ paddingVertical: 12 }}>
-              <Text variant="titleMedium">{item.title}</Text>
-
-              <Text
-                variant="bodyMedium"
-                style={{ color: theme.colors.onSurfaceVariant }}
-              >
-                {item.description}
-              </Text>
-
-              <Text style={{ color: theme.colors.primary }}>
-                {item.signatures} signatures
-              </Text>
-
-              <Button
-                mode="outlined"
-                style={{ marginTop: 8 }}
-                onPress={() =>
-                  navigation.navigate("PetitionDetail", {
-                    petitionId: item.id,
-                  })
-                }
-              >
-                View Petition
-              </Button>
-            </View>
-          )}
+        <TrendingEngagementCard
+          data={{
+            type: "petition",
+            id: item.id,
+            title: item.title,
+            description: item.description,
+            signature_goal: item.signature_goal,
+            signatures: item.signatures,
+            progress: item.progress,
+          }}
+          onPress={() =>
+            navigation.navigate("PetitionDetail", {
+              petitionId: item.id,
+            })
+          }
+        />
+      )}
         />
       </Section>
     </Screen>

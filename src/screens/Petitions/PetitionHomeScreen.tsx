@@ -13,23 +13,31 @@ import { useWeeklyPetition } from "../../hooks/petitions/useWeeklyPetition";
 import { useTrendingPetition } from "../../hooks/petitions/useTrendingPetition";
 
 import { Topic } from "../../types/Topic";
+import { mapDiscussionToTrending, mapPetitionToTrending, mapPollToTrending } from "../../mappers/trendingCardMapper";
+
 
 export default function PetitionHomeScreen() {
   const navigation = useNavigation<any>();
 
+  // Hook for topics
   const { topics, loading: topicsLoading } = useTopics();
-  const { petition: weeklyPetition, loading: weeklyLoading } = useWeeklyPetition();
-  const { petition: trendingPetition, loading: trendingLoading } = useTrendingPetition();
 
   const openTopic = (topic: Topic) => {
-    navigation.navigate("PetitionsList", {
+    navigation.navigate("PetitionList", {
       topicId: topic.id,
       title: topic.title,
     });
   };
+ 
+    // Hook for weekly petition
+  const { petition: weeklyPetition, loading: weeklyLoading } = useWeeklyPetition();
 
+// hook for trending petitions
+  const { petitions: trendingPetitions, loading: trendingLoading } = useTrendingPetition();
+  const trendingData = trendingPetitions.map(mapPetitionToTrending);
+  
   const openPetition = (id: number) => {
-    navigation.navigate("PetitionDetail", { id });
+    navigation.navigate("PetitionDetail", { petitionId: id });
   };
 
   return (
@@ -48,16 +56,24 @@ export default function PetitionHomeScreen() {
       </Section>
 
       {/* Trending */}
-      <Section label="Trending Petition">
-        {trendingLoading ? (
-          <Text>Loading…</Text>
-        ) : trendingPetition ? (
-          <TrendingEngagementCard
-            data={trendingPetition}
-            onPress={() => openPetition(trendingPetition.id)}
-          />
-        ) : null}
-      </Section>
+      <Section label="Trending Petitions">
+      {trendingData.length === 0 ? (
+        <Text>Loading…</Text>
+      ) : (
+        <FlatList
+          data={trendingData}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <TrendingEngagementCard
+              data={item}
+              onPress={() => openPetition(item.id)}
+            />
+          )}
+        />
+      )}
+    </Section>
 
       {/* Browse */}
       <Section label="Browse by topic">

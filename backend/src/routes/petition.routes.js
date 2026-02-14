@@ -9,7 +9,7 @@ router.get("/weekly", controller.getWeeklyPetition);
 // Trending
 router.get("/trending", controller.getTrendingPetition);
 
-// Lists
+// Lists (must be before :id)
 router.get("/topics/:id", controller.getPetitionsByTopic);
 
 // Single petition

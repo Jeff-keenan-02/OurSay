@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Text, Button, Divider, useTheme } from "react-native-paper";
+import { Text, Button, Divider, useTheme, ProgressBar } from "react-native-paper";
 import { useRoute } from "@react-navigation/native";
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
@@ -54,6 +54,9 @@ export default function PetitionDetailScreen() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: user?.id }),
     });
+  const res = await fetch(`${API_BASE_URL}/petitions/${petitionId}`);
+  const updated = await res.json();
+  setPetition(updated);
   };
 
   return (
@@ -104,6 +107,15 @@ export default function PetitionDetailScreen() {
             {requiredTierInfo.next}
           </Text>
         )}
+        <ProgressBar
+          progress={petition.progress}
+          color={theme.colors.primary}
+          style={{ height: 8, borderRadius: 6, marginVertical: 12 }}
+        />
+
+        <Text variant="bodySmall">
+          {petition.signatures} / {petition.signature_goal} signatures
+        </Text>
       </Section>
     </Screen>
     </>

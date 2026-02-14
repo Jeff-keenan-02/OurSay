@@ -44,18 +44,18 @@ export function Section({ label, subtitle, children }: SectionProps) {
 
 const styles = StyleSheet.create({
   section: {
-    marginBottom: spacing.md, // more breathing between sections
+    marginBottom: spacing.sm, // more breathing between sections
   },
 
   label: {
-    marginBottom: spacing.md, // proper space before content
+    marginBottom: spacing.sm, // proper space before content
   },
 
   subtitle: {
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
 
   content: {
-    gap: spacing.md, // slightly larger internal spacing
+    gap: spacing.sm, // slightly larger internal spacing
   },
 });

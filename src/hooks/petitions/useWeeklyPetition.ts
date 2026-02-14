@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "../../config/api";
-import { Petition } from "../../types/Petition";
 import { mapWeeklyPetitionToCard } from "../../mappers/weeklyCardMapper";
 
 export function useWeeklyPetition() {

@@ -17,7 +17,7 @@ type PollStackParams = {
 };
 
 
-export default function PollGroupsScreen() {
+export default function PollListScreen() {
   const navigation = useNavigation<any>();
   const { user } = useContext(AuthContext);
 
@@ -56,7 +56,7 @@ const { topicId, title } = route.params;
               keyExtractor={(item) => item.id.toString()}
               renderItem={({ item }) => (
                 <PollGroupCard
-                  topic={item}
+                  group={item}
                   onPress={() => openGroup(item)}
                 />
               )}

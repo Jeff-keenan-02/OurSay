@@ -12,13 +12,23 @@ exports.getTrendingPetition = async (req, res) => {
         p.id,
         p.title,
         p.description,
-        p.signature_count AS signatures
+        p.required_verification_tier,
+        p.signature_goal,
+        COUNT(ps.id)::int AS signatures,
+        CASE
+          WHEN p.signature_goal = 0 THEN 0
+          ELSE COUNT(ps.id)::float / p.signature_goal
+        END AS progress
       FROM petitions p
-      ORDER BY p.signature_count DESC
-      LIMIT 1
+      LEFT JOIN petition_signatures ps
+        ON ps.petition_id = p.id
+      GROUP BY p.id, p.title, p.description, p.required_verification_tier, p.signature_goal
+      ORDER BY signatures DESC
+      LIMIT 3;
     `);
 
-    res.json(result.rows[0] ?? null);
+    res.json(result.rows);
+
   } catch (err) {
     console.error("getTrendingPetition:", err);
     res.status(500).json({ error: "Failed to load trending petition" });
@@ -36,12 +46,20 @@ exports.getWeeklyPetition = async (req, res) => {
         p.id,
         p.title,
         p.description,
-        p.signature_count AS signatures
+        p.signature_goal,
+        COUNT(ps.id)::int AS signatures,
+        CASE
+          WHEN p.signature_goal = 0 THEN 0
+          ELSE COUNT(ps.id)::float / p.signature_goal
+        END AS progress
       FROM petitions p
       JOIN topics t ON t.id = p.topic_id
+      LEFT JOIN petition_signatures ps
+        ON ps.petition_id = p.id
       WHERE t.is_weekly = true
+      GROUP BY p.id, p.title, p.description, p.required_verification_tier, p.signature_goal
       ORDER BY p.created_at DESC
-      LIMIT 1
+      LIMIT 1;
     `);
 
     res.json(result.rows[0] ?? null);
@@ -50,37 +68,45 @@ exports.getWeeklyPetition = async (req, res) => {
     res.status(500).json({ error: "Failed to load weekly petition" });
   }
 };
-
 /* ------------------------------
-   GET petitions by topic
+   GET list of petitions
 ------------------------------ */
 exports.getPetitionsByTopic = async (req, res) => {
   const topicId = Number(req.params.id);
 
+  if (!topicId || isNaN(topicId)) {
+    return res.status(400).json({ error: "Invalid topic ID" });
+  }
+
   try {
-    const { rows } = await pool.query(
+    const result = await pool.query(
       `
       SELECT
         p.id,
         p.title,
         p.description,
-        p.required_verification_tier,
-        COUNT(ps.id) AS signatures
+        p.signature_goal,
+        COUNT(ps.id)::int AS signatures,
+        CASE
+          WHEN p.signature_goal = 0 THEN 0
+          ELSE COUNT(ps.id)::float / p.signature_goal
+        END AS progress
       FROM petitions p
       LEFT JOIN petition_signatures ps ON ps.petition_id = p.id
       WHERE p.topic_id = $1
-      GROUP BY p.id
-      ORDER BY p.created_at DESC
+      GROUP BY p.id, p.title, p.description, p.signature_goal
+      ORDER BY p.created_at DESC;
       `,
       [topicId]
     );
 
-    res.json(rows);
+    res.json(result.rows);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch petitions" });
+    console.error("getPetitionsByTopic:", err);
+    res.status(500).json({ error: "Failed to load petitions for topic" });
   }
 };
+
 
 /* ------------------------------
    GET single petition
@@ -96,11 +122,27 @@ exports.getPetition = async (req, res) => {
         p.title,
         p.description,
         p.required_verification_tier,
-        COUNT(ps.id) AS signatures
+        p.signature_goal,
+
+        COUNT(ps.id)::int AS signatures,
+
+        CASE
+          WHEN p.signature_goal = 0 THEN 0
+          ELSE COUNT(ps.id)::float / p.signature_goal
+        END AS progress
+
       FROM petitions p
-      LEFT JOIN petition_signatures ps ON ps.petition_id = p.id
+      LEFT JOIN petition_signatures ps
+        ON ps.petition_id = p.id
+
       WHERE p.id = $1
-      GROUP BY p.id
+
+      GROUP BY
+        p.id,
+        p.title,
+        p.description,
+        p.required_verification_tier,
+        p.signature_goal
       `,
       [petitionId]
     );
@@ -121,14 +163,41 @@ exports.getPetition = async (req, res) => {
 ------------------------------ */
 exports.signPetition = async (req, res) => {
   const petitionId = Number(req.params.id);
-  const userId = Number(req.body.userId);
+  const { userId } = req.body;
 
+  // -------------------------
+  // 1️⃣ Basic validation FIRST
+  // -------------------------
   if (!userId) {
-    return res.status(401).json({ error: "Missing user" });
+    return res.status(400).json({ error: "userId is required" });
+  }
+
+  if (!petitionId || isNaN(petitionId)) {
+    return res.status(400).json({ error: "Invalid petition ID" });
   }
 
   try {
-    // 1️⃣ Get user verification tier
+    // -------------------------
+    // 2️⃣ Prevent repeat signing
+    // -------------------------
+    const existing = await pool.query(
+      `
+      SELECT 1
+      FROM petition_participation
+      WHERE user_id = $1 AND petition_id = $2
+      `,
+      [userId, petitionId]
+    );
+
+    if (existing.rowCount > 0) {
+      return res.status(403).json({
+        error: "User has already signed this petition",
+      });
+    }
+
+    // -------------------------
+    // 3️⃣ Get user verification tier
+    // -------------------------
     const userResult = await pool.query(
       `SELECT verification_tier FROM users WHERE id = $1`,
       [userId]
@@ -138,9 +207,15 @@ exports.signPetition = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // 2️⃣ Get petition requirement
+    // -------------------------
+    // 4️⃣ Get petition requirement
+    // -------------------------
     const petitionResult = await pool.query(
-      `SELECT required_verification_tier FROM petitions WHERE id = $1`,
+      `
+      SELECT required_verification_tier
+      FROM petitions
+      WHERE id = $1
+      `,
       [petitionId]
     );
 
@@ -158,11 +233,10 @@ exports.signPetition = async (req, res) => {
       });
     }
 
-    // 3️⃣ Generate one-time action token
-    const tokenHash = crypto
-      .createHash("sha256")
-      .update(`petition:${petitionId}:${userId}:${Date.now()}`)
-      .digest("hex");
+    // -------------------------
+    // 5️⃣ Create one-time anonymous token
+    // -------------------------
+    const token = crypto.randomBytes(32).toString("hex");
 
     await pool.query(
       `
@@ -174,19 +248,35 @@ exports.signPetition = async (req, res) => {
       )
       VALUES ($1, 'petition_sign', $2, NOW() + INTERVAL '10 minutes')
       `,
-      [tokenHash, petitionId]
+      [token, petitionId]
     );
 
-    // 4️⃣ Record signature
+    // -------------------------
+    // 6️⃣ Record signature anonymously
+    // -------------------------
     await pool.query(
       `
       INSERT INTO petition_signatures (petition_id, token_hash)
       VALUES ($1, $2)
       `,
-      [petitionId, tokenHash]
+      [petitionId, token]
     );
 
-    // 5️⃣ Track participation (anti-repeat)
+    // -------------------------
+    // 7️⃣ Burn token
+    // -------------------------
+    await pool.query(
+      `
+      UPDATE action_tokens
+      SET used = TRUE
+      WHERE token_hash = $1
+      `,
+      [token]
+    );
+
+    // -------------------------
+    // 8️⃣ Record participation (NO identity linkage)
+    // -------------------------
     await pool.query(
       `
       INSERT INTO petition_participation (user_id, petition_id)
@@ -196,19 +286,10 @@ exports.signPetition = async (req, res) => {
       [userId, petitionId]
     );
 
-    // 6️⃣ Burn token
-    await pool.query(
-      `
-      UPDATE action_tokens
-      SET used = TRUE
-      WHERE token_hash = $1
-      `,
-      [tokenHash]
-    );
+    return res.json({ success: true });
 
-    res.json({ success: true });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to sign petition" });
+    console.error("Sign petition failed:", err);
+    return res.status(500).json({ error: "Failed to sign petition" });
   }
 };

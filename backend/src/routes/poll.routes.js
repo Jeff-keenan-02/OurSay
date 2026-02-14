@@ -3,7 +3,7 @@ const router = express.Router();
 const controller = require('../controllers/poll.controller');
 
 // Weekly (special case)
-router.get('/weekly-poll', controller.getWeeklyPoll);
+router.get('/weekly', controller.getWeeklyPoll);
 
 // GET /poll/trending
 router.get("/trending", controller.getTrendingPoll);
@@ -16,9 +16,5 @@ router.get('/groups/:pollGroupId/polls', controller.getPollsByGroup);
 
 // Vote on a poll
 router.post('/:id/vote', controller.votePoll);
-
-// Progress per poll group
-router.get('/groups/:pollGroupId/progress', controller.getProgress);
-router.post('/groups/:pollGroupId/progress', controller.updateProgress);
 
 module.exports = router;

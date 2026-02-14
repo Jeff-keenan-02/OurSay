@@ -8,11 +8,11 @@ router.get('/by-topic/:topicId', controller.getDisscussionByTopic);
 
 router.get('/weekly', controller.getWeeklyDiscussion);
 
-// ⚠️ MUST be last
-router.get('/:id', controller.getDiscussion);
-
 // Interactions
 router.post('/:id/comments', controller.postComment);
 router.post('/:id/vote', controller.voteDiscussion);
+
+// ⚠️ MUST be last
+router.get('/:id', controller.getDiscussion);
 
 module.exports = router;

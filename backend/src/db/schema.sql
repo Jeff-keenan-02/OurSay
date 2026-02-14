@@ -83,7 +83,6 @@ CREATE TABLE poll_groups (
   id SERIAL PRIMARY KEY,
   topic_id INTEGER NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
-  is_weekly BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -112,7 +111,7 @@ CREATE TABLE petitions (
 
   -- petition progress (global)
   signature_goal INT NOT NULL CHECK (signature_goal > 0),
-  signature_count INT NOT NULL DEFAULT 0,
+
 
   created_at TIMESTAMP DEFAULT NOW()
 );
@@ -258,48 +257,84 @@ VALUES
 ('Technology & Society', 'AI, privacy, digital rights', FALSE),
 ('Weekly Public Opinion', 'This week’s featured national topic', TRUE);
 
-INSERT INTO poll_groups (topic_id, title, is_weekly)
+INSERT INTO poll_groups (topic_id, title)
 VALUES
 -- Housing
-(1, 'Housing Affordability Survey', FALSE),
-(1, 'Rent Controls Policy Survey', FALSE),
+(1, 'Housing Affordability Survey'),
+(1, 'Rent Controls Policy Survey'),
 
 -- Transport
-(2, 'Public Transport Accessibility Survey', FALSE),
+(2, 'Public Transport Accessibility Survey'),
 
 -- Healthcare
-(3, 'Healthcare System Capacity Survey', FALSE),
+(3, 'Healthcare System Capacity Survey'),
 
--- Weekly
-(7, 'This Week’s National Opinion', TRUE);
+-- Climate
+(4, 'Climate Policy Survey'),
+
+-- Education
+(5, 'Education Reform Survey'),
+
+-- Technology
+(6, 'AI & Privacy Survey'),
+
+-- Weekly topic
+(7, 'This Week’s National Opinion');
 
 
 INSERT INTO polls (poll_group_id, question, description, required_verification_tier)
 VALUES
--- Housing Affordability Survey (group 1)
-(1, 'Is rent too high?', 'General perception of rent levels', 2),
-(1, 'Is home ownership affordable?', 'Ability to purchase a home', 2),
-(1, 'Have rents increased faster than wages?', 'Cost of living comparison', 2),
 
--- Rent Controls Policy Survey (group 2)
-(2, 'Should rent caps exist?', 'Support for rent controls', 2),
-(2, 'Do rent caps discourage supply?', 'Economic impact question', 2),
+-- Housing Affordability
+((SELECT id FROM poll_groups WHERE title = 'Housing Affordability Survey'),
+ 'Is rent too high?',
+ 'General perception of rent levels',
+ 2),
 
--- Transport Survey (group 3)
-(3, 'Should public transport be free?', 'Opinion on free transport', 2),
-(3, 'Is public transport reliable?', 'Service reliability', 2),
+((SELECT id FROM poll_groups WHERE title = 'Housing Affordability Survey'),
+ 'Is home ownership affordable?',
+ 'Ability to purchase a home',
+ 2),
 
--- Weekly National Opinion (group 5)
-(5, 'Should housing supply be increased?', 'National housing policy', 2),
-(5, 'Should carbon tax be increased?', 'Climate policy question', 2);
+-- Rent Controls
+((SELECT id FROM poll_groups WHERE title = 'Rent Controls Policy Survey'),
+ 'Should rent caps exist?',
+ 'Support for rent controls',
+ 2),
 
-INSERT INTO petitions (
-  topic_id,
-  title,
-  description,
-  required_verification_tier,
-  signature_goal
-)
+-- Transport
+((SELECT id FROM poll_groups WHERE title = 'Public Transport Accessibility Survey'),
+ 'Should public transport be free?',
+ 'Opinion on free transport',
+ 2),
+
+-- Climate
+((SELECT id FROM poll_groups WHERE title = 'Climate Policy Survey'),
+ 'Should carbon tax increase?',
+ 'Climate funding question',
+ 2),
+
+-- Education
+((SELECT id FROM poll_groups WHERE title = 'Education Reform Survey'),
+ 'Should college fees be reduced?',
+ 'Higher education affordability',
+ 2),
+
+-- Technology
+((SELECT id FROM poll_groups WHERE title = 'AI & Privacy Survey'),
+ 'Should AI be regulated?',
+ 'Digital governance',
+ 2),
+
+-- Weekly
+((SELECT id FROM poll_groups WHERE title = 'This Week’s National Opinion'),
+ 'Should housing supply be increased?',
+ 'National housing policy',
+ 2);
+
+
+-- create some petitions
+INSERT INTO petitions (topic_id, title, description, required_verification_tier, signature_goal)
 VALUES
 (1, 'Introduce stronger rent controls',
  'Limit annual rent increases nationwide',
@@ -307,6 +342,80 @@ VALUES
 (4, 'Increase climate action funding',
  'Commit additional funding to climate initiatives',
  3, 5000);
+
+-- Create Weeek;y petition
+INSERT INTO petitions (topic_id, title, description, required_verification_tier, signature_goal)
+VALUES (7, 'Ban Short-Term Rentals', 'Reduce housing pressure', 2, 1000);
+
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+-- To create petitions first we must create the action tokens that represent signatures, then link them to the petition_signatures table.
+
+WITH new_tokens AS (
+  INSERT INTO action_tokens (
+    token_hash,
+    action_type,
+    petition_id,
+    expires_at,
+    used
+  )
+  SELECT
+    encode(gen_random_bytes(32), 'hex'),
+    'petition_sign',
+    1,
+    NOW() + interval '10 years',
+    true
+  FROM generate_series(1, 340)
+  RETURNING token_hash
+)
+INSERT INTO petition_signatures (petition_id, token_hash)
+SELECT 1, token_hash
+FROM new_tokens;
+
+WITH new_tokens AS (
+  INSERT INTO action_tokens (
+    token_hash,
+    action_type,
+    petition_id,
+    expires_at,
+    used
+  )
+  SELECT
+    encode(gen_random_bytes(32), 'hex'),
+    'petition_sign',
+    2,
+    NOW() + interval '10 years',
+    true
+  FROM generate_series(2, 2850)
+  RETURNING token_hash
+)
+INSERT INTO petition_signatures (petition_id, token_hash)
+SELECT 2, token_hash
+FROM new_tokens;
+
+
+WITH new_tokens AS (
+  INSERT INTO action_tokens (
+    token_hash,
+    action_type,
+    petition_id,
+    expires_at,
+    used
+  )
+  SELECT
+    encode(gen_random_bytes(32), 'hex'),
+    'petition_sign',
+    3,
+    NOW() + interval '10 years',
+    true
+  FROM generate_series(3, 720)
+  RETURNING token_hash
+)
+INSERT INTO petition_signatures (petition_id, token_hash)
+SELECT 3, token_hash
+FROM new_tokens;
+
+
 
 INSERT INTO discussions (topic_id, title, body, created_by)
 VALUES
@@ -321,19 +430,15 @@ VALUES
  3),
 (6, 'Should AI be regulated more strictly?',
  'Concerns about surveillance and job displacement.',
- 1);
+ 1),
 
--- Weekly discussion (topic 7) - can be updated weekly to reflect current events
-INSERT INTO discussions (title, body, topic_id, created_by)
-VALUES (
+ (7,
   'Should Ireland introduce 4-day work weeks?',
   'What are the economic and social impacts of moving to a 4-day working model?',
-  7,
-  1  -- replace with an existing user id
-);
+  1);
 
-INSERT INTO petitions (topic_id, title, description, required_verification_tier, signature_goal)
-VALUES (7, 'Ban Short-Term Rentals', 'Reduce housing pressure', 2, 1000);
+
+
 
 
 
@@ -378,6 +483,13 @@ INSERT INTO poll_votes (poll_id, token_hash, choice)
 VALUES (1, 'secure_random_hash_1', 'yes');
 
 select * from users;
+
+
+
+
+
+
+
 
 UPDATE action_tokens
 SET used = TRUE

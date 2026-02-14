@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "../../config/api";
-import { mapPetitionToTrending } from "../../mappers/trendingCardMapper";
 
 export function useTrendingPetition() {
-  const [petition, setPetition] = useState<any>(null);
+  const [petitions, setPetitions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -12,11 +11,9 @@ export function useTrendingPetition() {
         const res = await fetch(`${API_BASE_URL}/petitions/trending`);
         const data = await res.json();
 
-        if (data) {
-          setPetition(mapPetitionToTrending(data));
-        }
+        setPetitions(data || []);
       } catch (err) {
-        console.error("Failed to load trending petition", err);
+        console.error("Failed to load trending petitions", err);
       } finally {
         setLoading(false);
       }
@@ -25,5 +22,5 @@ export function useTrendingPetition() {
     load();
   }, []);
 
-  return { petition, loading };
+  return { petitions, loading };
 }

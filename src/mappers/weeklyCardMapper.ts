@@ -6,13 +6,11 @@ import { Petition } from "../types/Petition";
 
 export function mapWeeklyPollToCard(poll: PollGroup): WeeklyCardData {
   return {
+    type: "poll",
     label: "Weekly Public Opinion Poll",
+    id: poll.id,
     title: poll.title,
-    description: poll.description ?? undefined,
-    progress:
-      poll.total_polls === 0
-        ? 0
-        : poll.completed_polls / poll.total_polls,
+    progress: poll.progress,
     footerText: `${poll.completed_polls}/${poll.total_polls} questions answered`,
   };
 }
@@ -22,7 +20,9 @@ export function mapWeeklyDiscussionToCard(
   discussion: WeeklyDiscussion
 ): WeeklyCardData {
   return {
+    type: "discussion", 
     label: "Weekly Community Discussion",
+    id: discussion.id,
     title: discussion.title,
     description: discussion.body,
     footerText: `${discussion.comment_count} comments`,
@@ -35,9 +35,13 @@ export function mapWeeklyPetitionToCard(
   petition: Petition
 ): WeeklyCardData {
   return {
+    type: "petition", 
     label: "Weekly Community Petition",
+    id: petition.id, 
     title: petition.title,
     description: petition.description,
-    footerText: `${petition.signatures} signatures`,
+    progress: petition.progress,
+    signatures: petition.signatures,
+    signature_goal: petition.signature_goal,
   };
 }

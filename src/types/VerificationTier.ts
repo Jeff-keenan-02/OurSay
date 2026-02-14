@@ -22,7 +22,7 @@ export const VERIFICATION_TIERS: Record<VerificationTier, TierInfo> = {
   1: {
     label: "Bronze verified",
     description: "Human presence confirmed",
-    icon: "medal-outline",
+    icon: "shield-outline",
     color: "#cd7f32", // bronze
     next: "Verify passport",
   },
@@ -30,7 +30,7 @@ export const VERIFICATION_TIERS: Record<VerificationTier, TierInfo> = {
   2: {
     label: "Silver verified",
     description: "Identity verified",
-    icon: "medal",
+    icon: "shield-outline",
     color: "#c0c0c0", // silver
     next: "Confirm residence",
   },
@@ -38,7 +38,7 @@ export const VERIFICATION_TIERS: Record<VerificationTier, TierInfo> = {
   3: {
     label: "Gold verified",
     description: "Fully verified citizen",
-    icon: "medal",
+    icon: "shield-outline",
     color: "#ffd700", // gold
     next: null,
   },

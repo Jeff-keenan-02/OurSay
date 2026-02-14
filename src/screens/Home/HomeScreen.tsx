@@ -1,18 +1,17 @@
 import React, { useContext, useCallback } from "react";
-import { FlatList } from "react-native";
-import { Text, useTheme, Divider } from "react-native-paper";
+import { Text} from "react-native-paper";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { AuthContext } from "../../context/AuthContext";
 import { useWeeklyPoll } from "../../hooks/polls/useWeeklyPoll";
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
-import { useTrendingDiscussions } from "../../hooks/discussions/useTrendingDiscussions";
-import { useDiscussionVote } from "../../hooks/discussions/useDiscussionVote";
 import { getGreeting } from "../../utils/greeting";
 import { canOpenPoll } from "../../utils/pollAccess";
-import { mapWeeklyPollToCard } from "../../mappers/weeklyCardMapper";
+import { mapWeeklyDiscussionToCard, mapWeeklyPetitionToCard, mapWeeklyPollToCard } from "../../mappers/weeklyCardMapper";
 import { WeeklyEngagementCard } from "../../components/common/WeeklyEngagementCard";
-import TrendingEngagementCard from "../../components/common/TrendingEngagementCard";
+import { useWeeklyDiscussion } from "../../hooks/discussions/useWeeklyDiscussion";
+import { useWeeklyPetition } from "../../hooks/petitions/useWeeklyPetition";
+
 
 
 export default function HomeScreen() {
@@ -21,27 +20,10 @@ export default function HomeScreen() {
   const greeting = getGreeting(user?.username);
   
 
-  // Hook to get trending discussions
-  const { discussions, loading: discussionsLoading, refresh: refreshDiscussions } = useTrendingDiscussions();
-
-  // Top 3 trending prevent errors
-  const trending = discussions.slice(0, 3);
-
-  // Hook to vote
-  const { vote } = useDiscussionVote(user, refreshDiscussions);
 
   //Hook to get the weekly poll
-const {
-  weeklyPoll,
-  loading: pollLoading,
-  reload: reloadWeeklyPoll
-} = useWeeklyPoll(user);
-
- const weeklyPollUI = weeklyPoll
-  ? mapWeeklyPollToCard(weeklyPoll)
-  : null;
-
-const openWeeklyPollFromHome = () => {
+ const {weeklyPoll, loading: weeklyPollLoading, reload: reloadWeeklyPoll} = useWeeklyPoll(user);
+ const openWeeklyPollFromHome = () => {
   if (!weeklyPoll) return;
   if (!canOpenPoll(weeklyPoll, user)) return;
 
@@ -54,18 +36,39 @@ const openWeeklyPollFromHome = () => {
   });
 };
 
-  const openDiscussion = (id: number, title: string) => {
-    navigation.navigate("Discussions", {
-      screen: "DiscussionDetail",
-      params: { id, title },
-    });
-  };
+
+  //Hook to get weekly discussion
+  const { weeklyDiscussion, loading: weeklyDiscussionLoading, loadWeekly } = useWeeklyDiscussion();
+
+  const openWeeklyDiscussion = () => {
+  if (!weeklyDiscussion) return;
+  navigation.navigate("Discussions", {
+    screen: "DiscussionDetail",
+    params: {
+      id: weeklyDiscussion.id,
+      title: weeklyDiscussion.title,
+    },
+  });
+};
+
+    // Hook for weekly petition
+  const { petition: weeklyPetition, loading: weeklyPetitionLoading } = useWeeklyPetition();
+  const openWeeklyPetition = () => {
+    if (!weeklyPetition) return;
+      navigation.navigate("Petitions", {
+        screen: "PetitionDetail",
+        params: {
+          id: weeklyPetition.id,
+          title: weeklyPetition.title,
+        },
+      });
+};
 
  useFocusEffect(
   useCallback(() => {
     reloadWeeklyPoll();
-    refreshDiscussions();
-  }, [reloadWeeklyPoll, refreshDiscussions])
+    loadWeekly();
+  }, [reloadWeeklyPoll, loadWeekly])
 );
 
   return (
@@ -75,36 +78,44 @@ const openWeeklyPollFromHome = () => {
       subtitle=" Take part in this week's public opinion poll."
     >
 
-      <Section label="Featured This Week">
-        {pollLoading ? (
-          <Text variant="bodyMedium">
-            Loading…
-          </Text>
-        ) : weeklyPollUI ? (
+      <Section label="This Week's Poll">
+        {weeklyPollLoading ? (
+          <Text variant="bodyMedium">Loading…</Text>
+        ) : weeklyPoll ? (
           <WeeklyEngagementCard
-            data={weeklyPollUI}
+            data={mapWeeklyPollToCard(weeklyPoll)}
             onPress={openWeeklyPollFromHome}
           />
         ) : null}
       </Section>
 
-      {/* Trending Section
-      <Section label="Trending Discussions">
-        <FlatList
-          data={trending}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 12, paddingRight: 16 }}
-          renderItem={({ item }) => (
-            <TrendingEngagementCard
-              data={item}
-              onPress={() => openDiscussion(item.id, item.title)}
-              onVote={vote}
-            />
-          )}
-          keyExtractor={(item) => item.id.toString()}
-        />
-      </Section> */}
+
+      {/* Weekly Section */}
+      <Section label="This Week Discussion">
+        {weeklyDiscussionLoading ? (
+                <Text variant="bodyMedium">Loading...</Text>
+              ) : weeklyDiscussion ? (
+                <WeeklyEngagementCard
+                  data={mapWeeklyDiscussionToCard(weeklyDiscussion)}
+                  onPress={openWeeklyDiscussion}
+                />
+              ) : null}
+      </Section>
+
+
+      {/* Weekly */}
+      <Section label="This Week's Petition">
+        {weeklyPetitionLoading ? (
+          <Text variant="bodyMedium">Loading…</Text>
+          ) : weeklyPetition ? (
+          <WeeklyEngagementCard
+            data={mapWeeklyPetitionToCard(weeklyPetition)}
+            onPress={() => openWeeklyPetition()}
+          />
+          ) : null}
+      </Section>
+
+
     </Screen> 
   );
 }

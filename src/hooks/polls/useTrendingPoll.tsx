@@ -1,32 +1,41 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { API_BASE_URL } from "../../config/api";
 import { mapPollToTrending } from "../../mappers/trendingCardMapper";
 import { TrendingCardData } from "../../types/trendingCardData";
+import { AuthContext } from "../../context/AuthContext";
 
 export function useTrendingPoll() {
-  const [poll, setPoll] = useState<TrendingCardData | null>(null);
+  const { user } = useContext(AuthContext);
+
+  const [polls, setPolls] = useState<TrendingCardData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user?.id) return;
+
     const load = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/poll/trending`);
+        const res = await fetch(
+          `${API_BASE_URL}/poll/trending?userId=${user.id}`
+        );
+
         const data = await res.json();
 
-        if (data) {
-          setPoll(mapPollToTrending(data));
+        if (Array.isArray(data)) {
+          const mapped = data.map(mapPollToTrending);
+          setPolls(mapped);
         } else {
-          setPoll(null);
+          setPolls([]);
         }
       } catch (err) {
-        console.error("Failed to load trending poll", err);
+        console.error("Failed to load trending polls", err);
       } finally {
         setLoading(false);
       }
     };
 
     load();
-  }, []);
+  }, [user?.id]);
 
-  return { poll, loading };
+  return { polls, loading };
 }

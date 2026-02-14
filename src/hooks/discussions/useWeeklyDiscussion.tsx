@@ -5,7 +5,7 @@ import { API_BASE_URL } from "../../config/api";
 import { WeeklyDiscussion } from "../../types/Discussion";
 
 export function useWeeklyDiscussion() {
-  const [weekly, setWeekly] = useState<WeeklyDiscussion | null>(null);
+  const [weeklyDiscussion, setWeekly] = useState<WeeklyDiscussion | null>(null);
   const [loading, setLoading] = useState(false);
 
   const loadWeekly = useCallback(async () => {
@@ -22,5 +22,5 @@ export function useWeeklyDiscussion() {
     }
   }, []);
 
-  return { weekly, loading, loadWeekly };
+  return { weeklyDiscussion, loading, loadWeekly };
 }

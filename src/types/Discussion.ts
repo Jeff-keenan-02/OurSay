@@ -1,5 +1,6 @@
 // src/types/Discussion.ts
 import { Comment } from "./Comment";
+import { VerificationTier } from "./VerificationTier";
 
 /**
  * Used for the featured weekly discussion card.
@@ -11,7 +12,7 @@ export type WeeklyDiscussion = {
   body: string;
   comment_count: number;
   created_at: string;
-  created_by: string;   // <-- ADD THIS
+  created_by: string;  
 };
 
 /**
@@ -22,6 +23,8 @@ export type DiscussionBase = {
   title: string;
   body: string;
   created_at: string;
+  created_by: string;
+  verification_tier: VerificationTier;
 };
 
 /**

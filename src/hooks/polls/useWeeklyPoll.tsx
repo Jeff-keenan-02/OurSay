@@ -25,7 +25,7 @@ export function useWeeklyPoll(user: User | null) {
       setError(null);
 
       const res = await fetch(
-        `${API_BASE_URL}/poll/weekly-poll?userId=${user.id}`
+        `${API_BASE_URL}/poll/weekly?userId=${user.id}`
       );
 
       if (!res.ok) {

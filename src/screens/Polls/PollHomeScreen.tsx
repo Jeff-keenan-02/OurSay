@@ -18,33 +18,34 @@ import TrendingEngagementCard from "../../components/common/TrendingEngagementCa
 
 const stack = createNativeStackNavigator();
 
-export default function PollTopicsScreen() {
+export default function PollHomeScreen() {
   const theme = useTheme();
   const navigation = useNavigation<any>();
   const { user } = useContext(AuthContext);
 
+  const {weeklyPoll, loading: pollLoading, reload: reloadWeeklyPoll} = useWeeklyPoll(user);
+
+  const weeklyPollUI = weeklyPoll ? mapWeeklyPollToCard(weeklyPoll): null;
 
 
-const {
-  weeklyPoll,
-  loading: pollLoading,
-  reload: reloadWeeklyPoll
-} = useWeeklyPoll(user);
+   // hook for trending Poll
+const { polls: trendingPolls, loading: trendingLoading } = useTrendingPoll();
 
-   const weeklyPollUI = weeklyPoll
-    ? mapWeeklyPollToCard(weeklyPoll)
-    : null;
-    // hook for trending Poll
-    const { poll: trendingPoll, loading: trendingLoading } = useTrendingPoll();
-
-      // hook for topics
-      const { topics, loading: topicsLoading, } = useTopics();
+  // hook for topics
+  const { topics, loading: topicsLoading, } = useTopics();
     
 
-const openTopic = (Topic: Topic) => {
-  navigation.navigate("PollGroups", {
-    topicId: Topic.id,
-    title: Topic.title,
+const openPollGroup = (groupId: number, title: string) => {
+  navigation.navigate("SwipePoll", {
+    groupId,
+    title,
+  });
+};
+
+const openTopic = (topic: Topic) => {
+  navigation.navigate("PollList", {
+    topicId: topic.id,
+    title: topic.title,
   });
 };
   // Reload data when screen focuses
@@ -65,27 +66,32 @@ const openTopic = (Topic: Topic) => {
             ) : weeklyPollUI ? (
               <WeeklyEngagementCard
                 data={weeklyPollUI}
-                onPress={() => openTopic(weeklyPoll!)}
+                onPress={() => openPollGroup(weeklyPollUI.id, weeklyPollUI.title)}
               />
             ) : null}
           </Section>
 
+
         {/* 🔥 Trending Poll */}
-        <Section label="Trending Poll">
+        <Section label="Trending Polls">
           {trendingLoading ? (
             <Text>Loading…</Text>
-          ) : trendingPoll ? (
-            <TrendingEngagementCard
-              data={trendingPoll}
-              onPress={() =>
-                navigation.navigate("SwipePoll", {
-                  groupId: trendingPoll.id,
-                  title: trendingPoll.title,
-                })
-              }
-            />
+          ) : trendingPolls.length === 0 ? (
+            <Text>No trending polls yet.</Text>
           ) : (
-            <Text>No trending poll yet.</Text>
+            <FlatList
+              data={trendingPolls}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 12, paddingRight: 16 }}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <TrendingEngagementCard
+                  data={item}
+                  onPress={() => openPollGroup(item.id, item.title)}
+                />
+              )}
+            />
           )}
         </Section>
 

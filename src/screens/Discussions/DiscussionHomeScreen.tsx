@@ -28,15 +28,14 @@ export default function DiscussionHomeScreen() {
 
   //hook for trending discussions
   const { discussions, setDiscussions } = useTrendingDiscussions();
-
-
   const trendingData = discussions.map(mapDiscussionToTrending);
+
 
   //hook upvoting or downvoting 
   const { vote } = useDiscussionVote (user, setDiscussions);
 
   //weekly discussion
-  const { weekly, loading: weeklyLoading, loadWeekly } = useWeeklyDiscussion();
+  const { weeklyDiscussion, loading: weeklyLoading, loadWeekly } = useWeeklyDiscussion();
 
   const openTopic = (topic: Topic) => {
     navigation.navigate("DiscussionsList", {
@@ -53,13 +52,13 @@ export default function DiscussionHomeScreen() {
   };
 
   const openWeeklyDiscussion = () => {
-  if (!weekly) return;
+  if (!weeklyDiscussion) return;
 
   navigation.navigate("Discussions", {
     screen: "DiscussionDetail",
     params: {
-      id: weekly.id,
-      title: weekly.title,
+      id: weeklyDiscussion.id,
+      title: weeklyDiscussion.title,
     },
   });
 };
@@ -75,9 +74,9 @@ export default function DiscussionHomeScreen() {
       <Section label="Featured This Week">
         {weeklyLoading ? (
           <Text>Loading...</Text>
-        ) : weekly ? (
+        ) : weeklyDiscussion ? (
           <WeeklyEngagementCard
-            data={mapWeeklyDiscussionToCard(weekly)}
+            data={mapWeeklyDiscussionToCard(weeklyDiscussion)}
             onPress={openWeeklyDiscussion}
           />
         ) : null}

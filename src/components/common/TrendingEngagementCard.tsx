@@ -1,6 +1,13 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
-import { Card, Text, IconButton, Divider, useTheme } from "react-native-paper";
+import {
+  Card,
+  Text,
+  IconButton,
+  Divider,
+  useTheme,
+  ProgressBar,
+} from "react-native-paper";
 import { TrendingCardData } from "../../types/trendingCardData";
 
 type Props = {
@@ -15,116 +22,201 @@ export default function TrendingEngagementCard({
   onVote,
 }: Props) {
   const theme = useTheme();
-  const {
-    id,
-    title,
-    description,
-    upvotes,
-    downvotes,
-    comment_count,
-  } = data;
+
+  /* --------------------------------------------------
+     Derived UI Values (Clean Separation of Logic)
+  ---------------------------------------------------*/
+
+  const descriptionText = useMemo(() => {
+    switch (data.type) {
+      case "discussion":
+        return data.description;
+
+      case "petition":
+        return data.description;
+
+      case "poll":
+        return `${data.completed_polls}/${data.total_polls} people completed this poll`;
+
+      default:
+        return "";
+    }
+  }, [data]);
+
+  const renderFooter = () => {
+    switch (data.type) {
+      case "discussion":
+        return (
+          <View style={styles.metricsRow}>
+            <Metric
+              icon="thumb-up"
+              value={data.upvotes}
+              onPress={() => onVote?.(data.id, "up")}
+              color={theme.colors.primary}
+            />
+            <Metric
+              icon="thumb-down"
+              value={data.downvotes}
+              onPress={() => onVote?.(data.id, "down")}
+              color={theme.colors.primary}
+            />
+            <Metric
+              icon="comment"
+              value={data.comment_count}
+              color={theme.colors.primary}
+            />
+          </View>
+        );
+
+      case "poll":
+        return (
+          <>
+            <ProgressBar
+              progress={data.progress}
+              color={theme.colors.primary}
+              style={styles.progressBar}
+            />
+            <Text style={[styles.subText, { color: theme.colors.primary }]}>
+              {data.completed_polls}/{data.total_polls} completed
+            </Text>
+          </>
+        );
+
+      case "petition":
+        return (
+          <>
+            <ProgressBar
+              progress={data.progress}
+              color={theme.colors.primary}
+              style={styles.progressBar}
+            />
+            <View style={styles.petitionMetaRow}>
+              <Text
+                style={[
+                  styles.subText,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+              >
+                {data.signatures} signatures
+              </Text>
+              <Text
+                style={[
+                  styles.subText,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+              >
+                Goal: {data.signature_goal}
+              </Text>
+            </View>
+          </>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  /* --------------------------------------------------
+     Component Render
+  ---------------------------------------------------*/
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.9}>
-      <View style={styles.sectionWrapper}>
+      <View style={styles.wrapper}>
         <Card
           mode="elevated"
           style={[
-            styles.discussionCard,
+            styles.card,
             { backgroundColor: theme.colors.surface },
           ]}
         >
-          {(
-            <View style={styles.tag}>
-              <Text style={styles.tagText}>🔥 Trending</Text>
-            </View>
-          )}
+          <View style={styles.tag}>
+            <Text style={styles.tagText}>🔥 Trending</Text>
+          </View>
 
-          <Card.Content>
-            <Text style={[styles.title, { color: theme.colors.onSurface }]}>
-              {title}
-            </Text>
+         <Card.Content style={styles.contentContainer}>
 
-            <Text
-              numberOfLines={2}
-              style={[styles.content, { color: theme.colors.onSurfaceVariant }]}
-            >
-              {description || "No description provided."}
-            </Text>
+  {/* TITLE */}
+  <Text
+    numberOfLines={2}
+    ellipsizeMode="tail"
+    style={[styles.title, { color: theme.colors.onSurface }]}
+  >
+    {data.title}
+  </Text>
 
-            <Divider style={{ marginVertical: 12 }} />
-
-
-              {data.type === "discussion" && (
-            <View style={styles.row}>
-              <View style={styles.voteGroup}>
-                <IconButton
-                  icon="thumb-up"
-                  size={20}
-                  iconColor={theme.colors.primary}
-                  onPress={() => onVote?.(data.id, "up")}
-                />
-                <Text>{data.upvotes}</Text>
-              </View>
-
-              <View style={styles.voteGroup}>
-                <IconButton
-                  icon="thumb-down"
-                  size={20}
-                  iconColor={theme.colors.primary}
-                  onPress={() => onVote?.(data.id, "down")}
-                />
-                <Text>{data.downvotes}</Text>
-              </View>
-
-              <View style={styles.voteGroup}>
-                <IconButton icon="comment" size={20} iconColor={theme.colors.primary} />
-                <Text>{data.comment_count}</Text>
-              </View>
-            </View>
-          )}
-          {data.type === "poll" && (
-  <View style={styles.row}>
-    <Text style={{ color: theme.colors.primary }}>
-      Swipe to vote
+  {/* DESCRIPTION SLOT */}
+  <View style={styles.descriptionContainer}>
+    <Text
+      numberOfLines={2}
+      ellipsizeMode="tail"
+      style={[styles.description, { color: theme.colors.onSurfaceVariant }]}
+    >
+      {descriptionText}
     </Text>
   </View>
-)}
-          {data.type === "petition" && (
-  <View style={styles.row}>
-    <Text style={{ color: theme.colors.primary }}>
-      {data.signatures} signatures
-    </Text>
-  </View>
-)}
 
-          </Card.Content>
+  <Divider style={styles.divider} />
+
+  {/* METRICS SLOT */}
+  <View style={styles.metricsContainer}>
+    {renderFooter()}
+  </View>
+
+</Card.Content>
         </Card>
       </View>
     </TouchableOpacity>
   );
 }
+
+/* --------------------------------------------------
+   Small Reusable Metric Component
+---------------------------------------------------*/
+
+function Metric({
+  icon,
+  value,
+  onPress,
+  color,
+}: {
+  icon: string;
+  value: number;
+  onPress?: () => void;
+  color: string;
+}) {
+  return (
+    <View style={styles.metricGroup}>
+      <IconButton
+        icon={icon}
+        size={20}
+        iconColor={color}
+        onPress={onPress}
+      />
+      <Text>{value}</Text>
+    </View>
+  );
+}
+
+/* --------------------------------------------------
+   Styles
+---------------------------------------------------*/
+
 const styles = StyleSheet.create({
-sectionWrapper: {
-  width: 260,  // <--- force properly sized cards
-  marginHorizontal: 4,
-},
-  discussionCard: {
+  wrapper: {
+    width: 260,
+    marginHorizontal: 6,
+  },
+
+  card: {
     borderRadius: 18,
-    borderColor: "#ffffff22",
     borderWidth: 1,
+    borderColor: "#ffffff22",
     shadowColor: "#000",
     shadowOpacity: 0.2,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
   },
-
- gradientBar: {
-  height: 4,
-  width: "100%",
-  borderTopLeftRadius: 18,
-  borderTopRightRadius: 18,
-},
 
   tag: {
     alignSelf: "flex-start",
@@ -141,30 +233,56 @@ sectionWrapper: {
     fontWeight: "600",
   },
 
-  voteGroup: {
+  metricsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 24,
+  },
+
+  metricGroup: {
     flexDirection: "row",
     alignItems: "center",
   },
 
-  voteCount: {
-    fontSize: 14,
-    marginLeft: -4,
+  progressBar: {
+    height: 8,
+    borderRadius: 6,
   },
 
-  title: {
+  petitionMetaRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 6,
+  },
+
+  subText: {
+    fontSize: 12,
+    marginTop: 6,
+  },
+  contentContainer: {
+  minHeight: 200, // 🔥 locks full card height
+  justifyContent: "space-between",
+},
+
+descriptionContainer: {
+  minHeight: 44, // exact 2-line area
+},
+
+metricsContainer: {
+  minHeight: 48, // 🔥 forces bottom area equal
+  justifyContent: "center",
+},
+
+divider: {
+  marginVertical: 10,
+},
+
+description: {
+  fontSize: 14,
+},
+
+title: {
   fontSize: 18,
   fontWeight: "600",
-  marginBottom: 10,
-},
-
-content: {
-  fontSize: 14,
-  marginBottom: 12,
-},
-
-row: {
-  flexDirection: "row",
-  alignItems: "center",
-  gap: 24,
 },
 });

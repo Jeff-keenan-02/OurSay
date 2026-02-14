@@ -72,7 +72,7 @@ exports.getDisscussionByTopic = async (req, res) => {
 };
 
 /**
- * GET /discussions/:id
+ * GET /discussion/:id
  */
 exports.getDiscussion = async (req, res) => {
   const { id } = req.params;
@@ -80,9 +80,16 @@ exports.getDiscussion = async (req, res) => {
   try {
     const discussionResult = await pool.query(
       `
-      SELECT id, title, body, created_at
-      FROM discussions
-      WHERE id = $1
+      SELECT 
+        d.id,
+        d.title,
+        d.body,
+        d.created_at,
+        u.username AS created_by,
+        u.verification_tier
+      FROM discussions d
+      LEFT JOIN users u ON u.id = d.created_by
+      WHERE d.id = $1
       `,
       [id]
     );
@@ -146,7 +153,7 @@ exports.getTrending = async (req, res) => {
         GROUP BY discussion_id
       ) c ON c.discussion_id = d.id
       ORDER BY upvotes DESC
-      LIMIT 2
+      LIMIT 3
       `
     );
 
