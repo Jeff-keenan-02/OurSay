@@ -1,11 +1,10 @@
 import React, { useContext, useCallback } from "react";
-import { Text } from "react-native-paper";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 
 import { AuthContext } from "../../context/AuthContext";
 import { Screen } from "../../layout/Screen";
-import { Section } from "../../layout/Section";
 import { WeeklyEngagementCard } from "../../components/common/WeeklyEngagementCard";
+import { QuerySection } from "../../components/common/QuerySection";
 
 import { getGreeting } from "../../utils/greeting";
 import { canOpenPoll } from "../../utils/pollAccess";
@@ -20,6 +19,12 @@ import {
   mapPetitionToWeekly,
 } from "../../mappers/weeklyCardMapper";
 
+import {
+  WeeklyDiscussion,
+} from "../../types/Discussion";
+import { Petition } from "../../types/Petition";
+import { PollGroup } from "../../types/PollGroup";
+
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const { user } = useContext(AuthContext);
@@ -33,69 +38,44 @@ export default function HomeScreen() {
   const weeklyDiscussionQuery = useWeeklyDiscussion();
   const weeklyPetitionQuery = useWeeklyPetition();
 
-
-  /* -------------------------------------------------
-   Derived UI (Mapping)
---------------------------------------------------*/
-
-const weeklyPollCard =
-  weeklyPollQuery.data
-    ? mapPollToWeekly(weeklyPollQuery.data)
-    : null;
-
-const weeklyDiscussionCard =
-  weeklyDiscussionQuery.data
-    ? mapDiscussionToWeekly(weeklyDiscussionQuery.data)
-    : null;
-
-const weeklyPetitionCard =
-  weeklyPetitionQuery.data
-    ? mapPetitionToWeekly(weeklyPetitionQuery.data)
-    : null;
-
   /* -------------------------------------------------
      Navigation Handlers
   --------------------------------------------------*/
 
-  const openWeeklyPoll = () => {
-    if (!weeklyPollQuery.data) return;
-    if (!canOpenPoll(weeklyPollQuery.data, user)) return;
+  const openWeeklyPoll = (poll: PollGroup) => {
+    if (!canOpenPoll(poll, user)) return;
 
     navigation.navigate("Polls", {
       screen: "SwipePoll",
       params: {
-        groupId: weeklyPollQuery.data.id,
-        title: weeklyPollQuery.data.title,
+        groupId: poll.id,
+        title: poll.title,
       },
     });
   };
 
-  const openWeeklyDiscussion = () => {
-    if (!weeklyDiscussionQuery.data) return;
-
+  const openWeeklyDiscussion = (discussion: WeeklyDiscussion) => {
     navigation.navigate("Discussions", {
       screen: "DiscussionDetail",
       params: {
-        id: weeklyDiscussionQuery.data.id,
-        title: weeklyDiscussionQuery.data.title,
+        id: discussion.id,
+        title: discussion.title,
       },
     });
   };
 
-  const openWeeklyPetition = () => {
-    if (!weeklyPetitionQuery.data) return;
-
+  const openWeeklyPetition = (petition: Petition) => {
     navigation.navigate("Petitions", {
       screen: "PetitionDetail",
       params: {
-        id: weeklyPetitionQuery.data.id,
-        title: weeklyPetitionQuery.data.title,
+        id: petition.id,
+        title: petition.title,
       },
     });
   };
 
   /* -------------------------------------------------
-     Focus Reload
+     Refresh on Focus
      (Keeps homepage always fresh)
   --------------------------------------------------*/
 
@@ -123,42 +103,45 @@ const weeklyPetitionCard =
     >
       {/* ---------------- Weekly Poll ---------------- */}
 
-      <Section label="This Week's Poll">
-        {weeklyPollQuery.loading ? (
-          <Text>Loading…</Text>
-        ) : weeklyPollCard ? (
+      <QuerySection
+        label="This Week's Poll"
+        query={weeklyPollQuery}
+      >
+        {(poll) => (
           <WeeklyEngagementCard
-            data={weeklyPollCard}
-            onPress={openWeeklyPoll}
+            data={mapPollToWeekly(poll)}
+            onPress={() => openWeeklyPoll(poll)}
           />
-        ) : null}
-      </Section>
+        )}
+      </QuerySection>
 
       {/* --------------- Weekly Discussion ------------ */}
 
-      <Section label="This Week's Discussion">
-        {weeklyDiscussionQuery.loading ? (
-          <Text>Loading…</Text>
-        ) : weeklyDiscussionCard ? (
+      <QuerySection
+        label="This Week's Discussion"
+        query={weeklyDiscussionQuery}
+      >
+        {(discussion) => (
           <WeeklyEngagementCard
-            data={weeklyDiscussionCard}
-            onPress={openWeeklyDiscussion}
+            data={mapDiscussionToWeekly(discussion)}
+            onPress={() => openWeeklyDiscussion(discussion)}
           />
-        ) : null}
-      </Section>
+        )}
+      </QuerySection>
 
       {/* --------------- Weekly Petition -------------- */}
 
-      <Section label="This Week's Petition">
-        {weeklyPetitionQuery.loading ? (
-          <Text>Loading…</Text>
-        ) : weeklyPetitionCard ? (
+      <QuerySection
+        label="This Week's Petition"
+        query={weeklyPetitionQuery}
+      >
+        {(petition) => (
           <WeeklyEngagementCard
-            data={weeklyPetitionCard}
-            onPress={openWeeklyPetition}
+            data={mapPetitionToWeekly(petition)}
+            onPress={() => openWeeklyPetition(petition)}
           />
-        ) : null}
-      </Section>
+        )}
+      </QuerySection>
     </Screen>
   );
 }

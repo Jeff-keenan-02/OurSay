@@ -8,7 +8,7 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 import { AuthContext } from "../../context/AuthContext";
 import { usePollQuestions } from "../../hooks/polls/usePollQuestions";
 import { usePollVote } from "../../hooks/polls/usePollVote";
-import { usePollProgress } from "../../hooks/polls/usePollProgress";
+
 
 import SwipeDeck from "../../components/SwipeDeck/SwipeDeck";
 import { BackRow } from "../../components/common/BackRow";
@@ -35,7 +35,7 @@ export default function SwipePollScreen() {
   --------------------------------------------------*/
 
   const pollQuery = usePollQuestions(groupId);
-  const progressQuery = usePollProgress(groupId, user);
+
 
   /* -------------------------------------------------
      Mutations
@@ -48,15 +48,6 @@ export default function SwipePollScreen() {
   --------------------------------------------------*/
 
   const [uiIndex, setUiIndex] = useState(0);
-
-  /* -------------------------------------------------
-     Sync Backend Progress → UI
-     (Backend is authoritative)
-  --------------------------------------------------*/
-
-  useEffect(() => {
-    setUiIndex(progressQuery.data?.index ?? 0);
-  }, [progressQuery.data?.index]);
 
   /* -------------------------------------------------
      Derived Values
@@ -81,19 +72,22 @@ export default function SwipePollScreen() {
       const poll = pollQuery.data?.[index];
       if (!poll) return;
 
-      // 1️⃣ Optimistic UI update
+      // 1. Optimistic UI update
       setUiIndex(index + 1);
 
-      // 2️⃣ Send vote to backend
-      await voteMutation.vote(poll.id, choice);
+      // 2. Send vote to backend
+      const success = await voteMutation.vote(poll.id, choice);
 
-      // 3️⃣ Optionally refresh backend progress
-      progressQuery.reload();
+      if (!success) {
+        setUiIndex(index); // rollback optimistic update
+        return;
+      }
+
+
     },
     [
       pollQuery.data,
       voteMutation,
-      progressQuery.reload,
     ]
   );
 
@@ -101,8 +95,47 @@ export default function SwipePollScreen() {
      Render
   --------------------------------------------------*/
 
+  
+  {/*--------------Loading State------------------*/}
+  if (pollQuery.loading) {
+    return (
+      <>
+        <BackRow />
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <Text>Loading polls…</Text>
+        </View>
+      </>
+    );
+  }
+
+  {/*--------------Loading State------------------*/}
+  if (pollQuery.error) {
+    return (
+      <>
+        <BackRow />
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <Text>
+            {pollQuery.error}
+          </Text>
+        </View>
+      </>
+    );
+  }
+  {/*--------------Check polls exist ------------------*/}
+  if (!pollQuery.data || pollQuery.data.length === 0) {
   return (
     <>
+      <BackRow />
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>No polls available.</Text>
+      </View>
+    </>
+  );
+}
+
+  return (
+    <>
+    
       <BackRow />
 
       <View
@@ -137,6 +170,7 @@ export default function SwipePollScreen() {
         {/* ---------- Swipe Deck ---------- */}
 
         <SwipeDeck
+          disabled={voteMutation.loading}
           cards={pollQuery.data ?? []}
           currentIndex={uiIndex}
           onSwipeYes={(i) =>

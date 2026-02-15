@@ -1,25 +1,22 @@
-import { useState, useEffect, useCallback } from "react";
-import { API_BASE_URL } from "../../config/api";
-import { Petition } from "../../types/Petition";
+// hooks/petitions/usePetitionsByTopic.ts
 
-/**
- * usePetitionsByTopic
- *
- * Fetches petitions belonging to a specific topic.
- *
- * Returns:
- * {
- *   data: Petition[]
- *   loading: boolean
- *   error: string | null
- *   reload: () => Promise<void>
- * }
- */
+import { useState, useEffect, useCallback } from "react";
+import { Petition } from "../../types/Petition";
+import { apiClient } from "../../services/apiClient";
+
+/* =====================================================
+   usePetitionsByTopic
+   Fetches petitions belonging to a specific topic
+===================================================== */
 
 export function usePetitionsByTopic(topicId: number | null) {
   const [data, setData] = useState<Petition[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  /* -------------------------------------------------
+     Reload Function
+  --------------------------------------------------*/
 
   const reload = useCallback(async () => {
     if (!topicId) {
@@ -32,29 +29,38 @@ export function usePetitionsByTopic(topicId: number | null) {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(
-        `${API_BASE_URL}/petitions/topics/${topicId}`
+      const json =
+        await apiClient.get<Petition[]>(
+          `/petitions/topics/${topicId}`
+        );
+
+      setData(Array.isArray(json) ? json : []);
+
+    } catch (err: any) {
+      console.error("Failed to load petitions:", err);
+
+      setError(
+        err.message || "Could not load petitions"
       );
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch petitions");
-      }
-
-      const json: Petition[] = await res.json();
-      setData(json);
-
-    } catch (err) {
-      console.error("Failed to load petitions:", err);
-      setError("Could not load petitions");
       setData([]);
+
     } finally {
       setLoading(false);
     }
   }, [topicId]);
 
+  /* -------------------------------------------------
+     Load on Mount / Topic Change
+  --------------------------------------------------*/
+
   useEffect(() => {
     reload();
   }, [reload]);
+
+  /* -------------------------------------------------
+     Return
+  --------------------------------------------------*/
 
   return { data, loading, error, reload };
 }

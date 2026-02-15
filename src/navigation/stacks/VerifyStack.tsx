@@ -1,11 +1,11 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import VerificationLevelsScreen from "../../screens/Verify/VerificationLevelsScreen";
 import PassportIntroScreen from "../../screens/Verify/PassportIntroScreen";
 import PassportCaptureScreen from "../../screens/Verify/PassportCaptureScreen";
 import LivenessIntroScreen from "../../screens/Verify/LivenessIntroScreen";
 import LivenessCaptureScreen from "../../screens/Verify/LivenessCaptureScreen";
 import ResidenceIntroScreen from "../../screens/Verify/ResidenceIntroScreen";
 import ResidenceCaptureScreen from "../../screens/Verify/ResidenceCaptureScreen";
+import VerificationHomeScreen from "../../screens/Verify/VerificationHomeScreen";
 
 
 
@@ -20,8 +20,8 @@ export default function VerifyStack() {
     >
       {/*Verification hub */}
       <Stack.Screen
-        name="VerificationLevels"
-        component={VerificationLevelsScreen}
+        name="VerificationHome"
+        component={VerificationHomeScreen}
       />
 
       {/* Passport */}

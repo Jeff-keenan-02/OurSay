@@ -1,30 +1,28 @@
+// hooks/polls/useWeeklyPoll.ts
+
 import { useState, useCallback, useEffect } from "react";
 import { User } from "../../types/User";
-import { API_BASE_URL } from "../../config/api";
 import { PollGroup } from "../../types/PollGroup";
+import { apiClient } from "../../services/apiClient";
 
-/**
- * useWeeklyPoll
- *
- * Fetches the weekly poll group for the logged-in user.
- *
- * Returns:
- * {
- *   data: PollGroup | null
- *   loading: boolean
- *   error: string | null
- *   reload: () => Promise<void>
- * }
- */
+/* =====================================================
+   useWeeklyPoll
+   Fetches weekly poll group for logged-in user
+===================================================== */
 
 export function useWeeklyPoll(user: User | null) {
   const [data, setData] = useState<PollGroup | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  /* -------------------------------------------------
+     Reload
+  --------------------------------------------------*/
+
   const reload = useCallback(async () => {
-    if (!user) {
+    if (!user?.id) {
       setData(null);
+      setLoading(false);
       return;
     }
 
@@ -32,29 +30,36 @@ export function useWeeklyPoll(user: User | null) {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(
-        `${API_BASE_URL}/poll/weekly?userId=${user.id}`
+      const json = await apiClient.get<PollGroup | null>(
+        `/poll/weekly?userId=${user.id}`
       );
 
-      if (!res.ok) {
-        throw new Error("Failed to load weekly poll");
-      }
+      setData(json ?? null);
 
-      const json: PollGroup | null = await res.json();
-      setData(json);
-
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error loading weekly poll:", err);
-      setError("Could not load weekly poll");
+
+      setError(
+        err.message || "Could not load weekly poll"
+      );
+
       setData(null);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user?.id]);
+
+  /* -------------------------------------------------
+     Auto Load
+  --------------------------------------------------*/
 
   useEffect(() => {
     reload();
   }, [reload]);
+
+  /* -------------------------------------------------
+     Return
+  --------------------------------------------------*/
 
   return { data, loading, error, reload };
 }

@@ -1,12 +1,23 @@
-import { useEffect, useState, useContext, useCallback } from "react";
-import { API_BASE_URL } from "../../config/api";
+// hooks/polls/useTrendingPoll.ts
+
+import { useState, useEffect, useCallback } from "react";
 import { PollGroup } from "../../types/PollGroup";
 import { User } from "../../types/User";
+import { apiClient } from "../../services/apiClient";
+
+/* =====================================================
+   useTrendingPoll
+   Fetches trending poll groups for logged-in user
+===================================================== */
 
 export function useTrendingPoll(user: User | null) {
   const [data, setData] = useState<PollGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  /* -------------------------------------------------
+     Reload
+  --------------------------------------------------*/
 
   const reload = useCallback(async () => {
     if (!user?.id) {
@@ -19,29 +30,36 @@ export function useTrendingPoll(user: User | null) {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(
-        `${API_BASE_URL}/poll/trending?userId=${user.id}`
+      const json = await apiClient.get<PollGroup[]>(
+        `/poll/trending?userId=${user.id}`
       );
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch trending polls");
-      }
-
-      const json: PollGroup[] = await res.json();
       setData(Array.isArray(json) ? json : []);
 
-    } catch (err) {
-      console.error("Failed to load trending polls", err);
-      setError("Could not load trending polls");
+    } catch (err: any) {
+      console.error("Failed to load trending polls:", err);
+
+      setError(
+        err.message || "Could not load trending polls"
+      );
+
       setData([]);
     } finally {
       setLoading(false);
     }
   }, [user?.id]);
 
+  /* -------------------------------------------------
+     Auto Load
+  --------------------------------------------------*/
+
   useEffect(() => {
     reload();
   }, [reload]);
+
+  /* -------------------------------------------------
+     Return
+  --------------------------------------------------*/
 
   return { data, loading, error, reload };
 }

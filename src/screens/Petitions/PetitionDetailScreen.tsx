@@ -1,10 +1,19 @@
 import React, { useContext, useCallback } from "react";
-import { Text, Button, Divider, useTheme, ProgressBar } from "react-native-paper";
-import { useRoute, useFocusEffect } from "@react-navigation/native";
+import {
+  Text,
+  Button,
+  Divider,
+  useTheme,
+  ProgressBar,
+} from "react-native-paper";
+import {
+  useRoute,
+  useFocusEffect,
+  RouteProp,
+} from "@react-navigation/native";
 
 import { Screen } from "../../layout/Screen";
-import { Section } from "../../layout/Section";
-import { BackRow } from "../../components/common/BackRow";
+
 
 import { AuthContext } from "../../context/AuthContext";
 import { permissions } from "../../utils/permissions";
@@ -15,40 +24,31 @@ import {
 
 import { usePetition } from "../../hooks/petitions/usePetition";
 import { useSignPetition } from "../../hooks/petitions/useSignPetition";
+import { QuerySection } from "../../components/common/QuerySection";
 
 /* =====================================================
    Types
 ===================================================== */
 
 type RouteParams = {
-  petitionId: number;
+  PetitionDetail: {
+    petitionId: number;
+  };
 };
 
 /* =====================================================
    Screen
 ===================================================== */
-
 export default function PetitionDetailScreen() {
   const theme = useTheme();
   const { user } = useContext(AuthContext);
-  const route = useRoute<any>();
-  const { petitionId } = route.params as RouteParams;
 
-  /* -------------------------------------------------
-     Queries
-  --------------------------------------------------*/
+  const route =
+    useRoute<RouteProp<RouteParams, "PetitionDetail">>();
+  const { petitionId } = route.params;
 
   const petitionQuery = usePetition(petitionId);
-
-  /* -------------------------------------------------
-     Mutations
-  --------------------------------------------------*/
-
   const signMutation = useSignPetition();
-
-  /* -------------------------------------------------
-     Refresh on Focus
-  --------------------------------------------------*/
 
   useFocusEffect(
     useCallback(() => {
@@ -56,138 +56,112 @@ export default function PetitionDetailScreen() {
     }, [petitionQuery.reload])
   );
 
-  /* -------------------------------------------------
-     Derived Values
-  --------------------------------------------------*/
-
-  const petition = petitionQuery.data;
-
-  if (petitionQuery.loading || !petition) {
-    return (
-      <Screen title="Petition">
-        <Text>Loading…</Text>
-      </Screen>
-    );
-  }
-
-  const userTier: VerificationTier =
-    user?.verification_tier ?? 0;
-
-  const requiredTier: VerificationTier =
-    petition.required_verification_tier;
-
-  const canSign = permissions.canSignPetition(
-    userTier,
-    requiredTier
-  );
-
-  const requiredTierInfo =
-    VERIFICATION_TIERS[requiredTier];
-
-  /* -------------------------------------------------
-     Handlers
-  --------------------------------------------------*/
-
-  const handleSign = async () => {
-    if (!user) return;
-
-    const success = await signMutation.sign(
-      petition.id,
-      user.id
-    );
-
-    if (success) {
-      petitionQuery.reload();
-    }
-  };
-
-  /* -------------------------------------------------
-     Render
-  --------------------------------------------------*/
-
   return (
-    <>
-      <BackRow />
+    <Screen title="Petition" showBack>
+      <QuerySection
+        label="Petition"
+        query={petitionQuery}
+      >
+        {(petition) => {
+          const userTier =
+            user?.verification_tier ?? 0;
 
-      <Screen title="Petition">
-        <Section>
+          const requiredTier =
+            petition.required_verification_tier;
 
-          {/* ---------- Title ---------- */}
+          const canSign =
+            permissions.canSignPetition(
+              userTier,
+              requiredTier
+            );
 
-          <Text variant="headlineSmall">
-            {petition.title}
-          </Text>
+          const requiredTierInfo =
+            VERIFICATION_TIERS[requiredTier];
 
-          <Text
-            variant="bodyMedium"
-            style={{
-              color: theme.colors.onSurfaceVariant,
-              marginVertical: 16,
-            }}
-          >
-            {petition.description}
-          </Text>
+          const handleSign = async () => {
+            if (!user) return;
 
-          <Divider />
+            const success =
+              await signMutation.sign(
+                petition.id,
+                user.id
+              );
 
-          {/* ---------- Stats ---------- */}
+            if (success) {
+              petitionQuery.reload();
+            }
+          };
 
-          <Text variant="titleMedium">
-            {petition.signatures} signatures
-          </Text>
+          return (
+            <>
+              <Text variant="headlineSmall">
+                {petition.title}
+              </Text>
 
-          <Text
-            variant="bodySmall"
-            style={{
-              color: theme.colors.onSurfaceVariant,
-            }}
-          >
-            Requires {requiredTierInfo.label}
-          </Text>
+              <Text
+                variant="bodyMedium"
+                style={{
+                  color: theme.colors.onSurfaceVariant,
+                  marginVertical: 16,
+                }}
+              >
+                {petition.description}
+              </Text>
 
-          {/* ---------- Sign Button ---------- */}
+              <Divider />
 
-          <Button
-            mode="contained"
-            disabled={!canSign}
-            loading={signMutation.loading}
-            onPress={handleSign}
-            style={{ marginTop: 16 }}
-          >
-            Sign Petition
-          </Button>
+              <Text variant="titleMedium">
+                {petition.signatures} signatures
+              </Text>
 
-          {!canSign && (
-            <Text
-              variant="bodySmall"
-              style={{
-                color: theme.colors.error,
-                marginTop: 8,
-              }}
-            >
-              {requiredTierInfo.next}
-            </Text>
-          )}
+              <Text
+                variant="bodySmall"
+                style={{
+                  color: theme.colors.onSurfaceVariant,
+                }}
+              >
+                Requires {requiredTierInfo.label}
+              </Text>
 
-          {/* ---------- Progress ---------- */}
+              <Button
+                mode="contained"
+                disabled={!canSign}
+                loading={signMutation.loading}
+                onPress={handleSign}
+                style={{ marginTop: 16 }}
+              >
+                Sign Petition
+              </Button>
 
-          <ProgressBar
-            progress={petition.progress}
-            color={theme.colors.primary}
-            style={{
-              height: 8,
-              borderRadius: 6,
-              marginVertical: 12,
-            }}
-          />
+              {!canSign && (
+                <Text
+                  variant="bodySmall"
+                  style={{
+                    color: theme.colors.error,
+                    marginTop: 8,
+                  }}
+                >
+                  {requiredTierInfo.next}
+                </Text>
+              )}
 
-          <Text variant="bodySmall">
-            {petition.signatures} /{" "}
-            {petition.signature_goal} signatures
-          </Text>
+              <ProgressBar
+                progress={petition.progress}
+                color={theme.colors.primary}
+                style={{
+                  height: 8,
+                  borderRadius: 6,
+                  marginVertical: 12,
+                }}
+              />
 
-        </Section>
-      </Screen>
-    </>
+              <Text variant="bodySmall">
+                {petition.signatures} / {petition.signature_goal} signatures
+              </Text>
+            </>
+          );
+        }}
+      </QuerySection>
+    </Screen>
   );
 }

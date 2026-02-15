@@ -1,43 +1,59 @@
 // hooks/common/useTopics.ts
 
 import { useState, useEffect, useCallback } from "react";
-import { API_BASE_URL } from "../../config/api";
 import { Topic } from "../../types/Topic";
+import { apiClient } from "../../services/apiClient";
+
+/* =====================================================
+   useTopics
+   Fetches all available topics
+===================================================== */
 
 export function useTopics() {
+  /* -------------------------------------------------
+     State
+  --------------------------------------------------*/
+
   const [data, setData] = useState<Topic[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  /* -------------------------------------------------
+     Reload Function
+  --------------------------------------------------*/
+
   const reload = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
     try {
-      const res = await fetch(`${API_BASE_URL}/topics`);
+      setLoading(true);
+      setError(null);
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch topics");
-      }
+      const json = await apiClient.get<Topic[]>("/topics");
 
-      const json: Topic[] = await res.json();
       setData(json);
 
-    } catch (err) {
+    } catch (err: any) {
       console.error("useTopics error:", err);
-      setError("Failed to load topics");
+      setError(err.message || "Failed to load topics");
       setData([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
+  /* -------------------------------------------------
+     Load On Mount
+  --------------------------------------------------*/
+
   useEffect(() => {
     reload();
   }, [reload]);
 
+  /* -------------------------------------------------
+     Return Standard Query Shape
+  --------------------------------------------------*/
+
   return {
-    data,  
+    data,
     loading,
     error,
     reload,

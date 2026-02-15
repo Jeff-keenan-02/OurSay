@@ -11,9 +11,7 @@ export default function LivenessIntroScreen() {
   const navigation = useNavigation<any>();
 
   return (
-    <>
-    <BackRow/>
-    <Screen title="Liveness Check" subtitle="Confirm you're a real person">
+    <Screen showBack title="Liveness Check" subtitle="Confirm you're a real person">
       <Section>
         <Card style={{ backgroundColor: theme.colors.surface }}>
           <Card.Content>
@@ -34,6 +32,5 @@ export default function LivenessIntroScreen() {
         </Card>
       </Section>
     </Screen>
-    </>
   );
 }

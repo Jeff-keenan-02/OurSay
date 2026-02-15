@@ -1,18 +1,13 @@
-import { API_BASE_URL } from "../../config/api";
+// hooks/discussions/useDiscussionVote.ts
+
 import { DiscussionListItem } from "../../types/Discussion";
 import { User } from "../../types/User";
+import { apiClient } from "../../services/apiClient";
 
-/**
- * useDiscussionVote
- *
- * Mutation hook for voting on a discussion.
- *
- * - Sends vote to backend
- * - Updates cached discussion list using provided updater
- *
- * @param user - currently logged in user
- * @param updateData - updater function from list query hook
- */
+/* =====================================================
+   useDiscussionVote
+   Handles voting mutation for discussions
+===================================================== */
 
 export function useDiscussionVote(
   user: User | null,
@@ -20,40 +15,52 @@ export function useDiscussionVote(
     updater: (prev: DiscussionListItem[]) => DiscussionListItem[]
   ) => void
 ) {
-  const vote = async (id: number, direction: "up" | "down") => {
+
+  /* -------------------------------------------------
+     Vote Mutation
+  --------------------------------------------------*/
+
+  const vote = async (
+    id: number,
+    direction: "up" | "down"
+  ): Promise<DiscussionListItem> => {
+
     if (!user) {
       throw new Error("Not logged in");
     }
 
-    const res = await fetch(
-      `${API_BASE_URL}/discussions/${id}/vote`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+    try {
+      const updated = await apiClient.post<DiscussionListItem>(
+        `/discussions/${id}/vote`,
+        {
           userId: user.id,
           direction,
-        }),
-      }
-    );
+        }
+      );
 
-    if (!res.ok) {
-      throw new Error("Vote failed");
+      /* ---------------------------------------------
+         Optimistically update local cache
+      ----------------------------------------------*/
+
+      updateData((prev) =>
+        prev.map((d) =>
+          d.id === updated.id
+            ? { ...d, ...updated }
+            : d
+        )
+      );
+
+      return updated;
+
+    } catch (err: any) {
+      console.error("Vote failed:", err);
+      throw new Error(err.message || "Vote failed");
     }
-
-    const updated: DiscussionListItem = await res.json();
-
-    // Update only the changed discussion in local cache
-    updateData((prev) =>
-      prev.map((d) =>
-        d.id === updated.id
-          ? { ...d, ...updated }
-          : d
-      )
-    );
-
-    return updated;
   };
+
+  /* -------------------------------------------------
+     Return Mutation
+  --------------------------------------------------*/
 
   return { vote };
 }

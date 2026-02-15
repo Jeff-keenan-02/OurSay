@@ -1,39 +1,59 @@
-import { useEffect, useState, useCallback } from "react";
-import { API_BASE_URL } from "../../config/api";
+// hooks/petitions/useTrendingPetition.ts
+
+import { useState, useEffect, useCallback } from "react";
 import { Petition } from "../../types/Petition";
+import { apiClient } from "../../services/apiClient";
+
+/* =====================================================
+   useTrendingPetition
+   Fetches trending petitions
+===================================================== */
 
 export function useTrendingPetition() {
   const [data, setData] = useState<Petition[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  /* -------------------------------------------------
+     Reload
+  --------------------------------------------------*/
+
   const reload = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(`${API_BASE_URL}/petitions/trending`);
-
-      if (!res.ok) {
-        throw new Error("Failed to fetch trending petitions");
-      }
-
-      const json: Petition[] = await res.json();
+      const json = await apiClient.get<Petition[]>(
+        "/petitions/trending"
+      );
 
       setData(json ?? []);
 
-    } catch (err) {
-      console.error("Failed to load trending petitions:", err);
-      setError("Could not load trending petitions");
+    } catch (err: any) {
+      console.error("Trending petitions error:", err);
+
+      setError(
+        err.message || "Could not load trending petitions"
+      );
+
       setData([]);
+
     } finally {
       setLoading(false);
     }
   }, []);
 
+  /* -------------------------------------------------
+     Initial Load
+  --------------------------------------------------*/
+
   useEffect(() => {
     reload();
   }, [reload]);
+
+  /* -------------------------------------------------
+     Return
+  --------------------------------------------------*/
 
   return { data, loading, error, reload };
 }

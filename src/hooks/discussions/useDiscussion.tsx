@@ -1,26 +1,27 @@
+// hooks/discussions/useDiscussion.ts
+
 import { useState, useEffect, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { DiscussionDetail } from "../../types/Discussion";
-import { API_BASE_URL } from "../../config/api";
+import { apiClient } from "../../services/apiClient";
 
-/**
- * useDiscussion
- *
- * Fetches a single discussion detail.
- *
- * Returns:
- * {
- *   data: DiscussionDetail | null
- *   loading: boolean
- *   error: string | null
- *   reload: () => Promise<void>
- * }
- */
+/* =====================================================
+   useDiscussion
+   Fetches a single discussion detail
+===================================================== */
 
 export function useDiscussion(id: number) {
+  /* -------------------------------------------------
+     State
+  --------------------------------------------------*/
+
   const [data, setData] = useState<DiscussionDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  /* -------------------------------------------------
+     Reload Function
+  --------------------------------------------------*/
 
   const reload = useCallback(async () => {
     if (!id) {
@@ -33,37 +34,48 @@ export function useDiscussion(id: number) {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(
-        `${API_BASE_URL}/discussions/${id}`
+      const json = await apiClient.get<DiscussionDetail>(
+        `/discussions/${id}`
       );
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch discussion");
-      }
-
-      const json: DiscussionDetail = await res.json();
       setData(json);
 
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to load discussion:", err);
-      setError("Could not load discussion");
+      setError(err.message || "Could not load discussion");
       setData(null);
     } finally {
       setLoading(false);
     }
   }, [id]);
 
-  // Load on mount
+  /* -------------------------------------------------
+     Load On Mount
+  --------------------------------------------------*/
+
   useEffect(() => {
     reload();
   }, [reload]);
 
-  // Reload when screen regains focus
+  /* -------------------------------------------------
+     Reload On Screen Focus
+     (After voting or commenting)
+  --------------------------------------------------*/
+
   useFocusEffect(
     useCallback(() => {
       reload();
     }, [reload])
   );
 
-  return { data, loading, error, reload };
+  /* -------------------------------------------------
+     Return Standard Query Shape
+  --------------------------------------------------*/
+
+  return {
+    data,
+    loading,
+    error,
+    reload,
+  };
 }

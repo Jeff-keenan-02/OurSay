@@ -1,26 +1,27 @@
-import { useState, useCallback } from "react";
-import { API_BASE_URL } from "../../config/api";
-import { User } from "../../types/User";
+// hooks/polls/usePollVote.ts
 
-/**
- * usePollVote
- *
- * Submits a vote for a single poll.
- *
- * Returns:
- * {
- *   vote: (pollId, choice) => Promise<any>
- *   loading: boolean
- *   error: string | null
- * }
- */
+import { useState, useCallback } from "react";
+import { User } from "../../types/User";
+import { apiClient } from "../../services/apiClient";
+
+/* =====================================================
+   usePollVote
+   Submits a vote for a single poll
+===================================================== */
 
 export function usePollVote(user: User | null) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /* -------------------------------------------------
+     Vote Mutation
+  --------------------------------------------------*/
+
   const vote = useCallback(
-    async (pollId: number, choice: "yes" | "no") => {
+    async (
+      pollId: number,
+      choice: "yes" | "no"
+    ) => {
       if (!user?.id) {
         setError("User not logged in");
         return;
@@ -30,33 +31,33 @@ export function usePollVote(user: User | null) {
         setLoading(true);
         setError(null);
 
-        const res = await fetch(
-          `${API_BASE_URL}/poll/${pollId}/vote`,
+        const result = await apiClient.post(
+          `/poll/${pollId}/vote`,
           {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              userId: user.id,
-              choice,
-            }),
+            userId: user.id,
+            choice,
           }
         );
 
-        if (!res.ok) {
-          throw new Error("Vote failed");
-        }
+        return result;
 
-        return await res.json();
+      } catch (err: any) {
+        console.error("Poll vote failed:", err);
 
-      } catch (err) {
-        console.error("Vote error:", err);
-        setError("Failed to submit vote");
+        setError(
+          err.message || "Failed to submit vote"
+        );
+
       } finally {
         setLoading(false);
       }
     },
     [user?.id]
   );
+
+  /* -------------------------------------------------
+     Return
+  --------------------------------------------------*/
 
   return { vote, loading, error };
 }

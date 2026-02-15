@@ -1,24 +1,26 @@
-import { useState, useEffect, useCallback } from "react";
-import { API_BASE_URL } from "../../config/api";
-import { DiscussionListItem } from "../../types/Discussion";
+// hooks/discussions/useDiscussionByTopic.ts
 
-/**
- * useDiscussionByTopic
- *
- * Returns:
- * {
- *   data: DiscussionListItem[]
- *   loading: boolean
- *   error: string | null
- *   reload: () => Promise<void>
- *   updateData: (updater) => void   // optional for vote updates
- * }
- */
+import { useState, useEffect, useCallback } from "react";
+import { DiscussionListItem } from "../../types/Discussion";
+import { apiClient } from "../../services/apiClient";
+
+/* =====================================================
+   useDiscussionByTopic
+   Fetches discussions under a specific topic
+===================================================== */
 
 export function useDiscussionByTopic(topicId: number | null) {
+  /* -------------------------------------------------
+     State
+  --------------------------------------------------*/
+
   const [data, setData] = useState<DiscussionListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  /* -------------------------------------------------
+     Reload Function
+  --------------------------------------------------*/
 
   const reload = useCallback(async () => {
     if (!topicId) {
@@ -31,33 +33,34 @@ export function useDiscussionByTopic(topicId: number | null) {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(
-        `${API_BASE_URL}/discussions/by-topic/${topicId}`
+      const json = await apiClient.get<DiscussionListItem[]>(
+        `/discussions/by-topic/${topicId}`
       );
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch discussions");
-      }
-
-      const json: DiscussionListItem[] = await res.json();
       setData(json);
 
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to load topic discussions:", err);
-      setError("Could not load discussions");
+      setError(err.message || "Could not load discussions");
       setData([]);
     } finally {
       setLoading(false);
     }
   }, [topicId]);
 
+  /* -------------------------------------------------
+     Load On Mount / Topic Change
+  --------------------------------------------------*/
+
   useEffect(() => {
     reload();
   }, [reload]);
 
-  /**
-   * Controlled local updates (for voting)
-   */
+  /* -------------------------------------------------
+     Controlled Local Updates
+     (Used for vote optimistic updates)
+  --------------------------------------------------*/
+
   const updateData = useCallback(
     (
       updater: (prev: DiscussionListItem[]) => DiscussionListItem[]
@@ -67,5 +70,15 @@ export function useDiscussionByTopic(topicId: number | null) {
     []
   );
 
-  return { data, loading, error, reload, updateData };
+  /* -------------------------------------------------
+     Return Standard Query Shape
+  --------------------------------------------------*/
+
+  return {
+    data,
+    loading,
+    error,
+    reload,
+    updateData,
+  };
 }

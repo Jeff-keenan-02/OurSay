@@ -1,8 +1,9 @@
 // src/layout/Screen.tsx
 import React from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
-import { Text, useTheme } from "react-native-paper";
+import { useTheme } from "react-native-paper";
 import { AppHeader } from "./AppHeader";
+import { BackRow } from "../components/common/BackRow";
 import { spacing } from "../theme/spacing";
 
 interface ScreenProps {
@@ -10,29 +11,40 @@ interface ScreenProps {
   subtitle?: string;
   scroll?: boolean;
   center?: boolean;
+  showBack?: boolean;
   children: React.ReactNode;
 }
+
 export function Screen({
   title,
   subtitle,
   scroll = false,
   center = false,
+  showBack = false,
   children,
 }: ScreenProps) {
   const theme = useTheme();
 
   const content = (
     <>
+      {/* Back button */}
+      {showBack && <BackRow />}
+
+      {/* Header */}
       {title && (
         <View style={styles.headerWrapper}>
           <AppHeader title={title} subtitle={subtitle} />
         </View>
       )}
 
+      {/* Page Content */}
       <View
         style={[
           styles.content,
-          center && { justifyContent: "center", alignItems: "center" },
+          center && {
+            justifyContent: "center",
+            alignItems: "center",
+          },
         ]}
       >
         {children}
@@ -66,21 +78,19 @@ export function Screen({
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.md,
   },
-
   scrollContent: {
     paddingBottom: spacing.lg,
   },
-
   headerWrapper: {
     marginBottom: spacing.lg,
   },
-
   content: {
     gap: spacing.lg,
   },

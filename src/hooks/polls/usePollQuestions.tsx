@@ -1,25 +1,22 @@
-import { useState, useEffect, useCallback } from "react";
-import { API_BASE_URL } from "../../config/api";
-import { Poll } from "../../types/Poll";
+// hooks/polls/usePollQuestions.ts
 
-/**
- * usePollQuestions
- *
- * Fetches all individual poll questions for a PollGroup.
- *
- * Returns:
- * {
- *   data: Poll[]
- *   loading: boolean
- *   error: string | null
- *   reload: () => Promise<void>
- * }
- */
+import { useState, useEffect, useCallback } from "react";
+import { Poll } from "../../types/Poll";
+import { apiClient } from "../../services/apiClient";
+
+/* =====================================================
+   usePollQuestions
+   Fetches all polls belonging to a PollGroup
+===================================================== */
 
 export function usePollQuestions(groupId: number | null) {
   const [data, setData] = useState<Poll[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  /* -------------------------------------------------
+     Reload
+  --------------------------------------------------*/
 
   const reload = useCallback(async () => {
     if (!groupId) {
@@ -32,29 +29,37 @@ export function usePollQuestions(groupId: number | null) {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(
-        `${API_BASE_URL}/poll/groups/${groupId}/polls`
+      const json = await apiClient.get<Poll[]>(
+        `/poll/groups/${groupId}/polls`
       );
 
-      if (!res.ok) {
-        throw new Error("Failed to load polls");
-      }
-
-      const json: Poll[] = await res.json();
       setData(Array.isArray(json) ? json : []);
 
-    } catch (err) {
-      console.error("Failed to load poll questions:", err);
-      setError("Could not load polls");
+    } catch (err: any) {
+      console.error("Poll questions error:", err);
+
+      setError(
+        err.message || "Could not load polls"
+      );
+
       setData([]);
+
     } finally {
       setLoading(false);
     }
   }, [groupId]);
 
+  /* -------------------------------------------------
+     Initial Load
+  --------------------------------------------------*/
+
   useEffect(() => {
     reload();
   }, [reload]);
+
+  /* -------------------------------------------------
+     Return
+  --------------------------------------------------*/
 
   return { data, loading, error, reload };
 }

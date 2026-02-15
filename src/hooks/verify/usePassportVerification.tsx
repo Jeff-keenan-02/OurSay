@@ -1,8 +1,19 @@
+// hooks/verify/usePassportVerification.ts
+
 import { useState, useCallback } from "react";
 import * as ImagePicker from "react-native-image-picker";
+import { API_BASE_URL } from "../../config/api";
 import { PhotoAsset } from "../../types/Photo";
 import { User } from "../../types/User";
 import { VerificationResponse } from "../../types/VerificationType";
+
+/* =====================================================
+   usePassportVerification
+   Handles:
+   - Camera capture
+   - Multipart upload
+   - Verification request
+===================================================== */
 
 type UsePassportVerificationResult = {
   photo: PhotoAsset | null;
@@ -14,9 +25,9 @@ type UsePassportVerificationResult = {
 };
 
 export function usePassportVerification(
-  API: string,
   user: User | null
 ): UsePassportVerificationResult {
+
   const [photo, setPhoto] = useState<PhotoAsset | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,7 +82,8 @@ export function usePassportVerification(
   --------------------------------------------------*/
 
   const uploadPassport = useCallback(async () => {
-    if (!photo || !user) {
+
+    if (!photo || !user?.id) {
       setError("Missing passport photo or user");
       return null;
     }
@@ -90,28 +102,36 @@ export function usePassportVerification(
 
       form.append("userId", user.id.toString());
 
-      const res = await fetch(`${API}/verify/verify-passport`, {
-        method: "POST",
-        body: form,
-      });
+      const res = await fetch(
+        `${API_BASE_URL}/verify/verify-passport`,
+        {
+          method: "POST",
+          body: form,
+        }
+      );
 
       const data: VerificationResponse = await res.json();
 
       if (!res.ok || !data.success) {
-        setError("Passport verification failed");
-        return null;
+        throw new Error("Passport verification failed");
       }
 
       return data;
 
-    } catch (err) {
-      console.error(err);
-      setError("Network error during verification");
+    } catch (err: any) {
+      console.error("Verification error:", err);
+      setError(err.message || "Verification failed");
       return null;
+
     } finally {
       setLoading(false);
     }
-  }, [API, photo, user]);
+
+  }, [photo, user?.id]);
+
+  /* -------------------------------------------------
+     Return
+  --------------------------------------------------*/
 
   return {
     photo,

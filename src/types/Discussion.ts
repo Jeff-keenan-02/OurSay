@@ -1,23 +1,12 @@
 // src/types/Discussion.ts
+
 import { Comment } from "./Comment";
 import { VerificationTier } from "./VerificationTier";
 
-/**
- * Used for the featured weekly discussion card.
- * Matches GET /discussions/weekly.
- */
-export type WeeklyDiscussion = {
-  id: number;
-  title: string;
-  body: string;
-  comment_count: number;
-  created_at: string;
-  created_by: string;  
-};
+/* =====================================================
+   Core Base (Single Source of Truth)
+===================================================== */
 
-/**
- * Core discussion entity fields.
- */
 export type DiscussionBase = {
   id: number;
   title: string;
@@ -27,24 +16,37 @@ export type DiscussionBase = {
   verification_tier: VerificationTier;
 };
 
-/**
- * Engagement metrics added for list views (trending, by topic).
- */
+/* =====================================================
+   Metrics
+===================================================== */
+
 export type DiscussionMetrics = {
   upvotes: number;
   downvotes: number;
   comment_count: number;
 };
 
-/**
- * Discussion shown in lists/cards.
- */
+/* =====================================================
+   List View (Trending, By Topic)
+===================================================== */
+
 export type DiscussionListItem =
   DiscussionBase & DiscussionMetrics;
 
-/**
- * Full discussion page with comments.
- */
+/* =====================================================
+   Weekly Discussion
+   (Is just a lighter list item)
+===================================================== */
+
+export type WeeklyDiscussion =
+  DiscussionBase & {
+    comment_count: number;
+  };
+
+/* =====================================================
+   Detail View
+===================================================== */
+
 export type DiscussionDetail =
   DiscussionBase & {
     comments: Comment[];

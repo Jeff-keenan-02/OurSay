@@ -11,9 +11,7 @@ export default function ResidenceIntroScreen() {
   const navigation = useNavigation<any>();
 
   return (
-    <>
-    <BackRow/>
-    <Screen title="Proof of Residence" subtitle="Confirm where you live">
+    <Screen showBack title="Proof of Residence" subtitle="Confirm where you live">
       <Section>
         <Card style={{ backgroundColor: theme.colors.surface }}>
           <Card.Content>
@@ -34,6 +32,5 @@ export default function ResidenceIntroScreen() {
         </Card>
       </Section>
     </Screen>
-    </>
   );
 }

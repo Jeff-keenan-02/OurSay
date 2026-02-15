@@ -9,19 +9,19 @@ import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { useTheme, Text } from "react-native-paper";
 
 import { AuthContext } from "../../context/AuthContext";
-import { Screen } from "../../layout/Screen";
-import { BackRow } from "../../components/common/BackRow";
+import { useDiscussion } from "../../hooks/discussions/useDiscussion";
+import { usePostComment } from "../../hooks/discussions/usePostComment";
+
 import { StickyCommentBar } from "../../components/Discussion/StickyCommentBar";
 import { CommentCard } from "../../components/Discussion/CommentCard";
 import { TierBadge } from "../../components/common/TierBadge";
-
-import { useDiscussion } from "../../hooks/discussions/useDiscussion";
-import { usePostComment } from "../../hooks/discussions/usePostComment";
+import { QuerySection } from "../../components/common/QuerySection";
+import { Screen } from "../../layout/Screen";
 
 import { permissions } from "../../utils/permissions";
 import { typography } from "../../theme/typography";
 import { VerificationTier } from "../../types/VerificationTier";
-
+import { spacing } from "../../theme/spacing";
 
 type RootStackParamList = {
   DiscussionDetail: { id: number };
@@ -32,8 +32,8 @@ export default function DiscussionDetailScreen() {
   const navigation: any = useNavigation();
   const { user } = useContext(AuthContext);
 
-
-  const route = useRoute<RouteProp<RootStackParamList, "DiscussionDetail">>();
+  const route =
+    useRoute<RouteProp<RootStackParamList, "DiscussionDetail">>();
   const { id } = route.params;
 
   /* -------------------------------------------------
@@ -72,12 +72,12 @@ export default function DiscussionDetailScreen() {
     if (!canComment) return;
     if (!newComment.trim()) return;
 
-    const result = await commentMutation.postComment(
+    const success = await commentMutation.postComment(
       newComment,
       user.id
     );
 
-    if (result) {
+    if (success) {
       setNewComment("");
       discussionQuery.reload();
     }
@@ -89,116 +89,109 @@ export default function DiscussionDetailScreen() {
     discussionQuery,
   ]);
 
-  const goToVerification = () => {
-    navigation.navigate("Tabs", { screen: "Verify" });
-  };
 
-  /* -------------------------------------------------
-     Loading State
-  --------------------------------------------------*/
-
-  if (discussionQuery.loading || !discussionQuery.data) {
-    return (
-      <Screen center>
-        <Text variant={typography.body}>Loading…</Text>
-      </Screen>
-    );
-  }
-
-  const discussion = discussionQuery.data;
 
   /* -------------------------------------------------
      Render
   --------------------------------------------------*/
 
-  return (
-    <>
-      <BackRow />
+ return (
+  <Screen showBack scroll>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{
-          flex: 1,
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        <FlatList
-          data={discussion.comments}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={{ paddingBottom: 140 }}
-          ListHeaderComponent={
-            <View
-              style={[
-                styles.headerCard,
-                {
-                  backgroundColor: theme.colors.surface,
-                  borderColor: theme.colors.outlineVariant,
-                },
-              ]}
-            >
-            {/* --------------- title  ------------ */}
-              <Text
-                variant={typography.sectionTitle}
-                style={{ color: theme.colors.onSurface }}
-              >
-                {discussion.title}
-              </Text>
+    <QuerySection 
+    label = "" query={discussionQuery}>
+      {(discussion) => (
 
-            {/* --------------- Created by and tier  ------------ */}
-              <View style={styles.creatorRow}>
-                <Text
+        <View style={{ flex: 1 }}>
+
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+          >
+            <FlatList
+              style={{ flex: 1 }}
+              data={discussion.comments}
+              keyExtractor={(item) => item.id.toString()}
+              contentContainerStyle={{ paddingBottom: 120 }}
+              
+              ListHeaderComponent={
+                <View
                   style={[
-                    styles.creatorText,
-                    { color: theme.colors.primary },
+                    styles.headerCard,
+                    {
+                      backgroundColor: theme.colors.surface,
+                      borderColor: theme.colors.outlineVariant,
+                    },
                   ]}
                 >
-                  Created by {discussion.created_by}
-                </Text>
+                  <Text
+                    variant={typography.sectionTitle}
+                    style={{ color: theme.colors.onSurface }}
+                  >
+                    {discussion.title}
+                  </Text>
 
-                <TierBadge
-                  tier={discussion.verification_tier}
-                  onPress={goToVerification}
+                  <View style={styles.creatorRow}>
+                    <Text
+                      style={{
+                        color: theme.colors.primary,
+                        fontWeight: "600",
+                      }}
+                    >
+                      Created by {discussion.created_by}
+                    </Text>
+
+                    <TierBadge
+                      tier={discussion.verification_tier}
+                      onPress={() =>
+                        navigation.navigate("Tabs", { screen: "Verify" })
+                      }
+                    />
+                  </View>
+
+                  <Text
+                    variant={typography.body}
+                    style={[
+                      styles.bodyText,
+                      { color: theme.colors.onSurfaceVariant },
+                    ]}
+                  >
+                    {discussion.body}
+                  </Text>
+                </View>
+              }
+
+              renderItem={({ item }) => (
+                <CommentCard
+                  username={item.username}
+                  body={item.body}
+                  verificationTier={item.verification_tier}
+                  created_at={item.created_at}
                 />
-              </View>
-
-            {/* --------------- body  ------------ */}
-              <Text
-                variant={typography.body}
-                style={[
-                  styles.bodyText,
-                  { color: theme.colors.onSurfaceVariant },
-                ]}
-              >
-                {discussion.body}
-              </Text>
-            </View>
-          }
-
-          renderItem={({ item }) => (
-            <CommentCard
-              username={item.username}
-              body={item.body}
-              verificationTier={item.verification_tier}
-              created_at={item.created_at}
+              )}
             />
-          )}
-        />
-      </KeyboardAvoidingView>
+          </KeyboardAvoidingView>
 
-      {/* --------------- Comment bar  ------------ */}
-      <StickyCommentBar
-        value={newComment}
-        onChange={setNewComment}
-        onSubmit={handleSubmitComment}
-        disabled={!canComment || commentMutation.loading}
-        placeholder={
-          canComment
-            ? "Write a comment…"
-            : "Verify your account to comment"
-        }
-      />
-    </>
-  );
+          {/* Sticky Comment Bar */}
+          <StickyCommentBar
+            value={newComment}
+            onChange={setNewComment}
+            onSubmit={handleSubmitComment}
+            disabled={!canComment || commentMutation.loading}
+            placeholder={
+              canComment
+                ? "Write a comment…"
+                : "Verify your account to comment"
+            }
+          />
+
+        </View>
+
+      )}
+    </QuerySection>
+
+  </Screen>
+);
 }
 
 /* =====================================================
@@ -221,13 +214,13 @@ const styles = {
     marginTop: 6,
     gap: 8,
   },
-
-  creatorText: {
-    fontWeight: "600" as const,
-  },
+  content: {
+  flex: 1,
+  gap: spacing.lg,
+},
 
   bodyText: {
     marginTop: 12,
     lineHeight: 22,
-  },
+  }
 };

@@ -1,6 +1,4 @@
 import React, { useCallback, useContext } from "react";
-import { FlatList } from "react-native";
-import { Text } from "react-native-paper";
 import {
   useNavigation,
   useRoute,
@@ -9,15 +7,15 @@ import {
 } from "@react-navigation/native";
 
 import { Screen } from "../../layout/Screen";
-import { Section } from "../../layout/Section";
 import { BackRow } from "../../components/common/BackRow";
+import { QuerySection } from "../../components/common/QuerySection";
+import { VerticalList } from "../../components/common/VerticalList";
 import PollGroupCard from "../../components/PollTopics/PollGroupCard";
 
 import { AuthContext } from "../../context/AuthContext";
 import { usePollGroups } from "../../hooks/polls/usePollGroups";
 
 import { PollGroup } from "../../types/PollGroup";
-
 
 type PollStackParams = {
   PollTopics: undefined;
@@ -29,19 +27,17 @@ export default function PollListScreen() {
   const navigation = useNavigation<any>();
   const { user } = useContext(AuthContext);
 
-  
-
   const route = useRoute<RouteProp<PollStackParams, "PollGroups">>();
   const { topicId, title } = route.params;
 
   /* -------------------------------------------------
-     Queries
+     Query
   --------------------------------------------------*/
 
   const pollGroupQuery = usePollGroups(user, topicId);
 
   /* -------------------------------------------------
-     Navigation Handlers
+     Navigation
   --------------------------------------------------*/
 
   const openGroup = (group: PollGroup) => {
@@ -53,7 +49,6 @@ export default function PollListScreen() {
 
   /* -------------------------------------------------
      Refresh on Focus
-     (Ensures updated progress when returning)
   --------------------------------------------------*/
 
   useFocusEffect(
@@ -68,21 +63,15 @@ export default function PollListScreen() {
   --------------------------------------------------*/
 
   return (
-    <>
-      <BackRow />
-
-      {/* --------------- Poll Groups  ------------ */}
-      <Screen scroll title={title}>
-        <Section label="Poll Groups">
-          {pollGroupQuery.loading ? (
-            <Text>Loading…</Text>
-          ) : (
-            <FlatList
-              data={pollGroupQuery.data ?? []}
-              scrollEnabled={false}
-              keyExtractor={(item) =>
-                item.id.toString()
-              }
+      <Screen scroll title={title} showBack>
+        <QuerySection
+          label="Poll Groups"
+          query={pollGroupQuery}
+        >
+          {(data) => (
+            <VerticalList
+              data={data}
+              keyExtractor={(item) => item.id.toString()}
               renderItem={({ item }) => (
                 <PollGroupCard
                   group={item}
@@ -91,8 +80,7 @@ export default function PollListScreen() {
               )}
             />
           )}
-        </Section>
+        </QuerySection>
       </Screen>
-    </>
   );
 }

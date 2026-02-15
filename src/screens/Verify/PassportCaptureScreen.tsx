@@ -14,28 +14,26 @@ import { usePassportVerification } from "../../hooks/verify/usePassportVerificat
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { spacing } from "../../theme/spacing";
-import { useNavigation } from "@react-navigation/native";
 import { API_BASE_URL } from "../../config/api";
 import { BackRow } from "../../components/common/BackRow";
 
 export default function PassportCaptureScreen(){
   const theme = useTheme();
-  const { user, updateUser } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const API = API_BASE_URL;
-  const navigation = useNavigation();
+
 
   const {
     photo,
     loading,
     capturePassport,
     uploadPassport,
-  } = usePassportVerification(API, user, updateUser);
+  } = usePassportVerification(user);
 
    return (
-    <>
-    <BackRow/>
     <Screen
       scroll
+      showBack
       title="Verify Identity"
       subtitle="Upload a clear photo of your passport information page."
     >
@@ -116,7 +114,6 @@ export default function PassportCaptureScreen(){
         </Card>
       </Section>
     </Screen>
-    </>
   );
 }
 

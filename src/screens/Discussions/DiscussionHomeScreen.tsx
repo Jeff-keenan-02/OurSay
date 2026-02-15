@@ -17,6 +17,10 @@ import { useWeeklyDiscussion } from "../../hooks/discussions/useWeeklyDiscussion
 import { Topic } from "../../types/Topic";
 import { mapDiscussionToWeekly } from "../../mappers/weeklyCardMapper";
 import { mapDiscussionToTrending } from "../../mappers/trendingCardMapper";
+import { QuerySection } from "../../components/common/QuerySection";
+import { HorizontalList } from "../../components/common/HorizontalList";
+import { VerticalList } from "../../components/common/VerticalList";
+import { DiscussionListItem, WeeklyDiscussion } from "../../types/Discussion";
 
 export default function DiscussionHomeScreen() {
   const navigation: any = useNavigation();
@@ -29,14 +33,6 @@ export default function DiscussionHomeScreen() {
   const topicsQuery = useTopics();
   const trendingQuery = useTrendingDiscussions();
   const weeklyDiscussionQuery = useWeeklyDiscussion();
-
-  /* -------------------------
-     Derived UI Data (Mapping)
-  --------------------------*/
-  const weeklyDiscussionCard = weeklyDiscussionQuery.data? mapDiscussionToWeekly(weeklyDiscussionQuery.data): null;
-
-  const trendingData = trendingQuery.data?.map(mapDiscussionToTrending) ?? [];
-
   
   /* -------------------------------------------------
      Mutations
@@ -55,24 +51,15 @@ const { vote } = useDiscussionVote(user, trendingQuery.updateData);
     });
   };
 
-  const openDiscussion = (id: number, title: string) => {
-    navigation.navigate("Discussions", {
-      screen: "DiscussionDetail",
-      params: { id, title },
-    });
-  };
-
-  const openWeeklyDiscussion = () => {
-    if (!weeklyDiscussionQuery.data) return;
-
+  const openDiscussion = useCallback((id: number, title: string) => {
     navigation.navigate("Discussions", {
       screen: "DiscussionDetail",
       params: {
-        id: weeklyDiscussionQuery.data.id,
-        title: weeklyDiscussionQuery.data.title,
+        id,
+        title,
       },
     });
-  };
+  }, [navigation]);
 
   /* -------------------------------------------------
      Refresh on Focus
@@ -92,60 +79,60 @@ const { vote } = useDiscussionVote(user, trendingQuery.updateData);
     <Screen scroll>
 
       {/* --------------- Weekly Disscussion  ------------ */}
-      <Section label="Featured This Week">
-        {weeklyDiscussionQuery.loading ? (
-          <Text>Loading...</Text>
-        ) : weeklyDiscussionQuery.data ? (
+        <QuerySection
+        label="Featured This Week"
+        query={weeklyDiscussionQuery}
+      >
+        {(data) => (
           <WeeklyEngagementCard
-            data={mapDiscussionToWeekly(weeklyDiscussionQuery.data)}
-            onPress={openWeeklyDiscussion}
+            data={mapDiscussionToWeekly(data)}
+            onPress={() => openDiscussion(data.id, data.title)}
           />
-        ) : null}
-      </Section>
+        )}
+      </QuerySection>
 
       {/* --------------- Trending Disccusisons  ------------ */}
-      <Section label="Trending Discussions">
-        {trendingQuery.loading ? (
-          <Text>Loading…</Text>
-        ) : (
-          <FlatList
-            data={trendingData}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 12, paddingRight: 16 }}
-            renderItem={({ item }) => (
-              <TrendingEngagementCard
-                data={item}
-                onPress={() => openDiscussion(item.id, item.title)}
-                onVote={vote}
-              />
-            )}
-            keyExtractor={(item) => item.id.toString()}
-          />
-        )}
-      </Section>
+      <QuerySection
+      label="Trending Discussions"
+      query={trendingQuery}
+    >
+      {(data) => (
+        <HorizontalList
+          data={data.map(mapDiscussionToTrending)}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <TrendingEngagementCard
+              data={item}
+              onPress={() =>
+                openDiscussion(item.id, item.title)
+              }
+              onVote={vote}
+            />
+          )}
+        />
+      )}
+    </QuerySection>
 
       {/* --------------- Topics ------------ */}
-      <Section label="Browse by topic">
-        {topicsQuery.loading ? (
-          <Text>Loading topics…</Text>
-        ) : (
-          <FlatList
-            data={topicsQuery.data ?? []}
-            scrollEnabled={false}
-            keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={{ gap: 12 }}
-            renderItem={({ item }) => (
-              <TopicCard
-                title={item.title}
-                description={item.description}
-                icon="dots-grid"
-                onPress={() => openTopic(item)}
-              />
-            )}
-          />
-        )}
-      </Section>
+    <QuerySection
+      label="Browse by topic"
+      query={topicsQuery}
+    >
+      {(data) => (
+        <VerticalList
+          data={data}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <TopicCard
+              title={item.title}
+              description={item.description}
+              icon="dots-grid"
+              onPress={() => openTopic(item)}
+            />
+          )}
+        />
+      )}
+    </QuerySection>
 
     </Screen>
   );

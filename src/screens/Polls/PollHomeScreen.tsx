@@ -1,15 +1,16 @@
 import React, { useContext, useCallback } from "react";
 import { FlatList } from "react-native";
-import { Text } from "react-native-paper";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
 import { AuthContext } from "../../context/AuthContext";
 import { Screen } from "../../layout/Screen";
-import { Section } from "../../layout/Section";
 
 import { WeeklyEngagementCard } from "../../components/common/WeeklyEngagementCard";
 import TrendingEngagementCard from "../../components/common/TrendingEngagementCard";
 import { TopicCard } from "../../components/common/TopicCard";
+import { QuerySection } from "../../components/common/QuerySection";
+import { HorizontalList } from "../../components/common/HorizontalList";
+import { VerticalList } from "../../components/common/VerticalList";
 
 import { useWeeklyPoll } from "../../hooks/polls/useWeeklyPoll";
 import { useTrendingPoll } from "../../hooks/polls/useTrendingPoll";
@@ -33,16 +34,6 @@ export default function PollHomeScreen() {
   const topicsQuery = useTopics();
 
   /* -------------------------------------------------
-     Derived UI Data (Mapping)
-  --------------------------------------------------*/
-
-  const weeklyPollCard = weeklyPollQuery.data
-    ? mapPollToWeekly(weeklyPollQuery.data)
-    : null;
-
-  const trendingPollCards =
-    trendingPollQuery.data?.map(mapPollToTrending) ?? [];
-  /* -------------------------------------------------
      Navigation Handlers
   --------------------------------------------------*/
 
@@ -62,7 +53,6 @@ export default function PollHomeScreen() {
 
   /* -------------------------------------------------
      Focus Reload
-     Keeps page fresh when returning
   --------------------------------------------------*/
 
   useFocusEffect(
@@ -83,40 +73,34 @@ export default function PollHomeScreen() {
 
   return (
     <Screen scroll>
+
       {/* ---------------- Weekly Poll ---------------- */}
+      <QuerySection
+        label="Featured This Week"
+        query={weeklyPollQuery}
+      >
+        {(data) => {
+          const card = mapPollToWeekly(data);
 
-      <Section label="Featured This Week">
-        {weeklyPollQuery.loading ? (
-          <Text>Loading…</Text>
-        ) : weeklyPollCard ? (
-          <WeeklyEngagementCard
-            data={weeklyPollCard}
-            onPress={() =>
-              openPollGroup(
-                weeklyPollCard.id,
-                weeklyPollCard.title
-              )
-            }
-          />
-        ) : null}
-      </Section>
+          return (
+            <WeeklyEngagementCard
+              data={card}
+              onPress={() =>
+                openPollGroup(card.id, card.title)
+              }
+            />
+          );
+        }}
+      </QuerySection>
 
-      {/* ---------------- Trending Polls -------------- */}
-
-      <Section label="Trending Polls">
-        {trendingPollQuery.loading ? (
-          <Text>Loading…</Text>
-        ) : trendingPollCards.length === 0 ? (
-          <Text>No trending polls yet.</Text>
-        ) : (
-          <FlatList
-            data={trendingPollCards}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              gap: 12,
-              paddingRight: 16,
-            }}
+      {/* ---------------- Trending Polls ---------------- */}
+      <QuerySection
+        label="Trending Polls"
+        query={trendingPollQuery}
+      >
+        {(data) => (
+          <HorizontalList
+            data={data.map(mapPollToTrending)}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
               <TrendingEngagementCard
@@ -128,19 +112,17 @@ export default function PollHomeScreen() {
             )}
           />
         )}
-      </Section>
+      </QuerySection>
 
       {/* ---------------- Topics ---------------- */}
-
-      <Section label="Browse by Topic">
-        {topicsQuery.loading ? (
-          <Text>Loading topics…</Text>
-        ) : (
-          <FlatList
-            data={topicsQuery.data}
-            scrollEnabled={false}
+      <QuerySection
+        label="Browse by Topic"
+        query={topicsQuery}
+      >
+        {(data) => (
+          <VerticalList
+            data={data}
             keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={{ gap: 12 }}
             renderItem={({ item }) => (
               <TopicCard
                 title={item.title}
@@ -151,7 +133,8 @@ export default function PollHomeScreen() {
             )}
           />
         )}
-      </Section>
+      </QuerySection>
+
     </Screen>
   );
 }

@@ -100,9 +100,7 @@ export default function LivenessCaptureScreen() {
   };
 
   return (
-    <>
-    <BackRow/>
-    <Screen title="Liveness Check">
+    <Screen showBack title="Liveness Check">
       <Section>
         <Text variant="titleMedium">Please perform:</Text>
         <Text variant="headlineSmall" style={styles.challenge}>
@@ -131,7 +129,6 @@ export default function LivenessCaptureScreen() {
         </Button>
       </Section>
     </Screen>
-    </>
   );
 }
 

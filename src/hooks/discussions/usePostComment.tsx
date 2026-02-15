@@ -1,22 +1,20 @@
-import { useState, useCallback } from "react";
-import { API_BASE_URL } from "../../config/api";
+// hooks/discussions/usePostComment.ts
 
-/**
- * usePostComment
- *
- * Submits a comment to a discussion.
- *
- * Returns:
- * {
- *   postComment: (text, userId) => Promise<any>
- *   loading: boolean
- *   error: string | null
- * }
- */
+import { useState, useCallback } from "react";
+import { apiClient } from "../../services/apiClient";
+
+/* =====================================================
+   usePostComment
+   Submits a comment to a discussion
+===================================================== */
 
 export function usePostComment(discussionId: number) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  /* -------------------------------------------------
+     Mutation
+  --------------------------------------------------*/
 
   const postComment = useCallback(
     async (text: string, userId: number) => {
@@ -26,33 +24,31 @@ export function usePostComment(discussionId: number) {
         setLoading(true);
         setError(null);
 
-        const res = await fetch(
-          `${API_BASE_URL}/discussions/${discussionId}/comments`,
+        const created = await apiClient.post(
+          `/discussions/${discussionId}/comments`,
           {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              body: text.trim(),
-              userId,
-            }),
+            body: text.trim(),
+            userId,
           }
         );
 
-        if (!res.ok) {
-          throw new Error("Failed to post comment");
-        }
+        return created;
 
-        return await res.json();
-
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error posting comment:", err);
-        setError("Failed to post comment");
+        setError(err.message || "Failed to post comment");
+        return null;
+
       } finally {
         setLoading(false);
       }
     },
     [discussionId]
   );
+
+  /* -------------------------------------------------
+     Return
+  --------------------------------------------------*/
 
   return { postComment, loading, error };
 }

@@ -13,7 +13,7 @@ type VerificationOption = {
   onPress: () => void;
 };
 
-export default function VerificationLevelsScreen({ navigation }: any) {
+export default function VerificationHomeScreen({ navigation }: any) {
   const theme = useTheme();
 
   const options: VerificationOption[] = [

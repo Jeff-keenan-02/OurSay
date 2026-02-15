@@ -1,54 +1,56 @@
-import { useState, useCallback } from "react";
-import { API_BASE_URL } from "../../config/api";
+// hooks/petitions/useSignPetition.ts
 
-/**
- * useSignPetition
- *
- * Submits a signature to backend.
- *
- * Returns:
- * {
- *   sign: (petitionId, userId) => Promise<boolean>
- *   loading: boolean
- *   error: string | null
- * }
- */
+import { useState, useCallback } from "react";
+import { apiClient } from "../../services/apiClient";
+
+/* =====================================================
+   useSignPetition
+   Handles petition signature mutation
+===================================================== */
 
 export function useSignPetition() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /* -------------------------------------------------
+     Sign Mutation
+  --------------------------------------------------*/
+
   const sign = useCallback(
-    async (petitionId: number, userId: number) => {
+    async (
+      petitionId: number,
+      userId: number
+    ): Promise<boolean> => {
       try {
         setLoading(true);
         setError(null);
 
-        const res = await fetch(
-          `${API_BASE_URL}/petitions/${petitionId}/sign`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId }),
-          }
+        await apiClient.post(
+          `/petitions/${petitionId}/sign`,
+          { userId }
         );
-
-        if (!res.ok) {
-          throw new Error("Failed to sign petition");
-        }
 
         return true;
 
-      } catch (err) {
+      } catch (err: any) {
         console.error("Sign petition error:", err);
-        setError("Could not sign petition");
+
+        setError(
+          err.message || "Could not sign petition"
+        );
+
         return false;
+
       } finally {
         setLoading(false);
       }
     },
     []
   );
+
+  /* -------------------------------------------------
+     Return
+  --------------------------------------------------*/
 
   return { sign, loading, error };
 }

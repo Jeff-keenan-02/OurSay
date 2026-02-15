@@ -1,21 +1,14 @@
+// hooks/polls/usePollGroups.ts
+
 import { useCallback, useEffect, useState } from "react";
-import { API_BASE_URL } from "../../config/api";
 import { PollGroup } from "../../types/PollGroup";
 import { User } from "../../types/User";
+import { apiClient } from "../../services/apiClient";
 
-/**
- * usePollGroups
- *
- * Fetches all poll groups under a specific topic.
- *
- * Returns:
- * {
- *   data: PollGroup[]
- *   loading: boolean
- *   error: string | null
- *   reload: () => Promise<void>
- * }
- */
+/* =====================================================
+   usePollGroups
+   Fetches all poll groups under a topic
+===================================================== */
 
 export function usePollGroups(
   user: User | null,
@@ -24,6 +17,10 @@ export function usePollGroups(
   const [data, setData] = useState<PollGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  /* -------------------------------------------------
+     Reload
+  --------------------------------------------------*/
 
   const reload = useCallback(async () => {
     if (!user?.id || !topicId) {
@@ -36,29 +33,37 @@ export function usePollGroups(
       setLoading(true);
       setError(null);
 
-      const res = await fetch(
-        `${API_BASE_URL}/poll/topics/${topicId}/groups?userId=${user.id}`
+      const json = await apiClient.get<PollGroup[]>(
+        `/poll/topics/${topicId}/groups?userId=${user.id}`
       );
 
-      if (!res.ok) {
-        throw new Error("Failed to load poll groups");
-      }
-
-      const json: PollGroup[] = await res.json();
       setData(Array.isArray(json) ? json : []);
 
-    } catch (err) {
-      console.error("Error loading poll groups:", err);
-      setError("Could not load poll groups");
+    } catch (err: any) {
+      console.error("Poll groups error:", err);
+
+      setError(
+        err.message || "Could not load poll groups"
+      );
+
       setData([]);
+
     } finally {
       setLoading(false);
     }
   }, [user?.id, topicId]);
 
+  /* -------------------------------------------------
+     Initial Load
+  --------------------------------------------------*/
+
   useEffect(() => {
     reload();
   }, [reload]);
+
+  /* -------------------------------------------------
+     Return
+  --------------------------------------------------*/
 
   return { data, loading, error, reload };
 }

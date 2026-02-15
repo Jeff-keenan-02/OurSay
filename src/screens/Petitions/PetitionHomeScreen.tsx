@@ -1,43 +1,36 @@
-import React, { useContext, useCallback } from "react";
-import { FlatList } from "react-native";
-import { Text } from "react-native-paper";
-import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import React from "react";
+import { useNavigation } from "@react-navigation/native";
+
 import { Screen } from "../../layout/Screen";
-import { Section } from "../../layout/Section";
-import { TopicCard } from "../../components/common/TopicCard";
+import { QuerySection } from "../../components/common/QuerySection";
+import { HorizontalList } from "../../components/common/HorizontalList";
+import { VerticalList } from "../../components/common/VerticalList";
 import { WeeklyEngagementCard } from "../../components/common/WeeklyEngagementCard";
 import TrendingEngagementCard from "../../components/common/TrendingEngagementCard";
+import { TopicCard } from "../../components/common/TopicCard";
 
 import { useTopics } from "../../hooks/common/useTopics";
 import { useWeeklyPetition } from "../../hooks/petitions/useWeeklyPetition";
 import { useTrendingPetition } from "../../hooks/petitions/useTrendingPetition";
 
-import { Topic } from "../../types/Topic";
 import { mapPetitionToTrending } from "../../mappers/trendingCardMapper";
-import {mapPetitionToWeekly } from "../../mappers/weeklyCardMapper";
+import { mapPetitionToWeekly } from "../../mappers/weeklyCardMapper";
+import { Topic } from "../../types/Topic";
 
 export default function PetitionHomeScreen() {
   const navigation = useNavigation<any>();
 
-  /* -------------------------
+  /* -------------------------------------------------
      Queries
-  --------------------------*/
+  --------------------------------------------------*/
 
   const weeklyPetitionQuery = useWeeklyPetition();
   const trendingPetitionsQuery = useTrendingPetition();
-  const topicQuery = useTopics();
+  const topicsQuery = useTopics();
 
-  /* -------------------------
-     Derived UI Data (Mapping)
-  --------------------------*/
-
-  const weeklyCardData = weeklyPetitionQuery.data ? mapPetitionToWeekly(weeklyPetitionQuery.data): null;
-
-  const trendingCardData = trendingPetitionsQuery.data?.map(mapPetitionToTrending) ?? [];
-
-  /* -------------------------
+  /* -------------------------------------------------
      Navigation Handlers
-  --------------------------*/
+  --------------------------------------------------*/
 
   const openTopic = (topic: Topic) => {
     navigation.navigate("PetitionList", {
@@ -46,38 +39,38 @@ export default function PetitionHomeScreen() {
     });
   };
 
-  const openPetition = (id: number) => {
-    navigation.navigate("PetitionDetail", { petitionId: id });
+  const openPetition = (petitionId: number) => {
+    navigation.navigate("PetitionDetail", { petitionId });
   };
 
-  /* -------------------------
+  /* -------------------------------------------------
      Render
-  --------------------------*/
+  --------------------------------------------------*/
 
   return (
     <Screen scroll>
 
       {/* ---------------- Weekly Petition ---------------- */}
-      <Section label="This Week's Petition">
-        {weeklyPetitionQuery.loading ? (
-          <Text>Loading…</Text>
-        ) : weeklyCardData ? (
+      <QuerySection
+        label="This Week's Petition"
+        query={weeklyPetitionQuery}
+      >
+        {(data) => (
           <WeeklyEngagementCard
-            data={weeklyCardData}
-            onPress={() => openPetition(weeklyCardData.id)}
+            data={mapPetitionToWeekly(data)}
+            onPress={() => openPetition(data.id)}
           />
-        ) : null}
-      </Section>
+        )}
+      </QuerySection>
 
-      {/* ---------------- trending Petitions ---------------- */}
-      <Section label="Trending Petitions">
-        {trendingPetitionsQuery.loading ? (
-          <Text>Loading…</Text>
-        ) : (
-          <FlatList
-            data={trendingCardData}
-            horizontal
-            showsHorizontalScrollIndicator={false}
+      {/* ---------------- Trending Petitions ---------------- */}
+      <QuerySection
+        label="Trending Petitions"
+        query={trendingPetitionsQuery}
+      >
+        {(data) => (
+          <HorizontalList
+            data={data.map(mapPetitionToTrending)}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
               <TrendingEngagementCard
@@ -87,18 +80,17 @@ export default function PetitionHomeScreen() {
             )}
           />
         )}
-      </Section>
+      </QuerySection>
 
-      {/* ---------------- topics  ---------------- */}
-      <Section label="Browse Petitions by Topic">
-        {topicQuery.loading ? (
-          <Text>Loading topics…</Text>
-        ) : (
-          <FlatList
-            data={topicQuery.data ?? []}
-            scrollEnabled={false}
+      {/* ---------------- Topics ---------------- */}
+      <QuerySection
+        label="Browse Petitions by Topic"
+        query={topicsQuery}
+      >
+        {(data) => (
+          <VerticalList
+            data={data}
             keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={{ gap: 12 }}
             renderItem={({ item }) => (
               <TopicCard
                 title={item.title}
@@ -109,7 +101,7 @@ export default function PetitionHomeScreen() {
             )}
           />
         )}
-      </Section>
+      </QuerySection>
 
     </Screen>
   );

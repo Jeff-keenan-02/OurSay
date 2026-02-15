@@ -48,9 +48,9 @@ export default function ResidenceCaptureScreen() {
   };
 
   return (
-    <>
-    <BackRow/>
+
     <Screen
+    showBack
       title="Residence Verification"
       subtitle="Contextual verification using network signals"
     >
@@ -101,7 +101,6 @@ export default function ResidenceCaptureScreen() {
         </Card>
       </Section>
     </Screen>
-    </>
   );
 }
 

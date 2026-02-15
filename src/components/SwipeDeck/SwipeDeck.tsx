@@ -11,9 +11,12 @@ type Props = {
   onSwipeYes: (index: number) => void;
   onSwipeNo: (index: number) => void;
   onSwipeAllDone: () => void;
+  disabled?: boolean; //  prevent double voting 
 };
 
-export default function SwipeDeck({cards, currentIndex, onSwipeYes, onSwipeNo, onSwipeAllDone,}: Props) {
+
+
+export default function SwipeDeck({cards, currentIndex, onSwipeYes, onSwipeNo, onSwipeAllDone, disabled = false,}: Props) {
   const swiperRef = useRef<any>(null);
 
   // When parent changes index, sync the swiper position
@@ -36,6 +39,9 @@ export default function SwipeDeck({cards, currentIndex, onSwipeYes, onSwipeNo, o
         stackSeparation={12}
         animateCardOpacity
 
+        disableLeftSwipe={disabled}
+        disableRightSwipe={disabled}
+        
         onSwipedLeft={(i) => onSwipeNo(i)}
         onSwipedRight={(i) => onSwipeYes(i)}
 
@@ -75,10 +81,11 @@ export default function SwipeDeck({cards, currentIndex, onSwipeYes, onSwipeNo, o
       />
 
       {/* Floating Yes/No Buttons */}
-      <SwipeActions
-        onYes={() => swiperRef.current?.swipeRight()}
-        onNo={() => swiperRef.current?.swipeLeft()}
-      />
+    <SwipeActions
+      disabled={disabled}
+      onYes={() => !disabled && swiperRef.current?.swipeRight()}
+      onNo={() => !disabled && swiperRef.current?.swipeLeft()}
+    />
     </View>
   );
 }

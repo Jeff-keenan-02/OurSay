@@ -1,27 +1,43 @@
 // components/SwipeDeck/SwipeActions.tsx
+
 import React from "react";
 import { FAB } from "react-native-paper";
 import { StyleSheet } from "react-native";
 
+type Props = {
+  onYes: () => void;
+  onNo: () => void;
+  disabled?: boolean;
+};
+
 export default function SwipeActions({
   onYes,
   onNo,
-}: {
-  onYes: () => void;
-  onNo: () => void;
-}) {
+  disabled = false,
+}: Props) {
   return (
     <>
       <FAB
         icon="close"
         color="white"
-        style={[styles.fab, styles.noButton]}
+        style={[
+          styles.fab,
+          styles.noButton,
+          disabled && styles.disabled,
+        ]}
+        disabled={disabled}
         onPress={onNo}
       />
+
       <FAB
         icon="check"
         color="white"
-        style={[styles.fab, styles.yesButton]}
+        style={[
+          styles.fab,
+          styles.yesButton,
+          disabled && styles.disabled,
+        ]}
+        disabled={disabled}
         onPress={onYes}
       />
     </>
@@ -41,5 +57,8 @@ const styles = StyleSheet.create({
   yesButton: {
     right: 40,
     backgroundColor: "#4caf50",
+  },
+  disabled: {
+    opacity: 0.5,
   },
 });

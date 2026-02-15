@@ -6,19 +6,21 @@ import {
   useNavigation,
   useRoute,
 } from "@react-navigation/native";
-import { Text, useTheme } from "react-native-paper";
+import { Text } from "react-native-paper";
 
 import { AuthContext } from "../../context/AuthContext";
 import { Screen } from "../../layout/Screen";
-import { Section } from "../../layout/Section";
 import { BackRow } from "../../components/common/BackRow";
 import TrendingEngagementCard from "../../components/common/TrendingEngagementCard";
+
 
 import { useDiscussionByTopic } from "../../hooks/discussions/useDiscussionByTopic";
 import { useDiscussionVote } from "../../hooks/discussions/useDiscussionVote";
 
 import { mapDiscussionToTrending } from "../../mappers/trendingCardMapper";
+import { DiscussionListItem } from "../../types/Discussion";
 
+import { QuerySection } from "../../components/common/QuerySection";
 type DiscussionStackParams = {
   DiscussionHome: undefined;
   DiscussionsList: { topicId: number; title: string };
@@ -26,11 +28,11 @@ type DiscussionStackParams = {
 };
 
 export default function DiscussionsListScreen() {
-  const theme = useTheme();
   const navigation = useNavigation<any>();
   const { user } = useContext(AuthContext);
 
-  const route = useRoute<RouteProp<DiscussionStackParams, "DiscussionsList">>();
+  const route =
+    useRoute<RouteProp<DiscussionStackParams, "DiscussionsList">>();
 
   const { topicId, title } = route.params;
 
@@ -38,13 +40,8 @@ export default function DiscussionsListScreen() {
      Queries
   --------------------------------------------------*/
 
-  const topicDiscussionsQuery = useDiscussionByTopic(topicId);
-
-  /* -------------------------------------------------
-     Derived UI Data (Mapping)
-  --------------------------------------------------*/
-
-  const discussionCards = topicDiscussionsQuery.data?.map(mapDiscussionToTrending) ?? [];
+  const topicDiscussionsQuery =
+    useDiscussionByTopic(topicId);
 
   /* -------------------------------------------------
      Mutations
@@ -68,7 +65,9 @@ export default function DiscussionsListScreen() {
     direction: "up" | "down"
   ) => {
     if (!user) {
-      return Alert.alert("You must be logged in to vote");
+      return Alert.alert(
+        "You must be logged in to vote"
+      );
     }
 
     vote(id, direction);
@@ -89,54 +88,53 @@ export default function DiscussionsListScreen() {
   --------------------------------------------------*/
 
   return (
-    <>
-      <BackRow />
-
       <Screen
         scroll
+        showBack
         title={title}
         subtitle="See what people are saying in this topic."
       >
-        {/* --------------- List of Disscusions  ------------ */}
-        <Section>
-          {topicDiscussionsQuery.loading ? (
-            <Text
-              style={{
-                color: theme.colors.onSurfaceVariant,
-                textAlign: "center",
-              }}
-            >
-              Loading discussions…
-            </Text>
-          ) : discussionCards.length === 0 ? (
-            <Text
-              style={{
-                color: theme.colors.onSurfaceVariant,
-                textAlign: "center",
-              }}
-            >
-              No discussions yet.
-            </Text>
-          ) : (
-            <FlatList
-              data={discussionCards}
-              keyExtractor={(item) =>
-                item.id.toString()
-              }
-              scrollEnabled={false}
-              renderItem={({ item }) => (
-                <TrendingEngagementCard
-                  data={item}
-                  onPress={() =>
-                    openDiscussion(item.id)
-                  }
-                  onVote={handleVote}
-                />
-              )}
-            />
-          )}
-        </Section>
+        {/* ---------------------------------------------
+           Discussions Query Section
+           Handles loading + error automatically
+        ---------------------------------------------- */}
+
+        <QuerySection
+          label="Discussions"
+          query={topicDiscussionsQuery}
+        >
+          {(data: DiscussionListItem[]) => {
+            const discussionCards =
+              data.map(mapDiscussionToTrending);
+
+            if (discussionCards.length === 0) {
+              return (
+                <Text style={{ textAlign: "center" }}>
+                  No discussions yet.
+                </Text>
+              );
+            }
+
+            return (
+              <FlatList
+                data={discussionCards}
+                keyExtractor={(item) =>
+                  item.id.toString()
+                }
+                scrollEnabled={false}
+                renderItem={({ item }) => (
+                  <TrendingEngagementCard
+                    data={item}
+                    onPress={() =>
+                      openDiscussion(item.id)
+                    }
+                    onVote={handleVote}
+                  />
+                )}
+              />
+            );
+          }}
+        </QuerySection>
       </Screen>
-    </>
   );
 }

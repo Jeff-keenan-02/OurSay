@@ -14,10 +14,9 @@ export default function PassportIntroScreen() {
 
 
   return (
-    <>
-    <BackRow/>
     <Screen
       scroll
+      showBack
       title="Citizen Verification"
       subtitle="Verify eligibility without revealing your identity."
     >
@@ -48,6 +47,5 @@ export default function PassportIntroScreen() {
         </Button>
       </Section>
     </Screen>
-    </>
   );
 }
