@@ -1,41 +1,47 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useCallback } from "react";
 import { API_BASE_URL } from "../../config/api";
-import { mapPollToTrending } from "../../mappers/trendingCardMapper";
-import { TrendingCardData } from "../../types/trendingCardData";
-import { AuthContext } from "../../context/AuthContext";
+import { PollGroup } from "../../types/PollGroup";
+import { User } from "../../types/User";
 
-export function useTrendingPoll() {
-  const { user } = useContext(AuthContext);
-
-  const [polls, setPolls] = useState<TrendingCardData[]>([]);
+export function useTrendingPoll(user: User | null) {
+  const [data, setData] = useState<PollGroup[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!user?.id) return;
+  const reload = useCallback(async () => {
+    if (!user?.id) {
+      setData([]);
+      setLoading(false);
+      return;
+    }
 
-    const load = async () => {
-      try {
-        const res = await fetch(
-          `${API_BASE_URL}/poll/trending?userId=${user.id}`
-        );
+    try {
+      setLoading(true);
+      setError(null);
 
-        const data = await res.json();
+      const res = await fetch(
+        `${API_BASE_URL}/poll/trending?userId=${user.id}`
+      );
 
-        if (Array.isArray(data)) {
-          const mapped = data.map(mapPollToTrending);
-          setPolls(mapped);
-        } else {
-          setPolls([]);
-        }
-      } catch (err) {
-        console.error("Failed to load trending polls", err);
-      } finally {
-        setLoading(false);
+      if (!res.ok) {
+        throw new Error("Failed to fetch trending polls");
       }
-    };
 
-    load();
+      const json: PollGroup[] = await res.json();
+      setData(Array.isArray(json) ? json : []);
+
+    } catch (err) {
+      console.error("Failed to load trending polls", err);
+      setError("Could not load trending polls");
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
   }, [user?.id]);
 
-  return { polls, loading };
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
+  return { data, loading, error, reload };
 }

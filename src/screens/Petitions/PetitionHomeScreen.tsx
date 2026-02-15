@@ -13,14 +13,31 @@ import { useWeeklyPetition } from "../../hooks/petitions/useWeeklyPetition";
 import { useTrendingPetition } from "../../hooks/petitions/useTrendingPetition";
 
 import { Topic } from "../../types/Topic";
-import { mapDiscussionToTrending, mapPetitionToTrending, mapPollToTrending } from "../../mappers/trendingCardMapper";
-
+import { mapPetitionToTrending } from "../../mappers/trendingCardMapper";
+import {mapPetitionToWeekly } from "../../mappers/weeklyCardMapper";
 
 export default function PetitionHomeScreen() {
   const navigation = useNavigation<any>();
 
-  // Hook for topics
-  const { topics, loading: topicsLoading } = useTopics();
+  /* -------------------------
+     Queries
+  --------------------------*/
+
+  const weeklyPetitionQuery = useWeeklyPetition();
+  const trendingPetitionsQuery = useTrendingPetition();
+  const topicQuery = useTopics();
+
+  /* -------------------------
+     Derived UI Data (Mapping)
+  --------------------------*/
+
+  const weeklyCardData = weeklyPetitionQuery.data ? mapPetitionToWeekly(weeklyPetitionQuery.data): null;
+
+  const trendingCardData = trendingPetitionsQuery.data?.map(mapPetitionToTrending) ?? [];
+
+  /* -------------------------
+     Navigation Handlers
+  --------------------------*/
 
   const openTopic = (topic: Topic) => {
     navigation.navigate("PetitionList", {
@@ -28,60 +45,57 @@ export default function PetitionHomeScreen() {
       title: topic.title,
     });
   };
- 
-    // Hook for weekly petition
-  const { petition: weeklyPetition, loading: weeklyLoading } = useWeeklyPetition();
 
-// hook for trending petitions
-  const { petitions: trendingPetitions, loading: trendingLoading } = useTrendingPetition();
-  const trendingData = trendingPetitions.map(mapPetitionToTrending);
-  
   const openPetition = (id: number) => {
     navigation.navigate("PetitionDetail", { petitionId: id });
   };
 
+  /* -------------------------
+     Render
+  --------------------------*/
+
   return (
     <Screen scroll>
 
-      {/* Weekly */}
-      <Section label="Featured This Week">
-        {weeklyLoading ? (
+      {/* ---------------- Weekly Petition ---------------- */}
+      <Section label="This Week's Petition">
+        {weeklyPetitionQuery.loading ? (
           <Text>Loading…</Text>
-        ) : weeklyPetition ? (
+        ) : weeklyCardData ? (
           <WeeklyEngagementCard
-            data={weeklyPetition}
-            onPress={() => openPetition(weeklyPetition.id)}
+            data={weeklyCardData}
+            onPress={() => openPetition(weeklyCardData.id)}
           />
         ) : null}
       </Section>
 
-      {/* Trending */}
+      {/* ---------------- trending Petitions ---------------- */}
       <Section label="Trending Petitions">
-      {trendingData.length === 0 ? (
-        <Text>Loading…</Text>
-      ) : (
-        <FlatList
-          data={trendingData}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <TrendingEngagementCard
-              data={item}
-              onPress={() => openPetition(item.id)}
-            />
-          )}
-        />
-      )}
-    </Section>
+        {trendingPetitionsQuery.loading ? (
+          <Text>Loading…</Text>
+        ) : (
+          <FlatList
+            data={trendingCardData}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <TrendingEngagementCard
+                data={item}
+                onPress={() => openPetition(item.id)}
+              />
+            )}
+          />
+        )}
+      </Section>
 
-      {/* Browse */}
-      <Section label="Browse by topic">
-        {topicsLoading ? (
+      {/* ---------------- topics  ---------------- */}
+      <Section label="Browse Petitions by Topic">
+        {topicQuery.loading ? (
           <Text>Loading topics…</Text>
         ) : (
           <FlatList
-            data={topics}
+            data={topicQuery.data ?? []}
             scrollEnabled={false}
             keyExtractor={(item) => item.id.toString()}
             contentContainerStyle={{ gap: 12 }}

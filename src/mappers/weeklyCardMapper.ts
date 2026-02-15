@@ -1,10 +1,10 @@
 import { PollGroup } from "../types/PollGroup";
 import { WeeklyCardData } from "../types/WeeklyCardData";
-import { DiscussionListItem, WeeklyDiscussion } from "../types/Discussion";
+import { WeeklyDiscussion } from "../types/Discussion";
 import { Petition } from "../types/Petition";
 
 
-export function mapWeeklyPollToCard(poll: PollGroup): WeeklyCardData {
+export function mapPollToWeekly(poll: PollGroup): WeeklyCardData {
   return {
     type: "poll",
     label: "Weekly Public Opinion Poll",
@@ -16,7 +16,7 @@ export function mapWeeklyPollToCard(poll: PollGroup): WeeklyCardData {
 }
 
 
-export function mapWeeklyDiscussionToCard(
+export function mapDiscussionToWeekly(
   discussion: WeeklyDiscussion
 ): WeeklyCardData {
   return {
@@ -31,7 +31,7 @@ export function mapWeeklyDiscussionToCard(
 }
 
 
-export function mapWeeklyPetitionToCard(
+export function mapPetitionToWeekly(
   petition: Petition
 ): WeeklyCardData {
   return {

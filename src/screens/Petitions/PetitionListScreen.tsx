@@ -1,61 +1,95 @@
-import React, { useEffect, useState } from "react";
-import { FlatList, View } from "react-native";
-import { Text, Button, Divider, useTheme } from "react-native-paper";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import React, { useCallback } from "react";
+import { FlatList } from "react-native";
+import { Text, Divider } from "react-native-paper";
+import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
+
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
-import { API_BASE_URL } from "../../config/api";
 import { BackRow } from "../../components/common/BackRow";
 import TrendingEngagementCard from "../../components/common/TrendingEngagementCard";
 
+import { usePetitionsByTopic } from "../../hooks/petitions/usePetitionsByTopic";
+import { mapPetitionToTrending } from "../../mappers/trendingCardMapper";
+
+type RouteParams = {
+  topicId: number;
+  title: string;
+};
+
+
+
 export default function PetitionListScreen() {
-  const theme = useTheme();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-const { topicId, title } = route.params;
+  const { topicId, title } = route.params as RouteParams;
 
-  const [petitions, setPetitions] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  /* -------------------------------------------------
+     Query
+  --------------------------------------------------*/
 
+  const petitionsQuery = usePetitionsByTopic(topicId);
 
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/petitions/topics/${topicId}`)
-      .then((res) => res.json())
-      .then(setPetitions)
-      .finally(() => setLoading(false));
-  }, [topicId]);
+  /* -------------------------------------------------
+     Refresh on Focus
+  --------------------------------------------------*/
+
+  useFocusEffect(
+    useCallback(() => {
+      petitionsQuery.reload();
+    }, [petitionsQuery.reload])
+  );
+
+  /* -------------------------------------------------
+     Derived UI Data (Mapping)
+  --------------------------------------------------*/
+
+  const petitionCards = petitionsQuery.data?.map(mapPetitionToTrending) ?? [];
+
+  /* -------------------------------------------------
+     Navigation
+  --------------------------------------------------*/
+
+  const openPetition = (id: number) => {
+    navigation.navigate("PetitionDetail", {
+      petitionId: id,
+    });
+  };
+
+  /* -------------------------------------------------
+     Render
+  --------------------------------------------------*/
 
   return (
     <>
-    <BackRow/>
-  
-    <Screen title={title}>
-      <Section label="Active Petitions">
-        <FlatList
-          data={petitions}
-          keyExtractor={(item) => item.id.toString()}
-          ItemSeparatorComponent={() => <Divider />}
-          renderItem={({ item }) => (
-        <TrendingEngagementCard
-          data={{
-            type: "petition",
-            id: item.id,
-            title: item.title,
-            description: item.description,
-            signature_goal: item.signature_goal,
-            signatures: item.signatures,
-            progress: item.progress,
-          }}
-          onPress={() =>
-            navigation.navigate("PetitionDetail", {
-              petitionId: item.id,
-            })
-          }
-        />
-      )}
-        />
-      </Section>
-    </Screen>
-  </>
+      <BackRow />
+
+      <Screen title={title}>
+        <Section label="Active Petitions">
+          {petitionsQuery.loading ? (
+            <Text>Loading…</Text>
+          ) : petitionsQuery.error ? (
+            <Text>{petitionsQuery.error}</Text>
+          ) : (
+            <FlatList
+              data={petitionCards}
+              keyExtractor={(item) =>
+                item.id.toString()
+              }
+              ItemSeparatorComponent={() => (
+                <Divider />
+              )}
+              renderItem={({ item }) => (
+                <TrendingEngagementCard
+                  data={item}
+                  onPress={() =>
+                    openPetition(item.id)
+                  }
+                />
+              )}
+            />
+          )}
+        </Section>
+      </Screen>
+    </>
   );
 }

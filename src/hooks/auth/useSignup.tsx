@@ -1,40 +1,69 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { API_BASE_URL } from "../../config/api";
+import { User } from "../../types/User";
+
+/* =====================================================
+   useSignup
+   Handles user registration
+===================================================== */
 
 export function useSignup() {
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-    const API = API_BASE_URL;
-    
-  const signupRequest = async (username: string, password: string) => {
-    setLoading(true);
-    setErrorMsg("");
+  /* -------------------------------------------------
+     Mutation
+  --------------------------------------------------*/
 
-    try {
-      const res = await fetch(`${API}/auth/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
+  const signup = useCallback(
+    async (
+      username: string,
+      password: string
+    ): Promise<User | null> => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const data = await res.json();
+        const res = await fetch(
+          `${API_BASE_URL}/auth/signup`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              username,
+              password,
+            }),
+          }
+        );
 
-      if (!res.ok) {
-        setErrorMsg(data.error || "Signup failed");
+        const json = await res.json();
+
+        if (!res.ok) {
+          throw new Error(
+            json.error || "Signup failed"
+          );
+        }
+
+        return json.user as User;
+
+      } catch (err: any) {
+        console.error("Signup error:", err);
+        setError(
+          err?.message || "Network error"
+        );
         return null;
+      } finally {
+        setLoading(false);
       }
+    },
+    []
+  );
 
-      return data.user; // return the user to the screen
+  /* -------------------------------------------------
+     Return
+  --------------------------------------------------*/
 
-    } catch (err) {
-      console.error("Signup error:", err);
-      setErrorMsg("Network error");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { signupRequest, loading, errorMsg };
+  return { signup, loading, error };
 }

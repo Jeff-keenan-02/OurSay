@@ -1,29 +1,29 @@
 import { useState, useEffect, useCallback } from "react";
 import { API_BASE_URL } from "../../config/api";
-import { Poll } from "../../types/Poll";
+import { Petition } from "../../types/Petition";
 
 /**
- * usePollQuestions
+ * usePetition
  *
- * Fetches all individual poll questions for a PollGroup.
+ * Fetches a single petition by ID.
  *
  * Returns:
  * {
- *   data: Poll[]
+ *   data: Petition | null
  *   loading: boolean
  *   error: string | null
  *   reload: () => Promise<void>
  * }
  */
 
-export function usePollQuestions(groupId: number | null) {
-  const [data, setData] = useState<Poll[]>([]);
+export function usePetition(petitionId: number | null) {
+  const [data, setData] = useState<Petition | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
-    if (!groupId) {
-      setData([]);
+    if (!petitionId) {
+      setData(null);
       setLoading(false);
       return;
     }
@@ -33,24 +33,24 @@ export function usePollQuestions(groupId: number | null) {
       setError(null);
 
       const res = await fetch(
-        `${API_BASE_URL}/poll/groups/${groupId}/polls`
+        `${API_BASE_URL}/petitions/${petitionId}`
       );
 
       if (!res.ok) {
-        throw new Error("Failed to load polls");
+        throw new Error("Failed to fetch petition");
       }
 
-      const json: Poll[] = await res.json();
-      setData(Array.isArray(json) ? json : []);
+      const json: Petition = await res.json();
+      setData(json);
 
     } catch (err) {
-      console.error("Failed to load poll questions:", err);
-      setError("Could not load polls");
-      setData([]);
+      console.error("Failed to load petition:", err);
+      setError("Could not load petition");
+      setData(null);
     } finally {
       setLoading(false);
     }
-  }, [groupId]);
+  }, [petitionId]);
 
   useEffect(() => {
     reload();

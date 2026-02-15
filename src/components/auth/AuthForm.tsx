@@ -7,7 +7,7 @@ interface Props {
   icon: string;
   username: string;
   password: string;
-  errorMsg?: string;
+  error?: string | null;
   loading?: boolean;
   submitLabel: string;
   onSubmit: () => void;
@@ -22,7 +22,7 @@ export default function AuthForm({
   icon,
   username,
   password,
-  errorMsg,
+  error,
   loading,
   submitLabel,
   footerLabel,
@@ -54,9 +54,9 @@ export default function AuthForm({
 
         <Card.Content>
 
-          {errorMsg ? (
+          {error ? (
             <Text style={{ color: theme.colors.error, marginBottom: 8 }}>
-              {errorMsg}
+              {error}
             </Text>
           ) : null}
 

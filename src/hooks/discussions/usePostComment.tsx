@@ -1,28 +1,31 @@
-import { useCallback } from "react";
+import { useState, useCallback } from "react";
 import { API_BASE_URL } from "../../config/api";
 
 /**
  * usePostComment
  *
- * Mutation hook for posting a comment on a discussion.
+ * Submits a comment to a discussion.
  *
- * - Sends comment to backend
- * - Optionally triggers reload via onSuccess callback
- *
- * Used in:
- * - DiscussionDetail screen
+ * Returns:
+ * {
+ *   postComment: (text, userId) => Promise<any>
+ *   loading: boolean
+ *   error: string | null
+ * }
  */
 
-export function usePostComment(
-  discussionId: number,
-  onSuccess?: () => void
-) {
+export function usePostComment(discussionId: number) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const postComment = useCallback(
     async (text: string, userId: number) => {
-      if (!discussionId) return;
-      if (!text.trim()) return;
+      if (!discussionId || !text.trim()) return;
 
       try {
+        setLoading(true);
+        setError(null);
+
         const res = await fetch(
           `${API_BASE_URL}/discussions/${discussionId}/comments`,
           {
@@ -39,20 +42,17 @@ export function usePostComment(
           throw new Error("Failed to post comment");
         }
 
-        const createdComment = await res.json();
-
-        // Optional reload hook
-        onSuccess?.();
-
-        return createdComment;
+        return await res.json();
 
       } catch (err) {
         console.error("Error posting comment:", err);
-        throw err;
+        setError("Failed to post comment");
+      } finally {
+        setLoading(false);
       }
     },
-    [discussionId, onSuccess]
+    [discussionId]
   );
 
-  return { postComment };
+  return { postComment, loading, error };
 }

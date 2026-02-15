@@ -1,26 +1,39 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { API_BASE_URL } from "../../config/api";
+import { Petition } from "../../types/Petition";
 
 export function useTrendingPetition() {
-  const [petitions, setPetitions] = useState<any[]>([]);
+  const [data, setData] = useState<Petition[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/petitions/trending`);
-        const data = await res.json();
+  const reload = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        setPetitions(data || []);
-      } catch (err) {
-        console.error("Failed to load trending petitions", err);
-      } finally {
-        setLoading(false);
+      const res = await fetch(`${API_BASE_URL}/petitions/trending`);
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch trending petitions");
       }
-    };
 
-    load();
+      const json: Petition[] = await res.json();
+
+      setData(json ?? []);
+
+    } catch (err) {
+      console.error("Failed to load trending petitions:", err);
+      setError("Could not load trending petitions");
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  return { petitions, loading };
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
+  return { data, loading, error, reload };
 }

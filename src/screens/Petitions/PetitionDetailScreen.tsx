@@ -1,33 +1,68 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useCallback } from "react";
 import { Text, Button, Divider, useTheme, ProgressBar } from "react-native-paper";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useFocusEffect } from "@react-navigation/native";
+
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
+import { BackRow } from "../../components/common/BackRow";
+
 import { AuthContext } from "../../context/AuthContext";
-import { API_BASE_URL } from "../../config/api";
 import { permissions } from "../../utils/permissions";
 import {
   VerificationTier,
   VERIFICATION_TIERS,
 } from "../../types/VerificationTier";
-import { Petition } from "../../types/Petition";
-import { BackRow } from "../../components/common/BackRow";
+
+import { usePetition } from "../../hooks/petitions/usePetition";
+import { useSignPetition } from "../../hooks/petitions/useSignPetition";
+
+/* =====================================================
+   Types
+===================================================== */
+
+type RouteParams = {
+  petitionId: number;
+};
+
+/* =====================================================
+   Screen
+===================================================== */
 
 export default function PetitionDetailScreen() {
   const theme = useTheme();
   const { user } = useContext(AuthContext);
   const route = useRoute<any>();
-  const { petitionId } = route.params;
+  const { petitionId } = route.params as RouteParams;
 
-  const [petition, setPetition] = useState<Petition | null>(null);
+  /* -------------------------------------------------
+     Queries
+  --------------------------------------------------*/
 
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/petitions/${petitionId}`)
-      .then((res) => res.json())
-      .then(setPetition);
-  }, [petitionId]);
+  const petitionQuery = usePetition(petitionId);
 
-  if (!petition) {
+  /* -------------------------------------------------
+     Mutations
+  --------------------------------------------------*/
+
+  const signMutation = useSignPetition();
+
+  /* -------------------------------------------------
+     Refresh on Focus
+  --------------------------------------------------*/
+
+  useFocusEffect(
+    useCallback(() => {
+      petitionQuery.reload();
+    }, [petitionQuery.reload])
+  );
+
+  /* -------------------------------------------------
+     Derived Values
+  --------------------------------------------------*/
+
+  const petition = petitionQuery.data;
+
+  if (petitionQuery.loading || !petition) {
     return (
       <Screen title="Petition">
         <Text>Loading…</Text>
@@ -46,78 +81,113 @@ export default function PetitionDetailScreen() {
     requiredTier
   );
 
-  const requiredTierInfo = VERIFICATION_TIERS[requiredTier];
+  const requiredTierInfo =
+    VERIFICATION_TIERS[requiredTier];
 
-  const signPetition = async () => {
-    await fetch(`${API_BASE_URL}/petitions/${petitionId}/sign`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: user?.id }),
-    });
-  const res = await fetch(`${API_BASE_URL}/petitions/${petitionId}`);
-  const updated = await res.json();
-  setPetition(updated);
+  /* -------------------------------------------------
+     Handlers
+  --------------------------------------------------*/
+
+  const handleSign = async () => {
+    if (!user) return;
+
+    const success = await signMutation.sign(
+      petition.id,
+      user.id
+    );
+
+    if (success) {
+      petitionQuery.reload();
+    }
   };
+
+  /* -------------------------------------------------
+     Render
+  --------------------------------------------------*/
 
   return (
     <>
-    <BackRow/>
-    
-    <Screen title="Petition">
-      <Section>
-        <Text variant="headlineSmall">{petition.title}</Text>
+      <BackRow />
 
-        <Text
-          variant="bodyMedium"
-          style={{
-            color: theme.colors.onSurfaceVariant,
-            marginVertical: 16,
-          }}
-        >
-          {petition.description}
-        </Text>
+      <Screen title="Petition">
+        <Section>
 
-        <Divider />
+          {/* ---------- Title ---------- */}
 
-        <Text variant="titleMedium">
-          {petition.signatures} signatures
-        </Text>
+          <Text variant="headlineSmall">
+            {petition.title}
+          </Text>
 
-        <Text
-          variant="bodySmall"
-          style={{ color: theme.colors.onSurfaceVariant }}
-        >
-          Requires {requiredTierInfo.label}
-        </Text>
+          <Text
+            variant="bodyMedium"
+            style={{
+              color: theme.colors.onSurfaceVariant,
+              marginVertical: 16,
+            }}
+          >
+            {petition.description}
+          </Text>
 
-        <Button
-          mode="contained"
-          disabled={!canSign}
-          onPress={signPetition}
-          style={{ marginTop: 16 }}
-        >
-          Sign Petition
-        </Button>
+          <Divider />
 
-        {!canSign && (
+          {/* ---------- Stats ---------- */}
+
+          <Text variant="titleMedium">
+            {petition.signatures} signatures
+          </Text>
+
           <Text
             variant="bodySmall"
-            style={{ color: theme.colors.error, marginTop: 8 }}
+            style={{
+              color: theme.colors.onSurfaceVariant,
+            }}
           >
-            {requiredTierInfo.next}
+            Requires {requiredTierInfo.label}
           </Text>
-        )}
-        <ProgressBar
-          progress={petition.progress}
-          color={theme.colors.primary}
-          style={{ height: 8, borderRadius: 6, marginVertical: 12 }}
-        />
 
-        <Text variant="bodySmall">
-          {petition.signatures} / {petition.signature_goal} signatures
-        </Text>
-      </Section>
-    </Screen>
+          {/* ---------- Sign Button ---------- */}
+
+          <Button
+            mode="contained"
+            disabled={!canSign}
+            loading={signMutation.loading}
+            onPress={handleSign}
+            style={{ marginTop: 16 }}
+          >
+            Sign Petition
+          </Button>
+
+          {!canSign && (
+            <Text
+              variant="bodySmall"
+              style={{
+                color: theme.colors.error,
+                marginTop: 8,
+              }}
+            >
+              {requiredTierInfo.next}
+            </Text>
+          )}
+
+          {/* ---------- Progress ---------- */}
+
+          <ProgressBar
+            progress={petition.progress}
+            color={theme.colors.primary}
+            style={{
+              height: 8,
+              borderRadius: 6,
+              marginVertical: 12,
+            }}
+          />
+
+          <Text variant="bodySmall">
+            {petition.signatures} /{" "}
+            {petition.signature_goal} signatures
+          </Text>
+
+        </Section>
+      </Screen>
     </>
   );
 }

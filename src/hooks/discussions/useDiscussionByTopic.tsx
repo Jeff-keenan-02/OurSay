@@ -5,41 +5,32 @@ import { DiscussionListItem } from "../../types/Discussion";
 /**
  * useDiscussionByTopic
  *
- * Fetches ALL discussions under a specific topic.
- *
- * Used in:
- * - DiscussionsListScreen (when user taps a topic)
- *
- * Backend route:
- * GET /discussions/by-topic/:topicId
- *
- * Behaviour:
- * - If topicId is null → returns empty array
- * - Loads automatically when topicId changes
- * - Exposes loadDiscussions() for manual refresh
- *
- * @param topicId - ID of selected topic
+ * Returns:
+ * {
+ *   data: DiscussionListItem[]
+ *   loading: boolean
+ *   error: string | null
+ *   reload: () => Promise<void>
+ *   updateData: (updater) => void   // optional for vote updates
+ * }
  */
 
-export function useDiscussionByTopic(
-  topicId: number | null
-) {
-
-  const [discussions, setDiscussions] = useState<DiscussionListItem[]>([]);
-  const [loading, setLoading] = useState(false);
+export function useDiscussionByTopic(topicId: number | null) {
+  const [data, setData] = useState<DiscussionListItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadDiscussions = useCallback(async () => {
+  const reload = useCallback(async () => {
     if (!topicId) {
-      setDiscussions([]);
+      setData([]);
       setLoading(false);
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
     try {
+      setLoading(true);
+      setError(null);
+
       const res = await fetch(
         `${API_BASE_URL}/discussions/by-topic/${topicId}`
       );
@@ -48,26 +39,33 @@ export function useDiscussionByTopic(
         throw new Error("Failed to fetch discussions");
       }
 
-      const data = await res.json();
-      setDiscussions(data);
+      const json: DiscussionListItem[] = await res.json();
+      setData(json);
+
     } catch (err) {
       console.error("Failed to load topic discussions:", err);
       setError("Could not load discussions");
-      setDiscussions([]);
+      setData([]);
     } finally {
       setLoading(false);
     }
-  }, [API_BASE_URL, topicId]);
+  }, [topicId]);
 
   useEffect(() => {
-    loadDiscussions();
-  }, [loadDiscussions]);
+    reload();
+  }, [reload]);
 
-  return {
-    discussions,
-    loading,
-    error,
-    setDiscussions,
-    loadDiscussions,
-  };
+  /**
+   * Controlled local updates (for voting)
+   */
+  const updateData = useCallback(
+    (
+      updater: (prev: DiscussionListItem[]) => DiscussionListItem[]
+    ) => {
+      setData(updater);
+    },
+    []
+  );
+
+  return { data, loading, error, reload, updateData };
 }

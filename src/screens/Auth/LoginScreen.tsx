@@ -10,7 +10,7 @@ export default function LoginScreen() {
 
 
 
-  const { loginRequest, loading, errorMsg } = useLogin();
+  const loginQuery = useLogin();
   const { login } = useContext(AuthContext);
 
   const [username, setUsername] = useState("");
@@ -19,7 +19,7 @@ export default function LoginScreen() {
 
   //(handleLogin function remains the same)
 const handleLogin = async () => {
-  const user = await loginRequest(username, password);
+  const user = await loginQuery.login(username, password);
 
   if (user) {
     login(user); // store in context
@@ -38,8 +38,8 @@ const handleLogin = async () => {
       footerLabel="Create an account"
       onSubmit={handleLogin}
       onFooterPress={() => navigation.navigate("Signup")}
-      errorMsg={errorMsg}
-      loading={loading}
+      error={loginQuery.error}
+      loading={loginQuery.loading}
     />
   );
 }

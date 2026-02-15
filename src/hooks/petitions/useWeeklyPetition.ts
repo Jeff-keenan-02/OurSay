@@ -1,29 +1,39 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { API_BASE_URL } from "../../config/api";
-import { mapWeeklyPetitionToCard } from "../../mappers/weeklyCardMapper";
+import { Petition } from "../../types/Petition";
 
 export function useWeeklyPetition() {
-  const [petition, setPetition] = useState<any>(null);
+  const [data, setData] = useState<Petition | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/petitions/weekly`);
-        const data = await res.json();
+  const reload = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        if (data) {
-          setPetition(mapWeeklyPetitionToCard(data));
-        }
-      } catch (err) {
-        console.error("Failed to load weekly petition", err);
-      } finally {
-        setLoading(false);
+      const res = await fetch(`${API_BASE_URL}/petitions/weekly`);
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch weekly petition");
       }
-    };
 
-    load();
+      const json: Petition | null = await res.json();
+
+      setData(json ?? null);
+
+    } catch (err) {
+      console.error("Failed to load weekly petition:", err);
+      setError("Could not load weekly petition");
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  return { petition, loading };
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
+  return { data, loading, error, reload };
 }

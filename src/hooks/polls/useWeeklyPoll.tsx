@@ -4,19 +4,27 @@ import { API_BASE_URL } from "../../config/api";
 import { PollGroup } from "../../types/PollGroup";
 
 /**
- * Hook: useWeeklyPoll
+ * useWeeklyPoll
  *
  * Fetches the weekly poll group for the logged-in user.
- * Returns a PollGroup (not a single poll).
+ *
+ * Returns:
+ * {
+ *   data: PollGroup | null
+ *   loading: boolean
+ *   error: string | null
+ *   reload: () => Promise<void>
+ * }
  */
+
 export function useWeeklyPoll(user: User | null) {
-  const [weeklyPoll, setWeeklyPoll] = useState<PollGroup | null>(null);
+  const [data, setData] = useState<PollGroup | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadWeeklyPoll = useCallback(async () => {
+  const reload = useCallback(async () => {
     if (!user) {
-      setWeeklyPoll(null);
+      setData(null);
       return;
     }
 
@@ -32,26 +40,21 @@ export function useWeeklyPoll(user: User | null) {
         throw new Error("Failed to load weekly poll");
       }
 
-      const data: PollGroup | null = await res.json();
-      setWeeklyPoll(data);
+      const json: PollGroup | null = await res.json();
+      setData(json);
 
     } catch (err) {
       console.error("Error loading weekly poll:", err);
       setError("Could not load weekly poll");
-      setWeeklyPoll(null);
+      setData(null);
     } finally {
       setLoading(false);
     }
   }, [user]);
 
   useEffect(() => {
-    loadWeeklyPoll();
-  }, [loadWeeklyPoll]);
+    reload();
+  }, [reload]);
 
-  return {
-    weeklyPoll,
-    loading,
-    error,
-    reload: loadWeeklyPoll,
-  };
+  return { data, loading, error, reload };
 }

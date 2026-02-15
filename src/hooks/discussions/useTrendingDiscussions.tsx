@@ -6,23 +6,28 @@ import { DiscussionListItem } from "../../types/Discussion";
 /**
  * useTrendingDiscussions
  *
- * Fetch hook for retrieving trending discussions.
+ * Fetches trending discussions.
  *
- * Used in:
- * - HomeScreen
- * - DiscussionHomeScreen
- *
- * Automatically reloads when screen regains focus.
+ * Returns:
+ * {
+ *   data: DiscussionListItem[]
+ *   loading: boolean
+ *   error: string | null
+ *   reload: () => Promise<void>
+ *   updateData: (updater) => void   // for vote updates
+ * }
  */
 
 export function useTrendingDiscussions() {
-  const [discussions, setDiscussions] = useState<DiscussionListItem[]>([]);
+  const [data, setData] = useState<DiscussionListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const loadDiscussions = useCallback(async () => {
-    setLoading(true);
-
+  const reload = useCallback(async () => {
     try {
+      setLoading(true);
+      setError(null);
+
       const res = await fetch(
         `${API_BASE_URL}/discussions/trending`
       );
@@ -31,28 +36,36 @@ export function useTrendingDiscussions() {
         throw new Error("Failed to fetch trending discussions");
       }
 
-      const data: DiscussionListItem[] = await res.json();
-      setDiscussions(data);
+      const json: DiscussionListItem[] = await res.json();
+      setData(json);
 
     } catch (err) {
       console.error("Failed to load trending discussions", err);
-      setDiscussions([]);
+      setError("Could not load trending discussions");
+      setData([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Reload when screen regains focus
+  // Reload automatically when screen regains focus
   useFocusEffect(
     useCallback(() => {
-      loadDiscussions();
-    }, [loadDiscussions])
+      reload();
+    }, [reload])
   );
 
-  return {
-    discussions,
-    setDiscussions, // exposed for vote updates
-    loading,
-    refresh: loadDiscussions,
-  };
+  /**
+   * Allows controlled updates (e.g. after vote)
+   */
+  const updateData = useCallback(
+    (
+      updater: (prev: DiscussionListItem[]) => DiscussionListItem[]
+    ) => {
+      setData(updater);
+    },
+    []
+  );
+
+  return { data, loading, error, reload, updateData };
 }

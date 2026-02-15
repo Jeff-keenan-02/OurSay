@@ -12,14 +12,14 @@ export default function SignupScreen() {
   const theme = useTheme();
 
 
-  const { signupRequest, loading, errorMsg } = useSignup();
+  const SignupQuery = useSignup();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
 
   const handleSignup = async () => {
-    const user = await signupRequest(username, password);
+    const user = await SignupQuery.signup(username, password);
     if (user) login(user);
   };
 
@@ -35,8 +35,8 @@ export default function SignupScreen() {
       footerLabel="Already have an account? Log in"
       onSubmit={handleSignup}
       onFooterPress={() => navigation.navigate("Login")}
-      errorMsg={errorMsg}
-      loading={loading}
+      error={SignupQuery.error}
+      loading={SignupQuery.loading}
     />
   );
 }

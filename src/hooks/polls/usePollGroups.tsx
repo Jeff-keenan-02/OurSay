@@ -7,34 +7,35 @@ import { User } from "../../types/User";
  * usePollGroups
  *
  * Fetches all poll groups under a specific topic.
- * Includes user-specific progress information.
  *
- * Used in:
- * - PollGroupsScreen
- *
- * Hierarchy:
- * Topic → PollGroup → Poll
+ * Returns:
+ * {
+ *   data: PollGroup[]
+ *   loading: boolean
+ *   error: string | null
+ *   reload: () => Promise<void>
+ * }
  */
 
 export function usePollGroups(
   user: User | null,
   topicId: number | null
 ) {
-  const [groups, setGroups] = useState<PollGroup[]>([]);
+  const [data, setData] = useState<PollGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadGroups = useCallback(async () => {
-    if (!user || !topicId) {
-      setGroups([]);
+  const reload = useCallback(async () => {
+    if (!user?.id || !topicId) {
+      setData([]);
       setLoading(false);
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
     try {
+      setLoading(true);
+      setError(null);
+
       const res = await fetch(
         `${API_BASE_URL}/poll/topics/${topicId}/groups?userId=${user.id}`
       );
@@ -43,21 +44,21 @@ export function usePollGroups(
         throw new Error("Failed to load poll groups");
       }
 
-      const data: PollGroup[] = await res.json();
-      setGroups(data);
+      const json: PollGroup[] = await res.json();
+      setData(Array.isArray(json) ? json : []);
 
     } catch (err) {
       console.error("Error loading poll groups:", err);
-      setGroups([]);
       setError("Could not load poll groups");
+      setData([]);
     } finally {
       setLoading(false);
     }
-  }, [user, topicId]);
+  }, [user?.id, topicId]);
 
   useEffect(() => {
-    loadGroups();
-  }, [loadGroups]);
+    reload();
+  }, [reload]);
 
-  return { groups, loading, error, loadGroups };
+  return { data, loading, error, reload };
 }

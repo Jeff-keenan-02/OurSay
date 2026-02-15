@@ -1,44 +1,62 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { API_BASE_URL } from "../../config/api";
 
-/**
- * usePollProgress
- *
- * Fetches and tracks user progress inside a poll group.
- *
- * Used in:
- * - SwipePollScreen
- *
- * Tracks:
- * - status (0 = not started, 1 = in progress, 2 = completed)
- * - index (number of polls completed)
- */
+/* -------------------------------------------------
+   Normalized Frontend Type
+--------------------------------------------------*/
+
+type PollProgress = {
+  status: 0 | 1 | 2;
+  index: number; // frontend-friendly name
+};
+
 export function usePollProgress(
   groupId: number | null,
-  user: { id: number } | null,
-  polls: any[]
+  user: { id: number } | null
 ) {
-  const [status, setStatus] = useState<0 | 1 | 2>(0);
-  const [index, setIndex] = useState(0);
+  const [data, setData] = useState<PollProgress | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const reload = async () => {
-    if (!user || !groupId) return;
+  const reload = useCallback(async () => {
+    if (!user?.id || !groupId) {
+      setData(null);
+      setLoading(false);
+      return;
+    }
 
-    const res = await fetch(
-      `${API_BASE_URL}/poll/groups/${groupId}/progress?userId=${user.id}`
-    );
+    try {
+      setLoading(true);
+      setError(null);
 
-    if (!res.ok) return;
+      const res = await fetch(
+        `${API_BASE_URL}/poll/groups/${groupId}/progress?userId=${user.id}`
+      );
 
-    const data = await res.json();
+      if (!res.ok) {
+        throw new Error("Failed to fetch poll progress");
+      }
 
-    setStatus(data.status);
-    setIndex(data.completed_polls);
-  };
+      const json = await res.json();
+
+      // NORMALIZE HERE
+      setData({
+        status: json.status,
+        index: json.completed_polls,
+      });
+
+    } catch (err) {
+      console.error("Failed to load poll progress:", err);
+      setError("Could not load poll progress");
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [groupId, user?.id]);
 
   useEffect(() => {
-    if (polls.length) reload();
-  }, [polls]);
+    reload();
+  }, [reload]);
 
-  return { status, index, reload };
+  return { data, loading, error, reload };
 }

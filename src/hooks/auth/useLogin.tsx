@@ -1,40 +1,69 @@
-// src/hooks/auth/useLogin.ts
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { API_BASE_URL } from "../../config/api";
+import { User } from "../../types/User";
+
+/* =====================================================
+   useLogin
+   Handles user authentication
+===================================================== */
 
 export function useLogin() {
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const API = API_BASE_URL;
+  /* -------------------------------------------------
+     Mutation
+  --------------------------------------------------*/
 
-  const loginRequest = async (username: string, password: string) => {
-    setLoading(true);
-    setErrorMsg("");
+  const login = useCallback(
+    async (
+      username: string,
+      password: string
+    ): Promise<User | null> => {
+      try {
+        setLoading(true);
+        setError(null);
 
-    try {
-      const res = await fetch(`${API}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
+        const res = await fetch(
+          `${API_BASE_URL}/auth/login`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              username,
+              password,
+            }),
+          }
+        );
 
-      const data = await res.json();
+        const json = await res.json();
 
-      if (!res.ok) {
-        setErrorMsg(data.error || "Invalid login");
+        if (!res.ok) {
+          throw new Error(
+            json.error || "Invalid login"
+          );
+        }
+
+        return json.user as User;
+
+      } catch (err: any) {
+        console.error("Login error:", err);
+        setError(
+          err?.message || "Network error"
+        );
         return null;
+      } finally {
+        setLoading(false);
       }
+    },
+    []
+  );
 
-      return data.user; // caller handles storing user in context
-    } catch (err) {
-      console.error(err);
-      setErrorMsg("Network error");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+  /* -------------------------------------------------
+     Return
+  --------------------------------------------------*/
 
-  return { loginRequest, loading, errorMsg };
+  return { login, loading, error };
 }

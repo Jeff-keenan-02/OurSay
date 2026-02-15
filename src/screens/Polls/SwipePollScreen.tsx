@@ -1,83 +1,187 @@
 // screens/Polls/SwipePollScreen.tsx
-import React, { useEffect, useState, useContext } from "react";
-import { View, StyleSheet, Alert } from "react-native";
+
+import React, { useEffect, useState, useContext, useCallback } from "react";
+import { View, StyleSheet } from "react-native";
 import { ProgressBar, Text, useTheme } from "react-native-paper";
+import { useRoute, useNavigation } from "@react-navigation/native";
+
 import { AuthContext } from "../../context/AuthContext";
-import SwipeDeck from "../../components/SwipeDeck/SwipeDeck";
 import { usePollQuestions } from "../../hooks/polls/usePollQuestions";
 import { usePollVote } from "../../hooks/polls/usePollVote";
 import { usePollProgress } from "../../hooks/polls/usePollProgress";
+
+import SwipeDeck from "../../components/SwipeDeck/SwipeDeck";
 import { BackRow } from "../../components/common/BackRow";
 
 
-export default function SwipePollScreen({ route, navigation }: any) {
-  const { groupId, title } = route.params;
-  const { user } = useContext(AuthContext);
+
+type RouteParams = {
+  groupId: number;
+  title: string;
+};
+
+
+export default function SwipePollScreen() {
   const theme = useTheme();
+  const navigation = useNavigation<any>();
+  const { user } = useContext(AuthContext);
 
 
-  const { polls } = usePollQuestions(groupId);
+  const route = useRoute<any>();
+  const { groupId, title } = route.params as RouteParams;
 
-  // authoritative backend progress
-  const {index: backendIndex } = usePollProgress(groupId, user, polls);
+  /* -------------------------------------------------
+     Queries
+  --------------------------------------------------*/
 
-  // local UI index
+  const pollQuery = usePollQuestions(groupId);
+  const progressQuery = usePollProgress(groupId, user);
+
+  /* -------------------------------------------------
+     Mutations
+  --------------------------------------------------*/
+
+  const voteMutation = usePollVote(user);
+
+  /* -------------------------------------------------
+     Local UI State
+  --------------------------------------------------*/
+
   const [uiIndex, setUiIndex] = useState(0);
 
-  // sync UI once backend index is known
-  useEffect(() => {
-    setUiIndex(backendIndex);
-  }, [backendIndex]);
+  /* -------------------------------------------------
+     Sync Backend Progress → UI
+     (Backend is authoritative)
+  --------------------------------------------------*/
 
-  const { vote } = usePollVote(user);
+  useEffect(() => {
+    setUiIndex(progressQuery.data?.index ?? 0);
+  }, [progressQuery.data?.index]);
+
+  /* -------------------------------------------------
+     Derived Values
+  --------------------------------------------------*/
+
+  const totalPolls = pollQuery.data?.length ?? 0;
+
+  const progressValue =
+    totalPolls > 0 ? uiIndex / totalPolls : 0;
+
+  const currentProgressLabel = `${Math.min(
+    uiIndex,
+    totalPolls
+  )} / ${totalPolls} questions`;
+
+  /* -------------------------------------------------
+     Handlers
+  --------------------------------------------------*/
+
+  const handleSwipe = useCallback(
+    async (index: number, choice: "yes" | "no") => {
+      const poll = pollQuery.data?.[index];
+      if (!poll) return;
+
+      // 1️⃣ Optimistic UI update
+      setUiIndex(index + 1);
+
+      // 2️⃣ Send vote to backend
+      await voteMutation.vote(poll.id, choice);
+
+      // 3️⃣ Optionally refresh backend progress
+      progressQuery.reload();
+    },
+    [
+      pollQuery.data,
+      voteMutation,
+      progressQuery.reload,
+    ]
+  );
+
+  /* -------------------------------------------------
+     Render
+  --------------------------------------------------*/
 
   return (
     <>
-    <BackRow/>
-    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <View style={styles.headerBox}>
-        <Text style={styles.headerLabel}>You are voting on:</Text>
-        <Text style={styles.headerTitle}>{title}</Text>
+      <BackRow />
+
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: theme.colors.background,
+        }}
+      >
+        {/* ---------- Header ---------- */}
+
+        <View style={styles.headerBox}>
+          <Text style={styles.headerLabel}>
+            You are voting on:
+          </Text>
+          <Text style={styles.headerTitle}>
+            {title}
+          </Text>
+        </View>
+
+        {/* ---------- Progress ---------- */}
+
+        <ProgressBar
+          progress={progressValue}
+          color={theme.colors.primary}
+          style={styles.topProgress}
+        />
+
+        <Text style={styles.progressLabel}>
+          {currentProgressLabel}
+        </Text>
+
+        {/* ---------- Swipe Deck ---------- */}
+
+        <SwipeDeck
+          cards={pollQuery.data ?? []}
+          currentIndex={uiIndex}
+          onSwipeYes={(i) =>
+            handleSwipe(i, "yes")
+          }
+          onSwipeNo={(i) =>
+            handleSwipe(i, "no")
+          }
+          onSwipeAllDone={() =>
+            navigation.goBack()
+          }
+        />
       </View>
-
-      <ProgressBar
-        progress={polls.length ? uiIndex / polls.length : 0}
-        color="#4caf50"
-        style={styles.topProgress}
-      />
-
-      <Text style={styles.progressLabel}>
-        {Math.min(uiIndex, polls.length)} / {polls.length} questions
-      </Text>
-
-      <SwipeDeck
-        cards={polls}
-        currentIndex={uiIndex}
-        onSwipeYes={(i) => {
-          const poll = polls[i];
-          if (!poll) return;
-
-          vote(poll.id, "yes");   // backend
-          setUiIndex(i + 1);      // ✅ UI moves immediately
-        }}
-        onSwipeNo={(i) => {
-          const poll = polls[i];
-          if (!poll) return;
-
-          vote(poll.id, "no");
-          setUiIndex(i + 1);
-        }}
-        onSwipeAllDone={() => navigation.goBack()}
-      />
-    </View>
     </>
   );
 }
 
+/* =====================================================
+   Styles
+===================================================== */
+
 const styles = StyleSheet.create({
-  headerBox: { paddingHorizontal: 20, paddingTop: 15, paddingBottom: 5 },
-  headerLabel: { fontSize: 14, color: "#bbb" },
-  headerTitle: { fontSize: 20, fontWeight: "700", color: "#fff" },
-  topProgress: { height: 6, marginHorizontal: 20, borderRadius: 6, marginTop: 10 },
-  progressLabel: { textAlign: "center", color: "#aaa", marginTop: 6 },
+  headerBox: {
+    paddingHorizontal: 20,
+    paddingTop: 15,
+    paddingBottom: 5,
+  },
+  headerLabel: {
+    fontSize: 14,
+    color: "#bbb",
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#fff",
+  },
+  topProgress: {
+    height: 6,
+    marginHorizontal: 20,
+    borderRadius: 6,
+    marginTop: 10,
+  },
+  progressLabel: {
+    textAlign: "center",
+    color: "#aaa",
+    marginTop: 6,
+  },
 });

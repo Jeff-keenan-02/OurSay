@@ -1,41 +1,52 @@
-import React, { useContext } from "react";
-import { View, StyleSheet, FlatList, ScrollView, TouchableOpacity, Text } from "react-native";
+import React, { useContext, useCallback } from "react";
+import { FlatList, Text } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { useTrendingDiscussions } from "../../hooks/discussions/useTrendingDiscussions";
-import { useDiscussionVote } from "../../hooks/discussions/useDiscussionVote";
-import { AuthContext } from "../../context/AuthContext";
-import { Section } from "../../layout/Section";
+
 import { Screen } from "../../layout/Screen";
-import { useTopics } from "../../hooks/common/useTopics";
-import { Topic } from "../../types/Topic";
+import { Section } from "../../layout/Section";
 import { TopicCard } from "../../components/common/TopicCard";
-import { useWeeklyDiscussion } from "../../hooks/discussions/useWeeklyDiscussion";
-import { mapWeeklyDiscussionToCard } from "../../mappers/weeklyCardMapper";
 import { WeeklyEngagementCard } from "../../components/common/WeeklyEngagementCard";
 import TrendingEngagementCard from "../../components/common/TrendingEngagementCard";
+
+import { AuthContext } from "../../context/AuthContext";
+import { useTopics } from "../../hooks/common/useTopics";
+import { useTrendingDiscussions } from "../../hooks/discussions/useTrendingDiscussions";
+import { useDiscussionVote } from "../../hooks/discussions/useDiscussionVote";
+import { useWeeklyDiscussion } from "../../hooks/discussions/useWeeklyDiscussion";
+
+import { Topic } from "../../types/Topic";
+import { mapDiscussionToWeekly } from "../../mappers/weeklyCardMapper";
 import { mapDiscussionToTrending } from "../../mappers/trendingCardMapper";
 
-
-
 export default function DiscussionHomeScreen() {
-
   const navigation: any = useNavigation();
   const { user } = useContext(AuthContext);
 
+  /* -------------------------------------------------
+     Queries
+  --------------------------------------------------*/
 
-  // hook for topics
-  const { topics, loading: topicsLoading, } = useTopics();
+  const topicsQuery = useTopics();
+  const trendingQuery = useTrendingDiscussions();
+  const weeklyDiscussionQuery = useWeeklyDiscussion();
 
-  //hook for trending discussions
-  const { discussions, setDiscussions } = useTrendingDiscussions();
-  const trendingData = discussions.map(mapDiscussionToTrending);
+  /* -------------------------
+     Derived UI Data (Mapping)
+  --------------------------*/
+  const weeklyDiscussionCard = weeklyDiscussionQuery.data? mapDiscussionToWeekly(weeklyDiscussionQuery.data): null;
 
+  const trendingData = trendingQuery.data?.map(mapDiscussionToTrending) ?? [];
 
-  //hook upvoting or downvoting 
-  const { vote } = useDiscussionVote (user, setDiscussions);
+  
+  /* -------------------------------------------------
+     Mutations
+  --------------------------------------------------*/
 
-  //weekly discussion
-  const { weeklyDiscussion, loading: weeklyLoading, loadWeekly } = useWeeklyDiscussion();
+const { vote } = useDiscussionVote(user, trendingQuery.updateData);
+
+  /* -------------------------------------------------
+     Navigation
+  --------------------------------------------------*/
 
   const openTopic = (topic: Topic) => {
     navigation.navigate("DiscussionsList", {
@@ -52,61 +63,75 @@ export default function DiscussionHomeScreen() {
   };
 
   const openWeeklyDiscussion = () => {
-  if (!weeklyDiscussion) return;
+    if (!weeklyDiscussionQuery.data) return;
 
-  navigation.navigate("Discussions", {
-    screen: "DiscussionDetail",
-    params: {
-      id: weeklyDiscussion.id,
-      title: weeklyDiscussion.title,
-    },
-  });
-};
+    navigation.navigate("Discussions", {
+      screen: "DiscussionDetail",
+      params: {
+        id: weeklyDiscussionQuery.data.id,
+        title: weeklyDiscussionQuery.data.title,
+      },
+    });
+  };
+
+  /* -------------------------------------------------
+     Refresh on Focus
+  --------------------------------------------------*/
 
   useFocusEffect(
-  React.useCallback(() => {
-    loadWeekly();
-  }, [loadWeekly])
-);
-    return (
+    useCallback(() => {
+      weeklyDiscussionQuery.reload();
+    }, [weeklyDiscussionQuery.reload])
+  );
+
+  /* -------------------------------------------------
+     Render
+  --------------------------------------------------*/
+
+  return (
     <Screen scroll>
-      {/* Weekly Section */}
+
+      {/* --------------- Weekly Disscussion  ------------ */}
       <Section label="Featured This Week">
-        {weeklyLoading ? (
+        {weeklyDiscussionQuery.loading ? (
           <Text>Loading...</Text>
-        ) : weeklyDiscussion ? (
+        ) : weeklyDiscussionQuery.data ? (
           <WeeklyEngagementCard
-            data={mapWeeklyDiscussionToCard(weeklyDiscussion)}
+            data={mapDiscussionToWeekly(weeklyDiscussionQuery.data)}
             onPress={openWeeklyDiscussion}
           />
         ) : null}
       </Section>
 
-      {/* Trending Section */}
+      {/* --------------- Trending Disccusisons  ------------ */}
       <Section label="Trending Discussions">
-        <FlatList
-          data={trendingData}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 12, paddingRight: 16 }}
-          renderItem={({ item }) => (
-            <TrendingEngagementCard
-              data={item}
-              onPress={() => openDiscussion(item.id, item.title)}
-              onVote={vote}
-            />
-          )}
-          keyExtractor={(item) => item.id.toString()}
-        />
+        {trendingQuery.loading ? (
+          <Text>Loading…</Text>
+        ) : (
+          <FlatList
+            data={trendingData}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 12, paddingRight: 16 }}
+            renderItem={({ item }) => (
+              <TrendingEngagementCard
+                data={item}
+                onPress={() => openDiscussion(item.id, item.title)}
+                onVote={vote}
+              />
+            )}
+            keyExtractor={(item) => item.id.toString()}
+          />
+        )}
       </Section>
 
-      {/* topics Section */}
+      {/* --------------- Topics ------------ */}
       <Section label="Browse by topic">
-        {topicsLoading ? (
+        {topicsQuery.loading ? (
           <Text>Loading topics…</Text>
         ) : (
           <FlatList
-            data={topics}
+            data={topicsQuery.data ?? []}
             scrollEnabled={false}
             keyExtractor={(item) => item.id.toString()}
             contentContainerStyle={{ gap: 12 }}
@@ -121,6 +146,7 @@ export default function DiscussionHomeScreen() {
           />
         )}
       </Section>
+
     </Screen>
   );
 }

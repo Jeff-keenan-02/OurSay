@@ -5,40 +5,46 @@ import { User } from "../../types/User";
 /**
  * useDiscussionVote
  *
- * Handles voting on a discussion.
+ * Mutation hook for voting on a discussion.
  *
  * - Sends vote to backend
- * - Updates local discussion list with new vote counts
- *
- * Used in:
- * - Trending list
- * - Topic discussion list
+ * - Updates cached discussion list using provided updater
  *
  * @param user - currently logged in user
- * @param setDiscussions - state setter from list hook
+ * @param updateData - updater function from list query hook
  */
 
 export function useDiscussionVote(
   user: User | null,
-  setDiscussions: React.Dispatch<React.SetStateAction<DiscussionListItem[]>>
+  updateData: (
+    updater: (prev: DiscussionListItem[]) => DiscussionListItem[]
+  ) => void
 ) {
   const vote = async (id: number, direction: "up" | "down") => {
-    if (!user) throw new Error("Not logged in");
+    if (!user) {
+      throw new Error("Not logged in");
+    }
 
-    const res = await fetch(`${API_BASE_URL}/discussions/${id}/vote`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: user.id, direction }),
-    });
+    const res = await fetch(
+      `${API_BASE_URL}/discussions/${id}/vote`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          direction,
+        }),
+      }
+    );
 
     if (!res.ok) {
       throw new Error("Vote failed");
     }
 
-    const updated = await res.json();
+    const updated: DiscussionListItem = await res.json();
 
-    // Update the specific discussion in list
-    setDiscussions((prev) =>
+    // Update only the changed discussion in local cache
+    updateData((prev) =>
       prev.map((d) =>
         d.id === updated.id
           ? { ...d, ...updated }

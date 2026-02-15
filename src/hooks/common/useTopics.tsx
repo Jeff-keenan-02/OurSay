@@ -5,11 +5,11 @@ import { API_BASE_URL } from "../../config/api";
 import { Topic } from "../../types/Topic";
 
 export function useTopics() {
-  const [topics, setTopics] = useState<Topic[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<Topic[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadTopics = useCallback(async () => {
+  const reload = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -20,20 +20,26 @@ export function useTopics() {
         throw new Error("Failed to fetch topics");
       }
 
-      const data: Topic[] = await res.json();
-      setTopics(data);
+      const json: Topic[] = await res.json();
+      setData(json);
+
     } catch (err) {
-      console.error("Failed to load topics:", err);
-      setError("Could not load topics");
-      setTopics([]);
+      console.error("useTopics error:", err);
+      setError("Failed to load topics");
+      setData([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    loadTopics();
-  }, [loadTopics]);
+    reload();
+  }, [reload]);
 
-  return { topics, loading, error, refresh: loadTopics };
+  return {
+    data,  
+    loading,
+    error,
+    reload,
+  };
 }
