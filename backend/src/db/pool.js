@@ -20,7 +20,7 @@
 {/* Render pool connection */}
 
 const { Pool } = require("pg");
-
+const DATABASE_URL = "postgresql://user:uItWJuHWJph5BntZG9efoXhxoamPmpHh@dpg-d651ge6r433s73arvp70-a/oursaydb";
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
