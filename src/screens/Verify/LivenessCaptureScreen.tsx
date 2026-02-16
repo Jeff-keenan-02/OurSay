@@ -1,131 +1,113 @@
 // screens/Verify/LivenessCaptureScreen.tsx
-import React, { useEffect, useRef, useState } from "react";
+
+import React, { useState, useContext } from "react";
 import { View, StyleSheet, Alert } from "react-native";
 import { Button, Text, ActivityIndicator } from "react-native-paper";
-import { Camera, useCameraDevices } from "react-native-vision-camera";
+import * as ImagePicker from "react-native-image-picker";
+
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { API_BASE_URL } from "../../config/api";
-import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
-import { BackRow } from "../../components/common/BackRow";
-
-const CHALLENGES = [
-  "Blink twice",
-  "Turn your head left",
-  "Turn your head right",
-  "Open your mouth",
-];
 
 export default function LivenessCaptureScreen() {
-  const cameraRef = useRef<Camera>(null);
-  const devices = useCameraDevices();
-  const device = devices.find((d) => d.position === "front");
   const { user, updateUser } = useContext(AuthContext);
-  
-  const [challenge, setChallenge] = useState("");
-  const [recording, setRecording] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  useEffect(() => {
-    const random = CHALLENGES[Math.floor(Math.random() * CHALLENGES.length)];
-    setChallenge(random);
+  /* -------------------------------------------------
+     Capture Selfie (Front Camera)
+  --------------------------------------------------*/
 
-    Camera.requestCameraPermission();
-    Camera.requestMicrophonePermission();
-  }, []);
+  const captureSelfie = () => {
+    if (!user) {
+      Alert.alert("You must be logged in");
+      return;
+    }
 
-  if (!device) {
-    return <ActivityIndicator style={{ marginTop: 40 }} />;
-  }
-
-  const startRecording = async () => {
-    if (!cameraRef.current) return;
-
-    setRecording(true);
-
-    cameraRef.current.startRecording({
-      fileType: "mp4",
-      onRecordingFinished: async (video) => {
-        setRecording(false);
-        await uploadLiveness(video.path);
+    ImagePicker.launchCamera(
+      {
+        mediaType: "photo",
+        cameraType: "front",
+        saveToPhotos: false,
+        includeBase64: false,
+        quality: 0.8,
       },
-      onRecordingError: (error) => {
-        console.error(error);
-        setRecording(false);
-      },
-    });
+      async (response) => {
+        if (response.didCancel) return;
 
-    // Auto-stop after 4 seconds
-    setTimeout(() => {
-      cameraRef.current?.stopRecording();
-    }, 4000);
+        if (response.errorCode) {
+          Alert.alert(response.errorMessage ?? "Camera error");
+          return;
+        }
+
+        const asset = response.assets?.[0];
+        if (!asset?.uri) {
+          Alert.alert("No image captured");
+          return;
+        }
+
+        try {
+          setUploading(true);
+
+          const form = new FormData();
+
+          form.append("file", {
+            uri: asset.uri,
+            type: asset.type ?? "image/jpeg",
+            name: asset.fileName ?? "selfie.jpg",
+          } as any);
+
+          form.append("userId", String(user.id));
+
+          const res = await fetch(
+            `${API_BASE_URL}/verify/verify-liveness`,
+            {
+              method: "POST",
+              body: form,
+            }
+          );
+
+          const data = await res.json();
+
+          if (!res.ok || !data.success) {
+            Alert.alert("❌ No face detected");
+            return;
+          }
+
+          updateUser({ verification_tier: data.level });
+          Alert.alert("✅ Liveness verified");
+
+        } catch (err) {
+          console.error(err);
+          Alert.alert("Liveness failed");
+        } finally {
+          setUploading(false);
+        }
+      }
+    );
   };
 
-  const uploadLiveness = async (videoPath: string) => {
-      if (!user) {
-    Alert.alert("You must be logged in");
-    return;
-  }
-
-    setUploading(true);
-
-    const form = new FormData();
-    form.append("video", {
-      uri: `file://${videoPath}`,
-      type: "video/mp4",
-      name: "liveness.mp4",
-    } as any);
-
-  form.append("challenge", challenge);
-  form.append("userId", String(user.id));
-
-   const res = await fetch(`${API_BASE_URL}/verify/verify-liveness`, {
-      method: "POST",
-      body: form,
-    });
-
-  const data = await res.json();
-
-  if (data.verified) {
-    // 🔑 THIS is the missing piece
-    updateUser({ verification_tier: data.level });
-    Alert.alert("✅ Liveness verified");
-  } else {
-    Alert.alert("Liveness failed");
-  }
-
-  setUploading(false);
-
-  };
+  /* -------------------------------------------------
+     Render
+  --------------------------------------------------*/
 
   return (
     <Screen showBack title="Liveness Check">
       <Section>
-        <Text variant="titleMedium">Please perform:</Text>
-        <Text variant="headlineSmall" style={styles.challenge}>
-          {challenge}
+        <Text variant="titleMedium">
+          Take a clear selfie to verify your identity
         </Text>
 
-        <View style={styles.cameraBox}>
-          <Camera
-            ref={cameraRef}
-            device={device}
-            isActive={true}
-            video
-            audio
-            style={StyleSheet.absoluteFill}
-          />
-        </View>
-
-        {recording && <ActivityIndicator style={{ marginVertical: 12 }} />}
+        {uploading && (
+          <ActivityIndicator style={{ marginVertical: 16 }} />
+        )}
 
         <Button
           mode="contained"
-          onPress={startRecording}
-          disabled={recording || uploading}
+          onPress={captureSelfie}
+          disabled={uploading}
         >
-          Start Liveness Check
+          Take Selfie
         </Button>
       </Section>
     </Screen>
@@ -133,10 +115,6 @@ export default function LivenessCaptureScreen() {
 }
 
 const styles = StyleSheet.create({
-  challenge: {
-    marginVertical: 12,
-    fontWeight: "700",
-  },
   cameraBox: {
     height: 320,
     borderRadius: 16,

@@ -109,34 +109,52 @@ exports.verifyPassport = async (req, res) => {
   }
 };
 
-// POST /verify/liveness/challenge
-exports.issueLivenessChallenge = (req, res) => {
-  const challenges = [
-    "blink",
-    "turn_left",
-    "turn_right",
-    "open_mouth"
-  ];
 
-  const challenge = challenges[Math.floor(Math.random() * challenges.length)];
-
-  res.json({
-    challenge,
-    expires_in: 30 // seconds
-  });
-};
-
+// deployed Cloud Function URL
+const LIVENESS_FUNCTION_URL =
+  "https://europe-west1-oursay.cloudfunctions.net/verifyLiveness";
 
 exports.verifyLiveness = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: "No video uploaded" });
+      return res.status(400).json({ error: "No file uploaded" });
     }
 
     const userId = Number(req.body.userId);
     if (!userId) {
       return res.status(400).json({ error: "Missing userId" });
     }
+
+    /* --------------------------------------------------
+       1. Forward image to Cloud Function
+    -------------------------------------------------- */
+
+    const form = new FormData();
+    form.append("file", req.file.buffer, {
+      filename: req.file.originalname || "selfie.jpg",
+      contentType: req.file.mimetype || "image/jpeg",
+    });
+
+    const cfResponse = await axios.post(
+      LIVENESS_FUNCTION_URL,
+      form,
+      {
+        headers: form.getHeaders(),
+        timeout: 60000,
+      }
+    );
+
+    const { success } = cfResponse.data;
+
+    if (!success) {
+      return res.status(400).json({
+        error: "Liveness check failed",
+      });
+    }
+
+    /* --------------------------------------------------
+       2. Store verification
+    -------------------------------------------------- */
 
     await pool.query(
       `
@@ -154,6 +172,10 @@ exports.verifyLiveness = async (req, res) => {
       [userId]
     );
 
+    /* --------------------------------------------------
+       3. Update user tier
+    -------------------------------------------------- */
+
     await pool.query(
       `
       UPDATE users
@@ -168,9 +190,13 @@ exports.verifyLiveness = async (req, res) => {
       level: 1,
       type: "liveness",
     });
+
   } catch (err) {
     console.error("Liveness verification failed:", err);
-    return res.status(500).json({ error: "Liveness verification failed" });
+
+    return res.status(500).json({
+      error: "Liveness verification failed",
+    });
   }
 };
 

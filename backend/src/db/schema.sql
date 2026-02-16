@@ -41,9 +41,6 @@ CREATE TABLE verifications (
 
   revoked BOOLEAN DEFAULT FALSE,
 
-  -- one verification per type per user
-  CONSTRAINT unique_user_verification_type
-    UNIQUE (user_id, type),
 
   -- residence must include region
   CONSTRAINT residence_requires_region
@@ -56,16 +53,12 @@ CREATE TABLE verifications (
   -- passport must include proof hash
   CONSTRAINT passport_requires_proof_hash
     CHECK (
-      (type = 'passport' AND proof_hash IS NOT NULL)
+      (type = 'passport' AND proof_hash IS  NULL)
       OR
       (type != 'passport' AND proof_hash IS NULL)
     )
 );
 
--- allows a user to have many revoked verifications (history) but only one active one.
-CREATE UNIQUE INDEX uniq_verification_per_type
-ON verifications (user_id, type)
-WHERE revoked = FALSE;
 
 CREATE TABLE topics (
   id SERIAL PRIMARY KEY,

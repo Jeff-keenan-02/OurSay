@@ -7,7 +7,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/verify-passport', upload.single('file'), controller.verifyPassport);
 
-router.post('/verify-liveness', upload.single('video'), controller.verifyLiveness);
+router.post('/verify-liveness', upload.single('file'), controller.verifyLiveness);
 
 router.post('/verify-residence', controller.verifyResidence);
 
