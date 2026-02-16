@@ -15,7 +15,7 @@ import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { spacing } from "../../theme/spacing";
 import { API_BASE_URL } from "../../config/api";
-import { BackRow } from "../../components/common/BackRow";
+
 
 export default function PassportCaptureScreen(){
   const theme = useTheme();

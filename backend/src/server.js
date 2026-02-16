@@ -6,7 +6,7 @@ const verifyRoutes = require('./routes/verify.routes');
 const discussionRoutes = require('./routes/discussion.routes');
 const pollRoutes = require('./routes/poll.routes');
 const petitionRoutes = require("./routes/petition.routes");
-const topicRoutes = require("./routes/topic.routes");
+const topicRoutes = require("./routes/topic.routes")
 
 
 
