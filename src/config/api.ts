@@ -1,13 +1,7 @@
 // src/config/api.ts
 
+const USE_LOCAL = true;
 
-{/* Local database */}
-// export const API_BASE_URL = __DEV__
-//   ? 'http://192.168.0.18:3000' // laptop IP
-//   : 'https://api.oursay.ie';
-
-
-{/* Render database */}
-  export const API_BASE_URL = __DEV__
-  ? 'http://192.168.0.18:3000'
+export const API_BASE_URL = USE_LOCAL
+  ? 'http://192.168.0.180:3000'
   : 'https://oursay.onrender.com';

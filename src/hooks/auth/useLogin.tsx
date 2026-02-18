@@ -1,13 +1,6 @@
-// hooks/auth/useLogin.ts
-
 import { useState, useCallback } from "react";
-import { User } from "../../types/User";
 import { apiClient } from "../../services/apiClient";
-
-/* =====================================================
-   useLogin
-   Handles user authentication mutation
-===================================================== */
+import { AuthResponse } from "../../types/AuthResponse";
 
 export function useLogin() {
   const [loading, setLoading] = useState(false);
@@ -17,30 +10,20 @@ export function useLogin() {
     async (
       username: string,
       password: string
-    ): Promise<User | null> => {
+    ): Promise<AuthResponse | null> => {
 
       try {
         setLoading(true);
         setError(null);
 
-        const result = await apiClient.post<{
-          user: User;
-        }>("/auth/login", {
-          username,
-          password,
-        });
+        const result = await apiClient.post<AuthResponse>("/auth/login",{ username, password });
 
-        return result.user;
+        return result;
 
       } catch (err: any) {
         console.error("Login error:", err);
-
-        setError(
-          err.message || "Login failed"
-        );
-
+        setError(err.message || "Login failed");
         return null;
-
       } finally {
         setLoading(false);
       }

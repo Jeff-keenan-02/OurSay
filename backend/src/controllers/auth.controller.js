@@ -1,5 +1,7 @@
 const crypto = require('crypto');
 const pool = require('../db/pool');
+const { generateToken } = require("../services/token.service");
+
 
 // ---------------------------------------------------------------------------
 // Password hashing helper
@@ -30,14 +32,22 @@ exports.signup = async (req, res) => {
       `
       INSERT INTO users (username, password_hash)
       VALUES ($1, $2)
-      RETURNING id, username, created_at
+      RETURNING id, username, verification_tier
       `,
       [username, password_hash]
     );
 
+    const user = result.rows[0];
+
+    // Generate token immediately
+    const token = generateToken({
+      userId: user.id
+    });
+
     return res.status(201).json({
-      message: 'Signup successful',
-      user: result.rows[0],
+      message: "Signup successful",
+      token,
+      user
     });
 
   } catch (err) {
@@ -81,13 +91,20 @@ exports.login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid username or password' });
     }
 
+
+    // Login returns token
+    const token = generateToken({
+      userId: user.id
+    });
+
     return res.json({
-      message: 'Login successful',
+      message: "Login successful",
+      token,
       user: {
         id: user.id,
         username: user.username,
-        verification_tier: user.verification_tier,
-      },
+        verification_tier: user.verification_tier
+      }
     });
 
   } catch (err) {

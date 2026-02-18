@@ -19,8 +19,8 @@ export default function SignupScreen() {
 
 
   const handleSignup = async () => {
-    const user = await SignupQuery.signup(username, password);
-    if (user) login(user);
+    const authData = await SignupQuery.signup(username, password);
+    if (authData) login(authData);
   };
 
     return (

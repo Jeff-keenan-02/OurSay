@@ -1,8 +1,8 @@
 // hooks/auth/useSignup.ts
 
 import { useState, useCallback } from "react";
-import { User } from "../../types/User";
 import { apiClient } from "../../services/apiClient";
+import { AuthResponse } from "../../types/AuthResponse";
 
 /* =====================================================
    useSignup
@@ -21,19 +21,17 @@ export function useSignup() {
     async (
       username: string,
       password: string
-    ): Promise<User | null> => {
+    ): Promise<AuthResponse | null> => {
       try {
         setLoading(true);
         setError(null);
 
-        const result = await apiClient.post<{
-          user: User;
-        }>("/auth/signup", {
-          username,
-          password,
-        });
+        const result = await apiClient.post<AuthResponse>(
+          "/auth/signup",
+          { username, password }
+        );
 
-        return result.user;
+        return result;
 
       } catch (err: any) {
         console.error("Signup error:", err);

@@ -1,6 +1,7 @@
 // src/services/apiClient.ts
 
 import { API_BASE_URL } from "../config/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 /* =====================================================
    Types
@@ -22,16 +23,26 @@ async function request<T>(
 ): Promise<T> {
   const { method = "GET", body, headers = {} } = options;
 
+  // Get token from storage
+  const token = await AsyncStorage.getItem("token");
+
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     method,
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...headers,
     },
     body: body ? JSON.stringify(body) : undefined,
   });
 
   const data = await response.json().catch(() => null);
+
+  if (response.status === 401) {
+    await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem("user");
+    throw new Error("Session expired");
+  }
 
   if (!response.ok) {
     const message =
@@ -40,6 +51,7 @@ async function request<T>(
       "Unexpected server error";
     throw new Error(message);
   }
+
 
   return data as T;
 }

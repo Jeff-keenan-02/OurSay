@@ -19,10 +19,10 @@ export default function LoginScreen() {
 
   //(handleLogin function remains the same)
 const handleLogin = async () => {
-  const user = await loginQuery.login(username, password);
+  const authData = await loginQuery.login(username, password);
 
-  if (user) {
-    login(user); // store in context
+  if (authData) {
+    await login(authData); // now expects { token, user }
   }
 };
 

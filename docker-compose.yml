@@ -24,6 +24,8 @@ services:
       DB_USER: oursay
       DB_PASSWORD: RILEY2015
       DB_NAME: oursaydb
+      JWT_SECRET: super_secret_dev_key
+      PASSWORD_SALT: dev_salt_change_me
     ports:
       - "3000:3000"
 
