@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { DiscussionDetail } from "../../types/Discussion";
-import { apiClient } from "../../services/apiClient";
+import { useApiClient } from "../common/useApiClient";
+
 
 /* =====================================================
    useDiscussion
@@ -19,6 +20,7 @@ export function useDiscussion(id: number) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const api = useApiClient();
   /* -------------------------------------------------
      Reload Function
   --------------------------------------------------*/
@@ -34,7 +36,7 @@ export function useDiscussion(id: number) {
       setLoading(true);
       setError(null);
 
-      const json = await apiClient.get<DiscussionDetail>(
+      const json = await api.get<DiscussionDetail>(
         `/discussions/${id}`
       );
 

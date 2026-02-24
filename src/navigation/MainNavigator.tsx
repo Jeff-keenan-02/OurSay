@@ -4,9 +4,12 @@ import AuthNavigator from "./AuthNavigator";
 import { AuthContext } from "../context/AuthContext";
 import DrawerNavigator from "./DrawerNavigator";
 
-
 export default function MainNavigator() {
-  const { user } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
+
+  if (loading) {
+    return null; // or ActivityIndicator
+  }
 
   return user ? <DrawerNavigator /> : <AuthNavigator />;
 }

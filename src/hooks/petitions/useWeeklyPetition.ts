@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Petition } from "../../types/Petition";
-import { apiClient } from "../../services/apiClient";
+import { useApiClient } from "../common/useApiClient";
 
 /* =====================================================
    useWeeklyPetition
@@ -14,6 +14,8 @@ export function useWeeklyPetition() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const api = useApiClient();
+
   /* -------------------------------------------------
      Reload
   --------------------------------------------------*/
@@ -23,7 +25,7 @@ export function useWeeklyPetition() {
       setLoading(true);
       setError(null);
 
-      const json = await apiClient.get<Petition | null>(
+      const json = await api.get<Petition | null>(
         "/petitions/weekly"
       );
 

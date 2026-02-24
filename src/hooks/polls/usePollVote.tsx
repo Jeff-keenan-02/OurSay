@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { User } from "../../types/User";
-import { apiClient } from "../../services/apiClient";
+import { useApiClient } from "../common/useApiClient";
 
 /* =====================================================
    usePollVote
@@ -12,6 +12,8 @@ import { apiClient } from "../../services/apiClient";
 export function usePollVote(user: User | null) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const api = useApiClient();
 
   /* -------------------------------------------------
      Vote Mutation
@@ -31,7 +33,7 @@ export function usePollVote(user: User | null) {
         setLoading(true);
         setError(null);
 
-        const result = await apiClient.post(
+        const result = await api.post(
           `/poll/${pollId}/vote`,
           {
             userId: user.id,

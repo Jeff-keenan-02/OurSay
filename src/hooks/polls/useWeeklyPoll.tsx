@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { User } from "../../types/User";
 import { PollGroup } from "../../types/PollGroup";
-import { apiClient } from "../../services/apiClient";
+import { useApiClient } from "../common/useApiClient";
 
 /* =====================================================
    useWeeklyPoll
@@ -15,6 +15,7 @@ export function useWeeklyPoll(user: User | null) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const api = useApiClient();
   /* -------------------------------------------------
      Reload
   --------------------------------------------------*/
@@ -30,7 +31,7 @@ export function useWeeklyPoll(user: User | null) {
       setLoading(true);
       setError(null);
 
-      const json = await apiClient.get<PollGroup | null>(
+      const json = await api.get<PollGroup | null>(
         `/poll/weekly?userId=${user.id}`
       );
 

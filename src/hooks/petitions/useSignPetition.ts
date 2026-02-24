@@ -1,7 +1,7 @@
 // hooks/petitions/useSignPetition.ts
 
 import { useState, useCallback } from "react";
-import { apiClient } from "../../services/apiClient";
+import { useApiClient } from "../common/useApiClient";
 
 /* =====================================================
    useSignPetition
@@ -12,6 +12,8 @@ export function useSignPetition() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+
+  const api = useApiClient();
   /* -------------------------------------------------
      Sign Mutation
   --------------------------------------------------*/
@@ -25,7 +27,7 @@ export function useSignPetition() {
         setLoading(true);
         setError(null);
 
-        await apiClient.post(
+        await api.post(
           `/petitions/${petitionId}/sign`,
           { userId }
         );

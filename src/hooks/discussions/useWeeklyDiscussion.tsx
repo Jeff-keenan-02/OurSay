@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { WeeklyDiscussion } from "../../types/Discussion";
-import { apiClient } from "../../services/apiClient";
+import { useApiClient } from "../common/useApiClient";
 
 /* =====================================================
    useWeeklyDiscussion
@@ -14,6 +14,7 @@ export function useWeeklyDiscussion() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const api = useApiClient();
   /* -------------------------------------------------
      Reload Function
   --------------------------------------------------*/
@@ -24,7 +25,7 @@ export function useWeeklyDiscussion() {
       setError(null);
 
       const json =
-        await apiClient.get<WeeklyDiscussion | null>(
+        await api.get<WeeklyDiscussion | null>(
           "/discussions/weekly"
         );
 

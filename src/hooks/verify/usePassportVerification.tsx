@@ -7,6 +7,7 @@ import { PhotoAsset } from "../../types/Photo";
 import { User } from "../../types/User";
 import { VerificationResponse } from "../../types/VerificationType";
 
+
 /* =====================================================
    usePassportVerification
    Handles:
@@ -31,6 +32,7 @@ export function usePassportVerification(
   const [photo, setPhoto] = useState<PhotoAsset | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
 
   /* -------------------------------------------------
      Capture Passport (Camera Only)
@@ -103,7 +105,7 @@ export function usePassportVerification(
       form.append("userId", user.id.toString());
 
       const res = await fetch(
-        `${API_BASE_URL}/verify/verify-passport`,
+        `${API_BASE_URL}/verify/passport`,
         {
           method: "POST",
           body: form,

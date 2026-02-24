@@ -1,10 +1,12 @@
 import { useState, useCallback } from "react";
-import { apiClient } from "../../services/apiClient";
 import { AuthResponse } from "../../types/AuthResponse";
+import { useApiClient } from "../common/useApiClient";
 
 export function useLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const api = useApiClient();
 
   const login = useCallback(
     async (
@@ -16,7 +18,7 @@ export function useLogin() {
         setLoading(true);
         setError(null);
 
-        const result = await apiClient.post<AuthResponse>("/auth/login",{ username, password });
+        const result = await api.post<AuthResponse>("/auth/login",{ username, password });
 
         return result;
 

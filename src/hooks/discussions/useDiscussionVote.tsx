@@ -2,7 +2,7 @@
 
 import { DiscussionListItem } from "../../types/Discussion";
 import { User } from "../../types/User";
-import { apiClient } from "../../services/apiClient";
+import { useApiClient } from "../common/useApiClient";
 
 /* =====================================================
    useDiscussionVote
@@ -16,6 +16,7 @@ export function useDiscussionVote(
   ) => void
 ) {
 
+  const api = useApiClient();
   /* -------------------------------------------------
      Vote Mutation
   --------------------------------------------------*/
@@ -30,7 +31,7 @@ export function useDiscussionVote(
     }
 
     try {
-      const updated = await apiClient.post<DiscussionListItem>(
+      const updated = await api.post<DiscussionListItem>(
         `/discussions/${id}/vote`,
         {
           userId: user.id,

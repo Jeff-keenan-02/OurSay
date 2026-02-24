@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { DiscussionListItem } from "../../types/Discussion";
-import { apiClient } from "../../services/apiClient";
+import { useApiClient } from "../common/useApiClient";
 
 /* =====================================================
    useTrendingDiscussions
@@ -15,6 +15,8 @@ export function useTrendingDiscussions() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const api = useApiClient();
+
   /* -------------------------------------------------
      Reload Function
   --------------------------------------------------*/
@@ -24,7 +26,7 @@ export function useTrendingDiscussions() {
       setLoading(true);
       setError(null);
 
-      const json = await apiClient.get<DiscussionListItem[]>(
+      const json = await api.get<DiscussionListItem[]>(
         "/discussions/trending"
       );
 

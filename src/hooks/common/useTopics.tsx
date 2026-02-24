@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Topic } from "../../types/Topic";
-import { apiClient } from "../../services/apiClient";
+import { useApiClient } from "../common/useApiClient";
 
 /* =====================================================
    useTopics
@@ -18,6 +18,8 @@ export function useTopics() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  const api = useApiClient();
+
   /* -------------------------------------------------
      Reload Function
   --------------------------------------------------*/
@@ -27,7 +29,7 @@ export function useTopics() {
       setLoading(true);
       setError(null);
 
-      const json = await apiClient.get<Topic[]>("/topics");
+      const json = await api.get<Topic[]>("/topics");
 
       setData(json);
 

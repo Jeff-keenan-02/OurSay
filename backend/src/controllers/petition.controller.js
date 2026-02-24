@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const pool = require("../db/pool");
+const petitionService = require('../services/petition.service');
 
 
 /* ------------------------------
@@ -163,133 +164,21 @@ exports.getPetition = async (req, res) => {
 ------------------------------ */
 exports.signPetition = async (req, res) => {
   const petitionId = Number(req.params.id);
-  const { userId } = req.body;
-
-  // -------------------------
-  // 1️⃣ Basic validation FIRST
-  // -------------------------
-  if (!userId) {
-    return res.status(400).json({ error: "userId is required" });
-  }
+  const userId = req.user.id;
 
   if (!petitionId || isNaN(petitionId)) {
     return res.status(400).json({ error: "Invalid petition ID" });
   }
 
   try {
-    // -------------------------
-    // 2️⃣ Prevent repeat signing
-    // -------------------------
-    const existing = await pool.query(
-      `
-      SELECT 1
-      FROM petition_participation
-      WHERE user_id = $1 AND petition_id = $2
-      `,
-      [userId, petitionId]
-    );
+    const result = await petitionService.signPetition({
+      userId,
+      petitionId
+    });
 
-    if (existing.rowCount > 0) {
-      return res.status(403).json({
-        error: "User has already signed this petition",
-      });
-    }
-
-    // -------------------------
-    // 3️⃣ Get user verification tier
-    // -------------------------
-    const userResult = await pool.query(
-      `SELECT verification_tier FROM users WHERE id = $1`,
-      [userId]
-    );
-
-    if (!userResult.rows.length) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    // -------------------------
-    // 4️⃣ Get petition requirement
-    // -------------------------
-    const petitionResult = await pool.query(
-      `
-      SELECT required_verification_tier
-      FROM petitions
-      WHERE id = $1
-      `,
-      [petitionId]
-    );
-
-    if (!petitionResult.rows.length) {
-      return res.status(404).json({ error: "Petition not found" });
-    }
-
-    const userTier = userResult.rows[0].verification_tier;
-    const requiredTier = petitionResult.rows[0].required_verification_tier;
-
-    if (userTier < requiredTier) {
-      return res.status(403).json({
-        error: "Insufficient verification level",
-        requiredTier,
-      });
-    }
-
-    // -------------------------
-    // 5️⃣ Create one-time anonymous token
-    // -------------------------
-    const token = crypto.randomBytes(32).toString("hex");
-
-    await pool.query(
-      `
-      INSERT INTO action_tokens (
-        token_hash,
-        action_type,
-        petition_id,
-        expires_at
-      )
-      VALUES ($1, 'petition_sign', $2, NOW() + INTERVAL '10 minutes')
-      `,
-      [token, petitionId]
-    );
-
-    // -------------------------
-    // 6️⃣ Record signature anonymously
-    // -------------------------
-    await pool.query(
-      `
-      INSERT INTO petition_signatures (petition_id, token_hash)
-      VALUES ($1, $2)
-      `,
-      [petitionId, token]
-    );
-
-    // -------------------------
-    // 7️⃣ Burn token
-    // -------------------------
-    await pool.query(
-      `
-      UPDATE action_tokens
-      SET used = TRUE
-      WHERE token_hash = $1
-      `,
-      [token]
-    );
-
-    // -------------------------
-    // 8️⃣ Record participation (NO identity linkage)
-    // -------------------------
-    await pool.query(
-      `
-      INSERT INTO petition_participation (user_id, petition_id)
-      VALUES ($1, $2)
-      ON CONFLICT DO NOTHING
-      `,
-      [userId, petitionId]
-    );
-
-    return res.json({ success: true });
+    return res.json(result);
 
   } catch (err) {
-    console.error("Sign petition failed:", err);
-    return res.status(500).json({ error: "Failed to sign petition" });
+    return res.status(400).json({ error: err.message });
   }
 };

@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^1.13.2",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
@@ -19,5 +20,9 @@
     "multer": "^2.0.2",
     "pg": "^8.16.3"
   },
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "eslint": "^8.56.0",
+    "eslint-plugin-security": "^1.7.1"
+  }
 }

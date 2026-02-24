@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { PollGroup } from "../../types/PollGroup";
 import { User } from "../../types/User";
-import { apiClient } from "../../services/apiClient";
+import { useApiClient } from "../common/useApiClient";
 
 /* =====================================================
    useTrendingPoll
@@ -14,6 +14,8 @@ export function useTrendingPoll(user: User | null) {
   const [data, setData] = useState<PollGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const api = useApiClient();
 
   /* -------------------------------------------------
      Reload
@@ -30,7 +32,7 @@ export function useTrendingPoll(user: User | null) {
       setLoading(true);
       setError(null);
 
-      const json = await apiClient.get<PollGroup[]>(
+      const json = await api.get<PollGroup[]>(
         `/poll/trending?userId=${user.id}`
       );
 

@@ -1,4 +1,4 @@
-const { verifyToken } = require("../services/token.service");
+const { verifyToken } = require("../services/jwt.service");
 
 module.exports = function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -11,7 +11,7 @@ module.exports = function requireAuth(req, res, next) {
 
   try {
     const decoded = verifyToken(token);
-    req.user = decoded;
+    req.user = { id: decoded.userId };
     next();
   } catch (err) {
     return res.status(401).json({ error: "Invalid or expired token" });

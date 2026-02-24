@@ -11,7 +11,7 @@ import { API_BASE_URL } from "../../config/api";
 import { AuthContext } from "../../context/AuthContext";
 
 export default function LivenessCaptureScreen() {
-  const { user, updateUser } = useContext(AuthContext);
+  const { user, token, updateUser } = useContext(AuthContext);
   const [uploading, setUploading] = useState(false);
 
   /* -------------------------------------------------
@@ -60,19 +60,29 @@ export default function LivenessCaptureScreen() {
           form.append("userId", String(user.id));
 
           const res = await fetch(
-            `${API_BASE_URL}/verify/verify-liveness`,
+            `${API_BASE_URL}/verify/liveness`,
             {
               method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
               body: form,
             }
           );
 
           const data = await res.json();
+console.log("STATUS:", res.status);
+console.log("RESPONSE DATA:", data);
 
-          if (!res.ok || !data.success) {
-            Alert.alert("❌ No face detected");
-            return;
-          }
+if (!res.ok) {
+  Alert.alert(`Server error ${res.status}`);
+  return;
+}
+
+if (!data.success) {
+  Alert.alert(data.error || "Verification failed");
+  return;
+}
 
           updateUser({ verification_tier: data.level });
           Alert.alert("✅ Liveness verified");

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { PollGroup } from "../../types/PollGroup";
 import { User } from "../../types/User";
-import { apiClient } from "../../services/apiClient";
+import { useApiClient } from "../common/useApiClient";
 
 /* =====================================================
    usePollGroups
@@ -17,6 +17,8 @@ export function usePollGroups(
   const [data, setData] = useState<PollGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const api = useApiClient();
 
   /* -------------------------------------------------
      Reload
@@ -33,7 +35,7 @@ export function usePollGroups(
       setLoading(true);
       setError(null);
 
-      const json = await apiClient.get<PollGroup[]>(
+      const json = await api.get<PollGroup[]>(
         `/poll/topics/${topicId}/groups?userId=${user.id}`
       );
 

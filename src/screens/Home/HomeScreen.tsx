@@ -13,15 +13,9 @@ import { useWeeklyPoll } from "../../hooks/polls/useWeeklyPoll";
 import { useWeeklyDiscussion } from "../../hooks/discussions/useWeeklyDiscussion";
 import { useWeeklyPetition } from "../../hooks/petitions/useWeeklyPetition";
 
-import {
-  mapPollToWeekly,
-  mapDiscussionToWeekly,
-  mapPetitionToWeekly,
-} from "../../mappers/weeklyCardMapper";
+import {mapPollToWeekly, mapDiscussionToWeekly, mapPetitionToWeekly} from "../../mappers/weeklyCardMapper";
 
-import {
-  WeeklyDiscussion,
-} from "../../types/Discussion";
+import {WeeklyDiscussion} from "../../types/Discussion";
 import { Petition } from "../../types/Petition";
 import { PollGroup } from "../../types/PollGroup";
 
@@ -36,7 +30,7 @@ export default function HomeScreen() {
 
   const weeklyPollQuery = useWeeklyPoll(user);
   const weeklyDiscussionQuery = useWeeklyDiscussion();
-  const weeklyPetitionQuery = useWeeklyPetition();
+  const weeklyPetitionQuery = useWeeklyPetition(); 
 
   /* -------------------------------------------------
      Navigation Handlers

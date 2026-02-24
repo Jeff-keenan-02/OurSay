@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Petition } from "../../types/Petition";
-import { apiClient } from "../../services/apiClient";
+import { useApiClient } from "../common/useApiClient";
 
 /* =====================================================
    usePetition
@@ -13,6 +13,8 @@ export function usePetition(petitionId: number | null) {
   const [data, setData] = useState<Petition | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const api = useApiClient();
 
   /* -------------------------------------------------
      Reload Function
@@ -30,7 +32,7 @@ export function usePetition(petitionId: number | null) {
       setError(null);
 
       const json =
-        await apiClient.get<Petition>(
+        await api.get<Petition>(
           `/petitions/${petitionId}`
         );
 

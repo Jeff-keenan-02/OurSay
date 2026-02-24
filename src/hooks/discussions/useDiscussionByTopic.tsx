@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { DiscussionListItem } from "../../types/Discussion";
-import { apiClient } from "../../services/apiClient";
+import { useApiClient } from "../common/useApiClient";
 
 /* =====================================================
    useDiscussionByTopic
@@ -17,6 +17,8 @@ export function useDiscussionByTopic(topicId: number | null) {
   const [data, setData] = useState<DiscussionListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const api = useApiClient();
 
   /* -------------------------------------------------
      Reload Function
@@ -33,7 +35,7 @@ export function useDiscussionByTopic(topicId: number | null) {
       setLoading(true);
       setError(null);
 
-      const json = await apiClient.get<DiscussionListItem[]>(
+      const json = await api.get<DiscussionListItem[]>(
         `/discussions/by-topic/${topicId}`
       );
 

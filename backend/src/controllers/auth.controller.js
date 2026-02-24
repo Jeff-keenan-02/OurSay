@@ -1,19 +1,8 @@
-const crypto = require('crypto');
+const bcrypt = require('bcrypt');
 const pool = require('../db/pool');
-const { generateToken } = require("../services/token.service");
+const { generateToken } = require("../services/jwt.service");
 
-
-// ---------------------------------------------------------------------------
-// Password hashing helper
-// ---------------------------------------------------------------------------
-const PASSWORD_SALT = process.env.PASSWORD_SALT || 'dev_salt_change_me';
-
-function hashPassword(password) {
-  return crypto
-    .createHash('sha256')
-    .update(password + PASSWORD_SALT)
-    .digest('hex');
-}
+const SALT_ROUNDS = 12; //12 is a good balance.
 
 // ---------------------------------------------------------------------------
 // POST /signup
@@ -26,7 +15,12 @@ exports.signup = async (req, res) => {
       return res.status(400).json({ error: 'Username and password are required' });
     }
 
-    const password_hash = hashPassword(password);
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+    }
+
+    // Hash password with bcrypt (includes per-user salt automatically)
+    const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
 
     const result = await pool.query(
       `
@@ -39,7 +33,6 @@ exports.signup = async (req, res) => {
 
     const user = result.rows[0];
 
-    // Generate token immediately
     const token = generateToken({
       userId: user.id
     });
@@ -85,14 +78,14 @@ exports.login = async (req, res) => {
     }
 
     const user = result.rows[0];
-    const hashedInput = hashPassword(password);
 
-    if (hashedInput !== user.password_hash) {
+    // Secure password comparison
+    const passwordMatch = await bcrypt.compare(password, user.password_hash);
+
+    if (!passwordMatch) {
       return res.status(401).json({ error: 'Invalid username or password' });
     }
 
-
-    // Login returns token
     const token = generateToken({
       userId: user.id
     });

@@ -24,7 +24,7 @@ export default function ResidenceCaptureScreen() {
     setResult(null);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/verify/verify-residence`, {
+      const res = await fetch(`${API_BASE_URL}/verify/residence`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

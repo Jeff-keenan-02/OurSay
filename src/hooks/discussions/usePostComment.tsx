@@ -1,7 +1,7 @@
 // hooks/discussions/usePostComment.ts
 
 import { useState, useCallback } from "react";
-import { apiClient } from "../../services/apiClient";
+import { useApiClient } from "../common/useApiClient";
 
 /* =====================================================
    usePostComment
@@ -12,6 +12,7 @@ export function usePostComment(discussionId: number) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const api = useApiClient();
   /* -------------------------------------------------
      Mutation
   --------------------------------------------------*/
@@ -24,7 +25,7 @@ export function usePostComment(discussionId: number) {
         setLoading(true);
         setError(null);
 
-        const created = await apiClient.post(
+        const created = await api.post(
           `/discussions/${discussionId}/comments`,
           {
             body: text.trim(),

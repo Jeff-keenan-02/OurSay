@@ -1,8 +1,8 @@
 // hooks/auth/useSignup.ts
 
 import { useState, useCallback } from "react";
-import { apiClient } from "../../services/apiClient";
 import { AuthResponse } from "../../types/AuthResponse";
+import { useApiClient } from "../common/useApiClient";
 
 /* =====================================================
    useSignup
@@ -12,6 +12,7 @@ import { AuthResponse } from "../../types/AuthResponse";
 export function useSignup() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+    const api = useApiClient();
 
   /* -------------------------------------------------
      Mutation
@@ -26,7 +27,7 @@ export function useSignup() {
         setLoading(true);
         setError(null);
 
-        const result = await apiClient.post<AuthResponse>(
+        const result = await api.post<AuthResponse>(
           "/auth/signup",
           { username, password }
         );
