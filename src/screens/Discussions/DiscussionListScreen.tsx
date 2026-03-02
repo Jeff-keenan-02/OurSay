@@ -7,20 +7,15 @@ import {
   useRoute,
 } from "@react-navigation/native";
 import { Text } from "react-native-paper";
-
 import { AuthContext } from "../../context/AuthContext";
 import { Screen } from "../../layout/Screen";
-import { BackRow } from "../../components/common/BackRow";
 import TrendingEngagementCard from "../../components/common/TrendingEngagementCard";
-
-
 import { useDiscussionByTopic } from "../../hooks/discussions/useDiscussionByTopic";
 import { useDiscussionVote } from "../../hooks/discussions/useDiscussionVote";
-
 import { mapDiscussionToTrending } from "../../mappers/trendingCardMapper";
 import { DiscussionListItem } from "../../types/Discussion";
-
 import { QuerySection } from "../../components/common/QuerySection";
+
 type DiscussionStackParams = {
   DiscussionHome: undefined;
   DiscussionsList: { topicId: number; title: string };

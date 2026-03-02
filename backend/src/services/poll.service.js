@@ -2,28 +2,36 @@ const pool = require('../db/pool');
 const verificationService = require('./verification.service');
 const { generateActionToken } = require('./actionToken.service');
 
-exports.signPetition = async ({ userId, petitionId }) => {
+exports.votePoll = async ({ userId, pollId, choice }) => {
   const client = await pool.connect();
 
   try {
     await client.query('BEGIN');
 
-    // 1️⃣ Validate tier + get active passport proof
-    const { effectiveTier, passportHash } =
-      await verificationService.getVotingIdentity(userId);
-
-    const petitionResult = await client.query(
-      `SELECT required_verification_tier
-       FROM petitions
-       WHERE id = $1`,
-      [petitionId]
-    );
-
-    if (!petitionResult.rows.length) {
-      throw new Error('Petition not found');
+    if (!['yes', 'no'].includes(choice)) {
+      throw new Error('Invalid choice');
     }
 
-    const { required_verification_tier } = petitionResult.rows[0];
+    // 1️⃣ Validate tier + get passport proof
+    const { effectiveTier, passportHash } = await verificationService.getVotingIdentity(userId);
+
+    const pollResult = await client.query(
+      `
+      SELECT 
+        pg.required_verification_tier
+      FROM polls p
+      JOIN poll_groups pg
+        ON pg.id = p.poll_group_id
+      WHERE p.id = $1
+      `,
+      [pollId]
+    );
+
+    if (!pollResult.rows.length) {
+      throw new Error('Poll not found');
+    }
+
+    const { required_verification_tier } = pollResult.rows[0];
 
     // Tier check
     if (effectiveTier < required_verification_tier) {
@@ -35,28 +43,28 @@ exports.signPetition = async ({ userId, petitionId }) => {
       throw new Error('Active passport verification required');
     }
 
-    // 2️⃣ Enforce one passport per petition (DB-level guarantee)
+    // 2️⃣ Enforce one passport per poll
     await client.query(
-      `INSERT INTO petition_identity_usage (petition_id, passport_hash)
+      `INSERT INTO poll_identity_usage (poll_id, passport_hash)
        VALUES ($1, $2)`,
-      [petitionId, passportHash]
+      [pollId, passportHash]
     );
 
-    // 3️⃣ Generate anonymous token
+    // 3️⃣ Generate anonymous vote token
     const token = generateActionToken();
 
     await client.query(
       `INSERT INTO action_tokens
-       (token_hash, action_type, petition_id, expires_at)
-       VALUES ($1, 'petition_sign', $2, NOW() + INTERVAL '10 minutes')`,
-      [token, petitionId]
+       (token_hash, action_type, poll_id, expires_at)
+       VALUES ($1, 'poll_vote', $2, NOW() + INTERVAL '10 minutes')`,
+      [token, pollId]
     );
 
-    // 4️⃣ Store signature (no identity linkage)
+    // 4️⃣ Store vote anonymously
     await client.query(
-      `INSERT INTO petition_signatures (petition_id, token_hash)
-       VALUES ($1, $2)`,
-      [petitionId, token]
+      `INSERT INTO poll_votes (poll_id, token_hash, choice)
+       VALUES ($1, $2, $3)`,
+      [pollId, token, choice]
     );
 
     await client.query(
@@ -68,10 +76,10 @@ exports.signPetition = async ({ userId, petitionId }) => {
 
     // 5️⃣ UI-only participation tracking
     await client.query(
-      `INSERT INTO petition_participation (user_id, petition_id)
+      `INSERT INTO poll_participation (user_id, poll_id)
        VALUES ($1, $2)
        ON CONFLICT DO NOTHING`,
-      [userId, petitionId]
+      [userId, pollId]
     );
 
     await client.query('COMMIT');
@@ -82,7 +90,7 @@ exports.signPetition = async ({ userId, petitionId }) => {
     await client.query('ROLLBACK');
 
     if (err.code === '23505') {
-      throw new Error('This identity has already signed this petition');
+      throw new Error('This identity has already voted in this poll');
     }
 
     throw err;

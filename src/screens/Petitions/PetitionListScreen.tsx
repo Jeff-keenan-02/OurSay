@@ -6,13 +6,10 @@ import {
   useFocusEffect,
   RouteProp,
 } from "@react-navigation/native";
-
 import { Screen } from "../../layout/Screen";
-import { BackRow } from "../../components/common/BackRow";
 import { QuerySection } from "../../components/common/QuerySection";
 import { VerticalList } from "../../components/common/VerticalList";
 import TrendingEngagementCard from "../../components/common/TrendingEngagementCard";
-
 import { usePetitionsByTopic } from "../../hooks/petitions/usePetitionsByTopic";
 import { mapPetitionToTrending } from "../../mappers/trendingCardMapper";
 

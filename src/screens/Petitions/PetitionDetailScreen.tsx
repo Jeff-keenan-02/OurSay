@@ -17,14 +17,12 @@ import { Screen } from "../../layout/Screen";
 
 import { AuthContext } from "../../context/AuthContext";
 import { permissions } from "../../utils/permissions";
-import {
-  VerificationTier,
-  VERIFICATION_TIERS,
-} from "../../types/VerificationTier";
+
 
 import { usePetition } from "../../hooks/petitions/usePetition";
 import { useSignPetition } from "../../hooks/petitions/useSignPetition";
 import { QuerySection } from "../../components/common/QuerySection";
+import { VERIFICATION_TIERS, VerificationTier } from "../../types/verification";
 
 /* =====================================================
    Types
@@ -66,17 +64,19 @@ export default function PetitionDetailScreen() {
           const userTier =
             user?.verification_tier ?? 0;
 
-          const requiredTier =
-            petition.required_verification_tier;
 
-          const canSign =
-            permissions.canSignPetition(
-              userTier,
-              requiredTier
-            );
+        const requiredTier = petition.required_verification_tier as VerificationTier;
 
-          const requiredTierInfo =
-            VERIFICATION_TIERS[requiredTier];
+        const hasSigned = petition.has_signed;
+
+        const canSign =
+          permissions.canSignPetition(
+            userTier,
+            requiredTier
+          );
+
+        const isActionAvailable = canSign && !hasSigned;
+        const requiredTierInfo = VERIFICATION_TIERS[requiredTier];
 
           const handleSign = async () => {
             if (!user) return;
@@ -125,25 +125,41 @@ export default function PetitionDetailScreen() {
 
               <Button
                 mode="contained"
-                disabled={!canSign}
+                disabled={!isActionAvailable || signMutation.loading}
                 loading={signMutation.loading}
                 onPress={handleSign}
                 style={{ marginTop: 16 }}
               >
-                Sign Petition
+                {hasSigned
+                  ? "Already Signed"
+                  : canSign
+                  ? "Sign Petition"
+                  : `Requires ${requiredTierInfo.label}`}
               </Button>
 
-              {!canSign && (
-                <Text
-                  variant="bodySmall"
-                  style={{
-                    color: theme.colors.error,
-                    marginTop: 8,
-                  }}
-                >
-                  {requiredTierInfo.next}
-                </Text>
-              )}
+                {hasSigned && (
+              <Text
+                variant="bodySmall"
+                style={{
+                  color: theme.colors.primary,
+                  marginTop: 8,
+                }}
+              >
+                You have already signed this petition.
+              </Text>
+            )}
+
+            {!hasSigned && !canSign && (
+              <Text
+                variant="bodySmall"
+                style={{
+                  color: theme.colors.error,
+                  marginTop: 8,
+                }}
+              >
+                {requiredTierInfo.next}
+              </Text>
+            )}
 
               <ProgressBar
                 progress={petition.progress}

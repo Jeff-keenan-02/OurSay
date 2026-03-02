@@ -3,14 +3,26 @@ import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Text } from "react-native";
 import { Card, ProgressBar, useTheme } from "react-native-paper";
 import { WeeklyCardData } from "../../types/WeeklyCardData";
+import { FeatureAccessState } from "../../utils/accessTypes";
 
 type Props = {
   data: WeeklyCardData;
   onPress: () => void;
+  state?: FeatureAccessState;
 };
 
-export function WeeklyEngagementCard({ data, onPress }: Props) {
+export function WeeklyEngagementCard({
+  data,
+  onPress,
+  state = "available",
+}: Props) {
+  
   const theme = useTheme();
+
+
+  const isLocked = state === "locked_verification";
+  const isCompleted = state === "completed";
+  const isAvailable = state === "available";
 
   const renderFooter = () => {
     switch (data.type) {
@@ -58,13 +70,20 @@ export function WeeklyEngagementCard({ data, onPress }: Props) {
   };
 
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.9}>
-      <Card
-        style={[
-          styles.card,
-          { backgroundColor: theme.colors.surface },
-        ]}
-      >
+          <TouchableOpacity
+            onPress={onPress}
+            disabled={!isAvailable}
+            activeOpacity={isAvailable ? 0.9 : 1}
+          >
+          <Card
+            style={[
+              styles.card,
+              {
+                backgroundColor: theme.colors.surface,
+                opacity: isLocked ? 0.5 : 1,
+              },
+            ]}
+          >
         <Card.Title
           title={data.label}
           subtitle={data.title}
@@ -73,7 +92,17 @@ export function WeeklyEngagementCard({ data, onPress }: Props) {
             fontWeight: "700",
           }}
         />
+                  {isLocked && (
+            <Text style={{ color: theme.colors.error, marginBottom: 6 }}>
+              🔒 Verification required
+            </Text>
+          )}
 
+          {isCompleted && (
+            <Text style={{ color: "#4caf50", marginBottom: 6 }}>
+              ✅ Completed
+            </Text>
+          )}
         <Card.Content>
 
           {/* Description Slot */}

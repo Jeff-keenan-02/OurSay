@@ -2,19 +2,40 @@ import React from "react";
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { Card, Text, ProgressBar, List, useTheme } from "react-native-paper";
 import { PollGroup } from "../../types/PollGroup";
+import { FeatureAccessState } from "../../utils/accessTypes";
 
 type Props = {
   group: PollGroup;
+  state: FeatureAccessState; // only "locked_verification" | "available"
   onPress: () => void;
 };
 
-export default function PollGroupCard({ group, onPress }: Props) {
+export default function PollGroupCard({
+  group,
+  state,
+  onPress,
+}: Props) {
   const theme = useTheme();
 
-  const { title,  status, progress, completed_polls, total_polls } = group;
+  const {
+    title,
+    status,
+    progress,
+    completed_polls,
+    total_polls,
+  } = group;
+
+  /* ----------------------------------------
+     Access Logic (verification only)
+  ---------------------------------------- */
+
+  const isVerificationLocked = state === "locked_verification";
+
+  /* ----------------------------------------
+     Progress Logic (business state)
+  ---------------------------------------- */
 
   const isCompleted = status === 2;
-  const inProgress = status === 1;
 
   const statusText =
     status === 2
@@ -37,9 +58,31 @@ export default function PollGroupCard({ group, onPress }: Props) {
       ? "progress-clock"
       : "checkbox-blank-circle-outline";
 
+  /* ----------------------------------------
+     Final Interaction Rule
+  ---------------------------------------- */
+
+  const disabled = isVerificationLocked || isCompleted;
+
+  /* ----------------------------------------
+     Render
+  ---------------------------------------- */
+
   return (
-    <TouchableOpacity onPress={onPress}>
-      <Card style={[styles.card, { backgroundColor: theme.colors.surface }]}>
+    <TouchableOpacity
+      disabled={disabled}
+      onPress={onPress}
+      activeOpacity={disabled ? 1 : 0.8}
+    >
+      <Card
+        style={[
+          styles.card,
+          {
+            backgroundColor: theme.colors.surface,
+            opacity: isVerificationLocked ? 0.5 : 1,
+          },
+        ]}
+      >
         <Card.Title
           title={title}
           titleStyle={{
@@ -50,10 +93,25 @@ export default function PollGroupCard({ group, onPress }: Props) {
           left={(props) => (
             <List.Icon {...props} icon={icon} color={statusColor} />
           )}
+          right={() => {
+            if (isVerificationLocked) {
+              return <List.Icon icon="lock-outline" />;
+            }
+
+            if (isCompleted) {
+              return (
+                <List.Icon
+                  icon="check-circle"
+                  color="#4caf50"
+                />
+              );
+            }
+
+            return null;
+          }}
         />
 
         <Card.Content>
-    
           <ProgressBar
             progress={progress}
             color={statusColor}
@@ -68,6 +126,17 @@ export default function PollGroupCard({ group, onPress }: Props) {
           >
             {statusText} — {completed_polls}/{total_polls} polls
           </Text>
+
+          {isVerificationLocked && (
+            <Text
+              style={{
+                marginTop: 6,
+                color: theme.colors.error,
+              }}
+            >
+              Verification required
+            </Text>
+          )}
         </Card.Content>
       </Card>
     </TouchableOpacity>

@@ -1,5 +1,7 @@
 // src/types/Petition.ts
-import { VerificationTier } from "./VerificationTier";
+
+import { VerificationTier } from "./verification";
+
 
 export type Petition = {
   id: number;
@@ -8,5 +10,6 @@ export type Petition = {
   signature_goal: number;
   signatures: number;
   progress: number;
+  has_signed: boolean; 
   required_verification_tier: VerificationTier;
 };

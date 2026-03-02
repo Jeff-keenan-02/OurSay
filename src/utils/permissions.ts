@@ -1,26 +1,35 @@
 // src/utils/permissions.ts
-import { VerificationTier } from "../types/VerificationTier";
+
+import { VerificationTier } from "../types/verification";
+
 
 export const permissions = {
-  canComment(userTier: VerificationTier): boolean {
+  canStartLiveness(userTier: VerificationTier) {
+    return userTier === 0;
+  },
+
+  canStartPassport(userTier: VerificationTier) {
+    return userTier >= 1 && userTier < 2;
+  },
+
+  canStartResidence(userTier: VerificationTier) {
+    return userTier >= 2 && userTier < 3;
+  },
+
+  // existing rules...
+  canComment(userTier: VerificationTier) {
     return userTier >= 1;
   },
 
-  canSignPetition(
-    userTier: VerificationTier,
-    requiredTier: VerificationTier
-  ): boolean {
+  canVotePoll(userTier: VerificationTier, requiredTier: VerificationTier) {
     return userTier >= requiredTier;
   },
 
-  canVotePoll(
-    userTier: VerificationTier,
-    requiredTier: VerificationTier
-  ): boolean {
+  canSignPetition(userTier: VerificationTier, requiredTier: VerificationTier) {
     return userTier >= requiredTier;
   },
 
-  canCreateContent(userTier: VerificationTier): boolean {
+  canCreateContent(userTier: VerificationTier) {
     return userTier === 3;
   },
 };

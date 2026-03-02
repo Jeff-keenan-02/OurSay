@@ -5,8 +5,7 @@ import { Button, Text, ActivityIndicator, Card } from "react-native-paper";
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { AuthContext } from "../../context/AuthContext";
-import { API_BASE_URL } from "../../config/api";
-import { BackRow } from "../../components/common/BackRow";
+import { useApiClient } from "../../hooks/common/useApiClient";
 
 export default function ResidenceCaptureScreen() {
   const { user, updateUser } = useContext(AuthContext);
@@ -16,36 +15,34 @@ export default function ResidenceCaptureScreen() {
     score: number;
     ip_seen: string;
   }>(null);
+  const api = useApiClient();
 
   const runResidenceCheck = async () => {
-    if (!user) return;
+  if (!user) return;
 
-    setLoading(true);
-    setResult(null);
+  setLoading(true);
+  setResult(null);
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/verify/residence`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId: user.id }),
-      });
+  try {
+    const data = await api.post<{
+      verified: boolean;
+      score: number;
+      ip_seen: string;
+      level?: number;
+    }>("/verify/residence");
 
-      const data = await res.json();
+    setResult(data);
 
-      setResult(data);
-
-      if (data.verified) {
-        updateUser({ verification_tier: 3 });
-      }
-
-    } catch (err) {
-      console.error("Residence check failed", err);
-    } finally {
-      setLoading(false);
+    if (data.verified) {
+      updateUser({ verification_tier: 3 });
     }
-  };
+
+  } catch (err: any) {
+    console.error("Residence check failed", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
 

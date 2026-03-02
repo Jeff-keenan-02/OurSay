@@ -1,0 +1,1 @@
+export type VerificationProgressStatus = "locked" | "available" | "completed";

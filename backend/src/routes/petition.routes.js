@@ -18,6 +18,6 @@ router.get("/topics/:id", requireAuth, controller.getPetitionsByTopic);
 router.get("/:id", requireAuth, controller.getPetition);
 
 // Sign
-router.post("/:id/sign",  requireAuth, controller.signPetition);
+router.post("/:id/sign",  requireAuth, requireTier(2), controller.signPetition);
 
 module.exports = router;

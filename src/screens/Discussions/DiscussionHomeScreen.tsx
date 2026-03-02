@@ -1,26 +1,21 @@
 import React, { useContext, useCallback } from "react";
-import { FlatList, Text } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
-
 import { Screen } from "../../layout/Screen";
-import { Section } from "../../layout/Section";
 import { TopicCard } from "../../components/common/TopicCard";
 import { WeeklyEngagementCard } from "../../components/common/WeeklyEngagementCard";
 import TrendingEngagementCard from "../../components/common/TrendingEngagementCard";
-
 import { AuthContext } from "../../context/AuthContext";
 import { useTopics } from "../../hooks/common/useTopics";
 import { useTrendingDiscussions } from "../../hooks/discussions/useTrendingDiscussions";
 import { useDiscussionVote } from "../../hooks/discussions/useDiscussionVote";
 import { useWeeklyDiscussion } from "../../hooks/discussions/useWeeklyDiscussion";
-
 import { Topic } from "../../types/Topic";
 import { mapDiscussionToWeekly } from "../../mappers/weeklyCardMapper";
 import { mapDiscussionToTrending } from "../../mappers/trendingCardMapper";
 import { QuerySection } from "../../components/common/QuerySection";
 import { HorizontalList } from "../../components/common/HorizontalList";
 import { VerticalList } from "../../components/common/VerticalList";
-import { DiscussionListItem, WeeklyDiscussion } from "../../types/Discussion";
+
 
 export default function DiscussionHomeScreen() {
   const navigation: any = useNavigation();

@@ -35,6 +35,7 @@ CREATE TABLE poll_groups (
   id SERIAL PRIMARY KEY,
   topic_id INTEGER NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
+  required_verification_tier SMALLINT NOT NULL CHECK (required_verification_tier BETWEEN 2 AND 3),
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -44,7 +45,6 @@ CREATE TABLE polls (
   poll_group_id INTEGER NOT NULL REFERENCES poll_groups(id) ON DELETE CASCADE,
   question TEXT NOT NULL,
   description TEXT,
-  required_verification_tier SMALLINT NOT NULL CHECK (required_verification_tier BETWEEN 2 AND 3),
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -248,72 +248,71 @@ VALUES
 ('Technology & Society', 'AI, privacy, digital rights', FALSE),
 ('Weekly Public Opinion', 'This week’s featured national topic', TRUE);
 
-INSERT INTO poll_groups (topic_id, title)
+INSERT INTO poll_groups (topic_id, title, required_verification_tier)
 VALUES
 -- Housing
-(1, 'Housing Affordability Survey'),
-(1, 'Rent Controls Policy Survey'),
+(1, 'Housing Affordability Survey', 2),
+(1, 'Rent Controls Policy Survey', 2),
+
 -- Transport
-(2, 'Public Transport Accessibility Survey'),
+(2, 'Public Transport Accessibility Survey', 2),
+
 -- Healthcare
-(3, 'Healthcare System Capacity Survey'),
+(3, 'Healthcare System Capacity Survey', 2),
+
 -- Climate
-(4, 'Climate Policy Survey'),
+(4, 'Climate Policy Survey', 3),
+
 -- Education
-(5, 'Education Reform Survey'),
+(5, 'Education Reform Survey', 2),
+
 -- Technology
-(6, 'AI & Privacy Survey'),
+(6, 'AI & Privacy Survey', 2),
+
 -- Weekly topic
-(7, 'This Weeks National Opinion');
+(7, 'This Weeks National Opinion', 3);
 
 
-INSERT INTO polls (poll_group_id, question, description, required_verification_tier)
+INSERT INTO polls (poll_group_id, question, description)
 VALUES
 
 -- Housing Affordability
 ((SELECT id FROM poll_groups WHERE title = 'Housing Affordability Survey'),
  'Is rent too high?',
- 'General perception of rent levels',
- 2),
+ 'General perception of rent levels'),
 
 ((SELECT id FROM poll_groups WHERE title = 'Housing Affordability Survey'),
  'Is home ownership affordable?',
- 'Ability to purchase a home',
- 2),
+ 'Ability to purchase a home'),
 
 -- Rent Controls
 ((SELECT id FROM poll_groups WHERE title = 'Rent Controls Policy Survey'),
  'Should rent caps exist?',
- 'Support for rent controls',
- 2),
+ 'Support for rent controls'),
 
 -- Transport
 ((SELECT id FROM poll_groups WHERE title = 'Public Transport Accessibility Survey'),
  'Should public transport be free?',
- 'Opinion on free transport',
- 2),
+ 'Opinion on free transport'),
 
 -- Climate
 ((SELECT id FROM poll_groups WHERE title = 'Climate Policy Survey'),
  'Should carbon tax increase?',
- 'Climate funding question',
- 2),
+ 'Climate funding question'),
 
 -- Education
 ((SELECT id FROM poll_groups WHERE title = 'Education Reform Survey'),
  'Should college fees be reduced?',
- 'Higher education affordability',
- 2),
+ 'Higher education affordability'),
 
 -- Technology
 ((SELECT id FROM poll_groups WHERE title = 'AI & Privacy Survey'),
  'Should AI be regulated?',
- 'Digital governance',
- 2),
+ 'Digital governance'),
 
 -- Weekly
 ((SELECT id FROM poll_groups WHERE title = 'This Weeks National Opinion'),
- 'Should housing supply be increased?', 'National housing policy',2);
+ 'Should housing supply be increased?', 'National housing policy');
 
 
 -- create some petitions

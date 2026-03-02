@@ -1,6 +1,6 @@
 // screens/Polls/SwipePollScreen.tsx
 
-import React, { useEffect, useState, useContext, useCallback } from "react";
+import React, { useEffect, useState, useContext, useCallback, useMemo } from "react";
 import { View, StyleSheet } from "react-native";
 import { ProgressBar, Text, useTheme } from "react-native-paper";
 import { useRoute, useNavigation } from "@react-navigation/native";
@@ -41,7 +41,7 @@ export default function SwipePollScreen() {
      Mutations
   --------------------------------------------------*/
 
-  const voteMutation = usePollVote(user);
+  const voteMutation = usePollVote();
 
   /* -------------------------------------------------
      Local UI State
@@ -53,15 +53,17 @@ export default function SwipePollScreen() {
      Derived Values
   --------------------------------------------------*/
 
-  const totalPolls = pollQuery.data?.length ?? 0;
+    const totalPolls = pollQuery.data?.length ?? 0;
+
+const answeredCount = useMemo(() => {
+  return pollQuery.data?.filter(p => p.has_voted).length ?? 0;
+}, [pollQuery.data]);
 
   const progressValue =
-    totalPolls > 0 ? uiIndex / totalPolls : 0;
+    totalPolls > 0 ? answeredCount / totalPolls : 0;
 
-  const currentProgressLabel = `${Math.min(
-    uiIndex,
-    totalPolls
-  )} / ${totalPolls} questions`;
+  const currentProgressLabel =
+    `${answeredCount} / ${totalPolls} questions`;
 
   /* -------------------------------------------------
      Handlers
@@ -82,14 +84,36 @@ export default function SwipePollScreen() {
         setUiIndex(index); // rollback optimistic update
         return;
       }
+      await pollQuery.reload();
 
 
     },
     [
       pollQuery.data,
+      pollQuery.reload,
       voteMutation,
     ]
   );
+
+  /* -------------------------------------------------
+   Auto Position To First Unanswered Poll
+--------------------------------------------------*/
+
+useEffect(() => {
+  if (!pollQuery.data || pollQuery.data.length === 0) return;
+
+  const firstUnansweredIndex =
+    pollQuery.data.findIndex(p => !p.has_voted);
+
+  if (firstUnansweredIndex === -1) {
+    // All polls answered
+    setUiIndex(totalPolls);
+    return;
+  }
+
+  setUiIndex(firstUnansweredIndex);
+
+}, [pollQuery.data]);
 
   /* -------------------------------------------------
      Render

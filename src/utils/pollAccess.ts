@@ -1,26 +1,29 @@
-import { Alert } from "react-native";
 import { PollGroup } from "../types/PollGroup";
+import { VerificationTier } from "../types/verification";
+import { FeatureAccessState } from "./accessTypes";
 import { permissions } from "./permissions";
 
-export function canOpenPoll(topic: PollGroup, user: any): boolean {
-  const userTier = user?.verification_tier ?? 0;
-  const requiredTier = 2;
 
-  if (!permissions.canVotePoll(userTier, requiredTier)) {
-    Alert.alert(
-      "Verification required",
-      "Verify your identity to participate in polls."
-    );
-    return false;
+export function getPollAccessState(
+  userTier: VerificationTier,
+  poll: Pick<PollGroup, "required_verification_tier" | "status">
+): FeatureAccessState {
+
+  // 🔒 Verification lock
+  if (
+    !permissions.canVotePoll(
+      userTier,
+      poll.required_verification_tier
+    )
+  ) {
+    return "locked_verification";
   }
 
-  if (topic.status === 2) {
-    Alert.alert(
-      "Poll completed",
-      "You have already completed this poll."
-    );
-    return false;
+  // ✅ Already completed
+  if (poll.status === 2) {
+    return "completed";
   }
 
-  return true;
+  // 🚀 Available
+  return "available";
 }

@@ -10,7 +10,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.post('/liveness', requireAuth, requireTier(0), upload.single('file'), controller.verifyLiveness);
 
 
-router.post('/passport', requireAuth, requireTier(1), upload.single('file'), controller.verifyPassport);
+router.post('/passport', requireAuth, requireTier(1),  upload.single('file'), controller.verifyPassport);
 
 
 router.post('/residence', requireAuth, requireTier(2), controller.verifyResidence);

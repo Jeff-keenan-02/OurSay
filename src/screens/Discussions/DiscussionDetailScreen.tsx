@@ -1,5 +1,6 @@
 import React, { useContext, useState, useCallback } from "react";
 import {
+  Alert,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -7,11 +8,9 @@ import {
 } from "react-native";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { useTheme, Text } from "react-native-paper";
-
 import { AuthContext } from "../../context/AuthContext";
 import { useDiscussion } from "../../hooks/discussions/useDiscussion";
 import { usePostComment } from "../../hooks/discussions/usePostComment";
-
 import { StickyCommentBar } from "../../components/Discussion/StickyCommentBar";
 import { CommentCard } from "../../components/Discussion/CommentCard";
 import { TierBadge } from "../../components/common/TierBadge";
@@ -20,8 +19,8 @@ import { Screen } from "../../layout/Screen";
 
 import { permissions } from "../../utils/permissions";
 import { typography } from "../../theme/typography";
-import { VerificationTier } from "../../types/VerificationTier";
 import { spacing } from "../../theme/spacing";
+import { VerificationTier } from "../../types/verification";
 
 type RootStackParamList = {
   DiscussionDetail: { id: number };
@@ -62,6 +61,7 @@ export default function DiscussionDetailScreen() {
     user?.verification_tier ?? 0;
 
   const canComment = permissions.canComment(userTier);
+
 
   /* -------------------------------------------------
      Handlers

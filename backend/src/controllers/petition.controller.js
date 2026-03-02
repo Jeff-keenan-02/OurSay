@@ -114,6 +114,7 @@ exports.getPetitionsByTopic = async (req, res) => {
 ------------------------------ */
 exports.getPetition = async (req, res) => {
   const petitionId = Number(req.params.id);
+  const userId = req.user.id;
 
   try {
     const { rows } = await pool.query(
@@ -130,7 +131,14 @@ exports.getPetition = async (req, res) => {
         CASE
           WHEN p.signature_goal = 0 THEN 0
           ELSE COUNT(ps.id)::float / p.signature_goal
-        END AS progress
+        END AS progress,
+
+        EXISTS (
+          SELECT 1
+          FROM petition_participation pp
+          WHERE pp.petition_id = p.id
+          AND pp.user_id = $2
+        ) AS has_signed
 
       FROM petitions p
       LEFT JOIN petition_signatures ps
@@ -145,7 +153,7 @@ exports.getPetition = async (req, res) => {
         p.required_verification_tier,
         p.signature_goal
       `,
-      [petitionId]
+      [petitionId, userId]
     );
 
     if (!rows.length) {
@@ -153,6 +161,7 @@ exports.getPetition = async (req, res) => {
     }
 
     res.json(rows[0]);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch petition" });

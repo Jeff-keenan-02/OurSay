@@ -2,10 +2,8 @@ import React from "react";
 import { TouchableOpacity, StyleSheet, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import {
-  VerificationTier,
-  VERIFICATION_TIERS,
-} from "../../types/VerificationTier";
+import { VERIFICATION_TIERS, VerificationTier } from "../../types/verification";
+
 
 type Props = {
   tier: VerificationTier;

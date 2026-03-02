@@ -1,5 +1,3 @@
-// src/types/VerificationTier.ts
-
 export type VerificationTier = 0 | 1 | 2 | 3;
 
 export type TierInfo = {
@@ -9,6 +7,7 @@ export type TierInfo = {
   color: string;
   next: string | null;
 };
+
 
 export const VERIFICATION_TIERS: Record<VerificationTier, TierInfo> = {
   0: {

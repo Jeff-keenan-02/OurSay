@@ -17,6 +17,6 @@ router.get('/topics/:topicId/groups', requireAuth, controller.getPollGroupsByTop
 router.get('/groups/:pollGroupId/polls', requireAuth, controller.getPollsByGroup);
 
 // Vote on a poll
-router.post('/:id/vote', requireAuth, controller.votePoll);
+router.post('/:id/vote', requireAuth, requireTier(2), controller.votePoll);
 
 module.exports = router;

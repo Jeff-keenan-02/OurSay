@@ -1,26 +1,28 @@
 // screens/VerifyPassportScreen.tsx
 import React, { useContext } from "react";
-import { StyleSheet, Image, View } from "react-native";
-import {
-  Text,
-  Card,
-  Button,
-  ActivityIndicator,
-  Avatar,
-  useTheme,
-} from "react-native-paper";
+import { StyleSheet, Image, View, Alert } from "react-native";
+import { Text, Card, Button, ActivityIndicator, Avatar, useTheme} from "react-native-paper";
 import { AuthContext } from "../../context/AuthContext";
 import { usePassportVerification } from "../../hooks/verify/usePassportVerification";
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { spacing } from "../../theme/spacing";
-import { API_BASE_URL } from "../../config/api";
+
 
 
 export default function PassportCaptureScreen(){
   const theme = useTheme();
-  const { user } = useContext(AuthContext);
-  const API = API_BASE_URL;
+  const { updateUser } = useContext(AuthContext);
+  
+  const handleUpload = async () => {
+  const data = await uploadPassport();
+
+  if (data?.success) {
+    updateUser({ verification_tier: data.level });
+    Alert.alert("✅ Passport verified");
+  }
+};
+
 
 
   const {
@@ -28,7 +30,7 @@ export default function PassportCaptureScreen(){
     loading,
     capturePassport,
     uploadPassport,
-  } = usePassportVerification(user);
+  } = usePassportVerification();
 
    return (
     <Screen
@@ -100,7 +102,7 @@ export default function PassportCaptureScreen(){
             {!loading && (
               <Button
                 mode="contained"
-                onPress={photo ? uploadPassport : capturePassport}
+                onPress={photo ? handleUpload : capturePassport}
                 style={styles.button}
               >
                 {photo ? "Upload & Verify" : "Capture Passport Photo"}

@@ -1,5 +1,4 @@
 import React, { useContext, useCallback } from "react";
-import { FlatList } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
 import { AuthContext } from "../../context/AuthContext";

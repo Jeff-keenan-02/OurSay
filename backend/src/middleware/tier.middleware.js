@@ -7,8 +7,8 @@ module.exports = function requireTier(minTier) {
         return res.status(401).json({ error: "Authentication required" });
       }
 
-      const userId = req.user.userId;
-
+      const userId = req.user.id;
+      
       const result = await pool.query(
         "SELECT verification_tier FROM users WHERE id = $1",
         [userId]

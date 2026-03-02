@@ -7,17 +7,18 @@ import * as ImagePicker from "react-native-image-picker";
 
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
-import { API_BASE_URL } from "../../config/api";
 import { AuthContext } from "../../context/AuthContext";
+import { useApiClient } from "../../hooks/common/useApiClient";
+import { VerificationResponse } from "../../types/VerificationType";
 
 export default function LivenessCaptureScreen() {
-  const { user, token, updateUser } = useContext(AuthContext);
+  const { user, updateUser } = useContext(AuthContext);
+  const api = useApiClient();
   const [uploading, setUploading] = useState(false);
 
   /* -------------------------------------------------
      Capture Selfie (Front Camera)
   --------------------------------------------------*/
-
   const captureSelfie = () => {
     if (!user) {
       Alert.alert("You must be logged in");
@@ -34,7 +35,6 @@ export default function LivenessCaptureScreen() {
       },
       async (response) => {
         if (response.didCancel) return;
-
         if (response.errorCode) {
           Alert.alert(response.errorMessage ?? "Camera error");
           return;
@@ -50,53 +50,28 @@ export default function LivenessCaptureScreen() {
           setUploading(true);
 
           const form = new FormData();
-
           form.append("file", {
             uri: asset.uri,
             type: asset.type ?? "image/jpeg",
             name: asset.fileName ?? "selfie.jpg",
           } as any);
 
-          form.append("userId", String(user.id));
-
-          const res = await fetch(
-            `${API_BASE_URL}/verify/liveness`,
-            {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-              body: form,
-            }
-          );
-
-          const data = await res.json();
-console.log("STATUS:", res.status);
-console.log("RESPONSE DATA:", data);
-
-if (!res.ok) {
-  Alert.alert(`Server error ${res.status}`);
-  return;
-}
-
-if (!data.success) {
-  Alert.alert(data.error || "Verification failed");
-  return;
-}
+        const data = await api.post<VerificationResponse>(
+          "/verify/liveness",
+          form
+        );
 
           updateUser({ verification_tier: data.level });
           Alert.alert("✅ Liveness verified");
 
-        } catch (err) {
-          console.error(err);
-          Alert.alert("Liveness failed");
+        } catch (err: any) {
+          Alert.alert(err.message || "Liveness failed");
         } finally {
           setUploading(false);
         }
       }
     );
   };
-
   /* -------------------------------------------------
      Render
   --------------------------------------------------*/

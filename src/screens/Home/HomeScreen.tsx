@@ -7,7 +7,7 @@ import { WeeklyEngagementCard } from "../../components/common/WeeklyEngagementCa
 import { QuerySection } from "../../components/common/QuerySection";
 
 import { getGreeting } from "../../utils/greeting";
-import { canOpenPoll } from "../../utils/pollAccess";
+
 
 import { useWeeklyPoll } from "../../hooks/polls/useWeeklyPoll";
 import { useWeeklyDiscussion } from "../../hooks/discussions/useWeeklyDiscussion";
@@ -18,11 +18,13 @@ import {mapPollToWeekly, mapDiscussionToWeekly, mapPetitionToWeekly} from "../..
 import {WeeklyDiscussion} from "../../types/Discussion";
 import { Petition } from "../../types/Petition";
 import { PollGroup } from "../../types/PollGroup";
+import { getPollAccessState } from "../../utils/pollAccess";
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const { user } = useContext(AuthContext);
   const greeting = getGreeting(user?.username);
+
 
   /* -------------------------------------------------
      Queries
@@ -37,7 +39,7 @@ export default function HomeScreen() {
   --------------------------------------------------*/
 
   const openWeeklyPoll = (poll: PollGroup) => {
-    if (!canOpenPoll(poll, user)) return;
+
 
     navigation.navigate("Polls", {
       screen: "SwipePoll",
@@ -101,12 +103,22 @@ export default function HomeScreen() {
         label="This Week's Poll"
         query={weeklyPollQuery}
       >
-        {(poll) => (
+      {(poll) => {
+        const userTier = user?.verification_tier ?? 0;
+
+        const state = getPollAccessState(userTier, poll);
+
+        return (
           <WeeklyEngagementCard
             data={mapPollToWeekly(poll)}
-            onPress={() => openWeeklyPoll(poll)}
+            onPress={() => {
+              if (state === "available") {
+                openWeeklyPoll(poll);
+              }
+            }}
           />
-        )}
+        );
+      }}
       </QuerySection>
 
       {/* --------------- Weekly Discussion ------------ */}

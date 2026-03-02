@@ -1,5 +1,4 @@
 import React, { useContext } from "react";
-import { StyleSheet } from "react-native";
 import { AuthContext } from "../../context/AuthContext";
 import { useThemeMode } from "../../context/ThemeModeContext";
 
@@ -13,11 +12,9 @@ import {
 
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
+import { VERIFICATION_TIERS, VerificationTier } from "../../types/verification";
 
-import {
-  VERIFICATION_TIERS,
-  VerificationTier,
-} from "../../types/VerificationTier";
+
 
 export default function SettingsScreen() {
   const theme = useTheme();

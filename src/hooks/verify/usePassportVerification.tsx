@@ -1,20 +1,10 @@
-// hooks/verify/usePassportVerification.ts
-
 import { useState, useCallback } from "react";
 import * as ImagePicker from "react-native-image-picker";
-import { API_BASE_URL } from "../../config/api";
+import { useApiClient } from "../common/useApiClient";
+
 import { PhotoAsset } from "../../types/Photo";
 import { User } from "../../types/User";
 import { VerificationResponse } from "../../types/VerificationType";
-
-
-/* =====================================================
-   usePassportVerification
-   Handles:
-   - Camera capture
-   - Multipart upload
-   - Verification request
-===================================================== */
 
 type UsePassportVerificationResult = {
   photo: PhotoAsset | null;
@@ -25,17 +15,16 @@ type UsePassportVerificationResult = {
   clearPhoto: () => void;
 };
 
-export function usePassportVerification(
-  user: User | null
-): UsePassportVerificationResult {
+export function usePassportVerification(): UsePassportVerificationResult {
+
+  const api = useApiClient();
 
   const [photo, setPhoto] = useState<PhotoAsset | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-
   /* -------------------------------------------------
-     Capture Passport (Camera Only)
+     Capture Passport
   --------------------------------------------------*/
 
   const capturePassport = useCallback(() => {
@@ -85,7 +74,7 @@ export function usePassportVerification(
 
   const uploadPassport = useCallback(async () => {
 
-    if (!photo || !user?.id) {
+    if (!photo) {
       setError("Missing passport photo or user");
       return null;
     }
@@ -95,28 +84,17 @@ export function usePassportVerification(
       setError(null);
 
       const form = new FormData();
-
       form.append("file", {
         uri: photo.uri,
         type: photo.type,
         name: photo.fileName,
       } as any);
 
-      form.append("userId", user.id.toString());
-
-      const res = await fetch(
-        `${API_BASE_URL}/verify/passport`,
-        {
-          method: "POST",
-          body: form,
-        }
+      const data = await api.post<VerificationResponse>(
+        "/verify/passport",
+        form
       );
-
-      const data: VerificationResponse = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error("Passport verification failed");
-      }
+      
 
       return data;
 
@@ -129,11 +107,7 @@ export function usePassportVerification(
       setLoading(false);
     }
 
-  }, [photo, user?.id]);
-
-  /* -------------------------------------------------
-     Return
-  --------------------------------------------------*/
+  }, [photo, api]);
 
   return {
     photo,

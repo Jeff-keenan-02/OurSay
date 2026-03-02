@@ -1,0 +1,1 @@
+export type VerificationType = "liveness" | "passport" | "residence";

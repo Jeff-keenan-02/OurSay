@@ -5,17 +5,19 @@ import {
   RouteProp,
   useFocusEffect,
 } from "@react-navigation/native";
-
 import { Screen } from "../../layout/Screen";
-import { BackRow } from "../../components/common/BackRow";
 import { QuerySection } from "../../components/common/QuerySection";
 import { VerticalList } from "../../components/common/VerticalList";
 import PollGroupCard from "../../components/PollTopics/PollGroupCard";
-
 import { AuthContext } from "../../context/AuthContext";
 import { usePollGroups } from "../../hooks/polls/usePollGroups";
-
 import { PollGroup } from "../../types/PollGroup";
+import { permissions } from "../../utils/permissions";
+import { VerificationTier } from "../../types/verification";
+import { getPollAccessState } from "../../utils/pollAccess";
+
+
+
 
 type PollStackParams = {
   PollTopics: undefined;
@@ -27,17 +29,27 @@ export default function PollListScreen() {
   const navigation = useNavigation<any>();
   const { user } = useContext(AuthContext);
 
-  const route = useRoute<RouteProp<PollStackParams, "PollGroups">>();
+  const route =
+    useRoute<RouteProp<PollStackParams, "PollGroups">>();
   const { topicId, title } = route.params;
 
   /* -------------------------------------------------
-     Query
+     Derived Values
+     (Compute user tier safely)
   --------------------------------------------------*/
 
-  const pollGroupQuery = usePollGroups(user, topicId);
+
+
+  /* -------------------------------------------------
+     Query
+     (Fetch poll groups for this topic)
+  --------------------------------------------------*/
+
+  const pollGroupQuery = usePollGroups(topicId);
 
   /* -------------------------------------------------
      Navigation
+     (Navigate to poll group if allowed)
   --------------------------------------------------*/
 
   const openGroup = (group: PollGroup) => {
@@ -49,6 +61,7 @@ export default function PollListScreen() {
 
   /* -------------------------------------------------
      Refresh on Focus
+     (Keeps data fresh when returning)
   --------------------------------------------------*/
 
   useFocusEffect(
@@ -60,27 +73,46 @@ export default function PollListScreen() {
 
   /* -------------------------------------------------
      Render
-  --------------------------------------------------*/
-
+  -------------------------------------------------*/
   return (
-      <Screen scroll title={title} showBack>
-        <QuerySection
-          label="Poll Groups"
-          query={pollGroupQuery}
-        >
-          {(data) => (
-            <VerticalList
-              data={data}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item }) => (
+  
+   <Screen scroll title={title} showBack>
+      <QuerySection
+        label="Poll Groups"
+        query={pollGroupQuery}
+      >
+        {(groups) => (
+          <VerticalList
+            data={groups}
+            keyExtractor={(item) =>
+              item.id.toString()
+            }
+            renderItem={({ item }) => {
+              /* ----------------------------------
+                 Access Control
+              ---------------------------------- */
+              const userTier = user?.verification_tier ?? 0;
+              const state = getPollAccessState(userTier, item);
+
+
+              /* ----------------------------------
+                 Final Card State
+              ---------------------------------- */
+              return (
                 <PollGroupCard
                   group={item}
-                  onPress={() => openGroup(item)}
+                  state={state}
+                  onPress={() => {
+                    if (state === "available") {
+                      openGroup(item);
+                    }
+                  }}
                 />
-              )}
-            />
-          )}
-        </QuerySection>
-      </Screen>
+              );
+            }}
+          />
+        )}
+      </QuerySection>
+    </Screen>
   );
 }

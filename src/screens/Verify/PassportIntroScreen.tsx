@@ -5,7 +5,7 @@ import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { spacing } from "../../theme/spacing";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
-import { BackRow } from "../../components/common/BackRow";
+
 
 
 export default function PassportIntroScreen() {
