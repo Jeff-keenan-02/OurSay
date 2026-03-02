@@ -9,3 +9,5 @@ const requireAuth = require("../middleware/auth.middleware");
 -------------------------------------------------- */
 
 router.get("/", requireAuth, controller.getTopics);
+
+module.exports = router;
