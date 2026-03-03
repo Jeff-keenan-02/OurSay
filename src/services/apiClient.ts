@@ -38,7 +38,9 @@ export async function request<T>(
 
   const { method = "GET", body, headers = {} } = options;
   const isFormData =
-    typeof FormData !== "undefined" && body instanceof FormData;
+    body &&
+    typeof body === "object" &&
+    typeof body.append === "function";
 
   let response;
 

@@ -8,7 +8,7 @@ const pool = require('../db/pool');
 const PASSPORT_FUNCTION_URL = process.env.PASSPORT_FUNCTION_URL;
 const LIVENESS_FUNCTION_URL = process.env.LIVENESS_FUNCTION_URL;
 const IDENTITY_SALT = process.env.IDENTITY_SALT;
-const MOCK_VERIFICATION = process.env.MOCK_VERIFICATION === "true";
+const MOCK_VERIFICATION = true;
 
 exports.verifyPassport = async (req, res) => {
   try {
