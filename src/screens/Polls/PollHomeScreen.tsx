@@ -16,9 +16,10 @@ import { useTrendingPoll } from "../../hooks/polls/useTrendingPoll";
 import { useTopics } from "../../hooks/common/useTopics";
 
 import { mapPollToWeekly } from "../../mappers/weeklyCardMapper";
-import { mapPollToTrending } from "../../mappers/trendingCardMapper";
+import { mapPollGroupToTrending } from "../../mappers/trendingCardMapper";
 
 import { Topic } from "../../types/Topic";
+import { getPollAccessState } from "../../utils/pollAccess";
 
 export default function PollHomeScreen() {
   const navigation = useNavigation<any>();
@@ -71,7 +72,7 @@ export default function PollHomeScreen() {
   --------------------------------------------------*/
 
   return (
-    <Screen scroll>
+    <Screen scroll title="Polls" subtitle="Have your say on issues that matter to you!">
 
       {/* ---------------- Weekly Poll ---------------- */}
       <QuerySection
@@ -80,37 +81,61 @@ export default function PollHomeScreen() {
       >
         {(data) => {
           const card = mapPollToWeekly(data);
+          /* ----------------------------------
+            Access Control
+          ---------------------------------- */
+        const userTier = user?.verification_tier ?? 0;
+        const state = getPollAccessState(userTier, data);
 
           return (
             <WeeklyEngagementCard
               data={card}
-              onPress={() =>
-                openPollGroup(card.id, card.title)
-              }
-            />
+              state={state}
+              onPress={() => {
+                if (state === "available" || state === "in_progress") {
+                  openPollGroup(card.id, card.title);
+                }
+              }}
+              />
           );
         }}
       </QuerySection>
+
+
 
       {/* ---------------- Trending Polls ---------------- */}
       <QuerySection
         label="Trending Polls"
         query={trendingPollQuery}
       >
-        {(data) => (
-          <HorizontalList
-            data={data.map(mapPollToTrending)}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-              <TrendingEngagementCard
-                data={item}
-                onPress={() =>
-                  openPollGroup(item.id, item.title)
-                }
-              />
-            )}
-          />
-        )}
+        {(data) => {
+          const userTier = user?.verification_tier ?? 0;
+
+          const mapped = data.map((group) =>
+            mapPollGroupToTrending(group, userTier)
+          );
+
+          return (
+            <HorizontalList
+              data={mapped}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <TrendingEngagementCard
+                  data={item}
+                  onPress={() => {
+                  if (
+                    item.type === "poll" &&
+                    (item.accessState === "available" ||
+                      item.accessState === "in_progress")
+                  ) {
+                    openPollGroup(item.id, item.title);
+                  }
+                  }}
+                />
+              )}
+            />
+          );
+        }}
       </QuerySection>
 
       {/* ---------------- Topics ---------------- */}

@@ -3,12 +3,12 @@ import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Text } from "react-native";
 import { Card, ProgressBar, useTheme } from "react-native-paper";
 import { WeeklyCardData } from "../../types/WeeklyCardData";
-import { FeatureAccessState } from "../../utils/accessTypes";
+import { PollAccessState } from "../../utils/pollAccess";
 
 type Props = {
   data: WeeklyCardData;
   onPress: () => void;
-  state?: FeatureAccessState;
+  state?: PollAccessState;
 };
 
 export function WeeklyEngagementCard({
@@ -16,13 +16,35 @@ export function WeeklyEngagementCard({
   onPress,
   state = "available",
 }: Props) {
-  
   const theme = useTheme();
 
+  const isPoll = data.type === "poll";
 
-  const isLocked = state === "locked_verification";
-  const isCompleted = state === "completed";
-  const isAvailable = state === "available";
+  const isLocked = isPoll && state === "locked";
+  const isCompleted = isPoll && state === "completed";
+  const isDisabled = isLocked || isCompleted;
+
+  const renderStatusBadge = () => {
+    if (!isPoll) return null;
+
+    if (isLocked) {
+      return (
+        <Text style={[styles.statusText, { color: theme.colors.error }]}>
+          🔒 Verification required
+        </Text>
+      );
+    }
+
+    if (isCompleted) {
+      return (
+        <Text style={[styles.statusText, { color: "#4caf50" }]}>
+          ✅ Completed — Participation recorded
+        </Text>
+      );
+    }
+
+    return null;
+  };
 
   const renderFooter = () => {
     switch (data.type) {
@@ -70,20 +92,20 @@ export function WeeklyEngagementCard({
   };
 
   return (
-          <TouchableOpacity
-            onPress={onPress}
-            disabled={!isAvailable}
-            activeOpacity={isAvailable ? 0.9 : 1}
-          >
-          <Card
-            style={[
-              styles.card,
-              {
-                backgroundColor: theme.colors.surface,
-                opacity: isLocked ? 0.5 : 1,
-              },
-            ]}
-          >
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={isDisabled}
+      activeOpacity={isDisabled ? 1 : 0.9}
+    >
+      <Card
+        style={[
+          styles.card,
+          {
+            backgroundColor: theme.colors.surface,
+            opacity: isDisabled ? 0.65 : 1,
+          },
+        ]}
+      >
         <Card.Title
           title={data.label}
           subtitle={data.title}
@@ -92,20 +114,10 @@ export function WeeklyEngagementCard({
             fontWeight: "700",
           }}
         />
-                  {isLocked && (
-            <Text style={{ color: theme.colors.error, marginBottom: 6 }}>
-              🔒 Verification required
-            </Text>
-          )}
 
-          {isCompleted && (
-            <Text style={{ color: "#4caf50", marginBottom: 6 }}>
-              ✅ Completed
-            </Text>
-          )}
+        {renderStatusBadge()}
+
         <Card.Content>
-
-          {/* Description Slot */}
           {"description" in data && (
             <View style={styles.descriptionContainer}>
               <Text
@@ -121,7 +133,6 @@ export function WeeklyEngagementCard({
             </View>
           )}
 
-          {/* Progress Slot */}
           {"progress" in data && (
             <ProgressBar
               progress={data.progress}
@@ -131,7 +142,6 @@ export function WeeklyEngagementCard({
           )}
 
           {renderFooter()}
-
         </Card.Content>
       </Card>
     </TouchableOpacity>
@@ -144,8 +154,13 @@ const styles = StyleSheet.create({
     padding: 14,
   },
 
+  statusText: {
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+
   descriptionContainer: {
-    minHeight: 42, // ensures layout consistency
+    minHeight: 42,
     marginBottom: 8,
   },
 

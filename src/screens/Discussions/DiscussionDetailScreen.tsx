@@ -1,6 +1,5 @@
 import React, { useContext, useState, useCallback } from "react";
 import {
-  Alert,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -14,13 +13,17 @@ import { usePostComment } from "../../hooks/discussions/usePostComment";
 import { StickyCommentBar } from "../../components/Discussion/StickyCommentBar";
 import { CommentCard } from "../../components/Discussion/CommentCard";
 import { TierBadge } from "../../components/common/TierBadge";
-import { QuerySection } from "../../components/common/QuerySection";
-import { Screen } from "../../layout/Screen";
-
 import { permissions } from "../../utils/permissions";
 import { typography } from "../../theme/typography";
 import { spacing } from "../../theme/spacing";
 import { VerificationTier } from "../../types/verification";
+import { SectionError, SectionLoader } from "../../components/common/SectionState";
+import { Keyboard } from "react-native";
+import { useHeaderHeight } from "@react-navigation/elements";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { BackRow } from "../../components/common/BackRow";
+
+
 
 type RootStackParamList = {
   DiscussionDetail: { id: number };
@@ -53,14 +56,18 @@ export default function DiscussionDetailScreen() {
 
   const [newComment, setNewComment] = useState("");
 
+
   /* -------------------------------------------------
      Derived Values
   --------------------------------------------------*/
 
-  const userTier: VerificationTier =
-    user?.verification_tier ?? 0;
+  const userTier: VerificationTier =user?.verification_tier ?? 0;
 
   const canComment = permissions.canComment(userTier);
+
+  const insets = useSafeAreaInsets();
+  const headerHeight = useHeaderHeight();
+
 
 
   /* -------------------------------------------------
@@ -74,12 +81,12 @@ export default function DiscussionDetailScreen() {
 
     const success = await commentMutation.postComment(
       newComment,
-      user.id
     );
 
     if (success) {
       setNewComment("");
       discussionQuery.reload();
+      Keyboard.dismiss();
     }
   }, [
     user,
@@ -90,30 +97,41 @@ export default function DiscussionDetailScreen() {
   ]);
 
 
+ // ✅ NOW SAFE to early return
+  if (discussionQuery.loading) return <SectionLoader />;
+  if (discussionQuery.error) return <SectionError message={discussionQuery.error} />;
+  if (!discussionQuery.data) return null;
 
+  const discussion = discussionQuery.data;
+  
   /* -------------------------------------------------
      Render
   --------------------------------------------------*/
 
- return (
-  <Screen showBack scroll>
+return (
+    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
 
-    <QuerySection 
-    label = "" query={discussionQuery}>
-      {(discussion) => (
+    <View style={{ paddingHorizontal: spacing.md, paddingTop: spacing.md }}>
+      <BackRow />
+    </View>
+    
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={headerHeight}
+        >
 
-        <View style={{ flex: 1 }}>
+          {/* Main Column Layout */}
+          <View style={{ flex: 1 }}>
 
-          <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
-          >
+            {/* COMMENTS LIST */}
             <FlatList
               style={{ flex: 1 }}
-              data={discussion.comments}
+              data={discussionQuery.data.comments}
               keyExtractor={(item) => item.id.toString()}
-              contentContainerStyle={{ paddingBottom: 120 }}
-              
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{ paddingBottom: 0 }}
+
               ListHeaderComponent={
                 <View
                   style={[
@@ -128,7 +146,7 @@ export default function DiscussionDetailScreen() {
                     variant={typography.sectionTitle}
                     style={{ color: theme.colors.onSurface }}
                   >
-                    {discussion.title}
+                    {discussionQuery.data.title}
                   </Text>
 
                   <View style={styles.creatorRow}>
@@ -138,13 +156,15 @@ export default function DiscussionDetailScreen() {
                         fontWeight: "600",
                       }}
                     >
-                      Created by {discussion.created_by}
+                      Created by {discussionQuery.data.created_by}
                     </Text>
 
                     <TierBadge
-                      tier={discussion.verification_tier}
+                      tier={discussionQuery.data.verification_tier}
                       onPress={() =>
-                        navigation.navigate("Tabs", { screen: "Verify" })
+                        navigation.navigate("Tabs", {
+                          screen: "Verify",
+                        })
                       }
                     />
                   </View>
@@ -156,7 +176,7 @@ export default function DiscussionDetailScreen() {
                       { color: theme.colors.onSurfaceVariant },
                     ]}
                   >
-                    {discussion.body}
+                    {discussionQuery.data.body}
                   </Text>
                 </View>
               }
@@ -170,9 +190,8 @@ export default function DiscussionDetailScreen() {
                 />
               )}
             />
-          </KeyboardAvoidingView>
 
-          {/* Sticky Comment Bar */}
+
           <StickyCommentBar
             value={newComment}
             onChange={setNewComment}
@@ -185,13 +204,11 @@ export default function DiscussionDetailScreen() {
             }
           />
 
+
         </View>
-
-      )}
-    </QuerySection>
-
-  </Screen>
-);
+        </KeyboardAvoidingView>
+      </View>
+  );
 }
 
 /* =====================================================

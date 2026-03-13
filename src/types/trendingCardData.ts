@@ -1,3 +1,5 @@
+import { PollAccessState } from "../utils/pollAccess";
+
 export type TrendingCardData =
   | {
       type: "discussion";
@@ -16,6 +18,7 @@ export type TrendingCardData =
       total_polls: number;
       completed_polls: number;
       status: 0 | 1 | 2;
+      accessState: PollAccessState;
       required_verification_tier?: number;
     }
   | {

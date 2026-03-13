@@ -11,6 +11,10 @@ router.get("/weekly", requireAuth, controller.getWeeklyPetition);
 // Trending
 router.get("/trending", requireAuth, controller.getTrendingPetition);
 
+
+// create a petition
+router.post("/", requireAuth, requireTier(3),  controller.createPetition);
+
 // Lists (must be before :id)
 router.get("/topics/:id", requireAuth, controller.getPetitionsByTopic);
 

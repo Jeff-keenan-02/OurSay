@@ -248,6 +248,12 @@ VALUES
 ('Technology & Society', 'AI, privacy, digital rights', FALSE),
 ('Weekly Public Opinion', 'This week’s featured national topic', TRUE);
 
+
+-- Comunity topic for user created discussions or petitions
+INSERT INTO topics (title, description, is_weekly)
+VALUES
+('Community & Local Issues', 'Local civic matters and grassroots discussions', FALSE);
+
 INSERT INTO poll_groups (topic_id, title, required_verification_tier)
 VALUES
 -- Housing
@@ -355,58 +361,67 @@ VALUES
 (3, 2, 1),
 (4, 1, 1);
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- CREATE EXTENSION IF NOT EXISTS pgcrypto;
--- -- To create petitions first we must create the action tokens that represent signatures, then link them to the petition_signatures table.
+WITH new_tokens AS (
+  INSERT INTO action_tokens (
+    token_hash,
+    action_type,
+    petition_id,
+    expires_at,
+    used
+  )
+  SELECT
+    encode(gen_random_bytes(32), 'hex'),
+    'petition_sign',
+    1,
+    NOW() + INTERVAL '10 years',
+    true
+  FROM generate_series(1, 420)
+  RETURNING token_hash
+)
+INSERT INTO petition_signatures (petition_id, token_hash)
+SELECT 1, token_hash
+FROM new_tokens;
 
--- WITH new_tokens AS (
---   INSERT INTO action_tokens (token_hash, action_type, petition_id, expires_at, used)
---   SELECT
---     encode(gen_random_bytes(32), 'hex'), 'petition_sign', 1, NOW() + interval '10 years', true
---   FROM generate_series(1, 340)
---   RETURNING token_hash
--- )
--- INSERT INTO petition_signatures (petition_id, token_hash)
--- SELECT 1, token_hash
--- FROM new_tokens;
+WITH new_tokens AS (
+  INSERT INTO action_tokens (
+    token_hash,
+    action_type,
+    petition_id,
+    expires_at,
+    used
+  )
+  SELECT
+    encode(gen_random_bytes(32), 'hex'),
+    'petition_sign',
+    2,
+    NOW() + INTERVAL '10 years',
+    true
+  FROM generate_series(1, 3200)
+  RETURNING token_hash
+)
+INSERT INTO petition_signatures (petition_id, token_hash)
+SELECT 2, token_hash
+FROM new_tokens;
 
--- WITH new_tokens AS (
---   INSERT INTO action_tokens (token_hash, action_type, petition_id, expires_at, used)
---   SELECT encode(gen_random_bytes(32), 'hex'), 'petition_sign', 2, NOW() + interval '10 years', true
---   FROM generate_series(2, 2850)
---   RETURNING token_hash
--- )
--- INSERT INTO petition_signatures (petition_id, token_hash)
--- SELECT 2, token_hash
--- FROM new_tokens;
-
-
--- WITH new_tokens AS (
---   INSERT INTO action_tokens (token_hash,action_type,petition_id,expires_at,used)
---   SELECT
---     encode(gen_random_bytes(32), 'hex'),'petition_sign',3, NOW() + interval '10 years', true
---     FROM generate_series(3, 720)
---     RETURNING token_hash
---   )
-
-
--- INSERT INTO petition_signatures (petition_id, token_hash)
--- SELECT 3, token_hash
--- FROM new_tokens;
-
--- INSERT INTO action_tokens (token_hash,action_type, poll_id, expires_at)
--- VALUES 
--- ('secure_random_hash_1', 'poll_vote', 1, NOW() + INTERVAL '10 minutes');
-
--- INSERT INTO poll_votes (poll_id, token_hash, choice)
--- VALUES 
--- (1, 'secure_random_hash_1', 'yes');
-
-
--- UPDATE action_tokens
--- SET used = TRUE
--- WHERE token_hash = 'secure_random_hash_1';
-
--- INSERT INTO poll_participation (user_id, poll_id)
--- VALUES (1, 1);
-
+WITH new_tokens AS (
+  INSERT INTO action_tokens (
+    token_hash,
+    action_type,
+    petition_id,
+    expires_at,
+    used
+  )
+  SELECT
+    encode(gen_random_bytes(32), 'hex'),
+    'petition_sign',
+    3,
+    NOW() + INTERVAL '10 years',
+    true
+  FROM generate_series(1, 860)
+  RETURNING token_hash
+)
+INSERT INTO petition_signatures (petition_id, token_hash)
+SELECT 3, token_hash
+FROM new_tokens;

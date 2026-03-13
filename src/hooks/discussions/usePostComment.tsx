@@ -18,7 +18,7 @@ export function usePostComment(discussionId: number) {
   --------------------------------------------------*/
 
   const postComment = useCallback(
-    async (text: string, userId: number) => {
+    async (text: string) => {
       if (!discussionId || !text.trim()) return;
 
       try {
@@ -29,7 +29,6 @@ export function usePostComment(discussionId: number) {
           `/discussions/${discussionId}/comments`,
           {
             body: text.trim(),
-            userId,
           }
         );
 

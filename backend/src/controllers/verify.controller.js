@@ -10,6 +10,126 @@ const LIVENESS_FUNCTION_URL = process.env.LIVENESS_FUNCTION_URL;
 const IDENTITY_SALT = process.env.IDENTITY_SALT;
 const MOCK_VERIFICATION = true;
 
+exports.verifyLiveness = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const userId = req.user.id; // from JWT middleware
+    if (!userId) {
+      return res.status(400).json({ error: "Missing userId" });
+    }
+
+    if (MOCK_VERIFICATION) {
+  await pool.query(
+    `
+    INSERT INTO verifications (
+      user_id,
+      type,
+      level,
+      passport_hash,
+      issued_at,
+      expires_at
+    )
+    VALUES ($1, 'liveness', 1, NULL, NOW(), NOW() + INTERVAL '1 year')
+    `,
+    [userId]
+  );
+
+  await pool.query(
+    `
+    UPDATE users
+    SET verification_tier = GREATEST(verification_tier, 1)
+    WHERE id = $1
+    `,
+    [userId]
+  );
+
+  return res.json({
+    success: true,
+    level: 1,
+    type: "liveness",
+    mock: true
+  });
+}
+
+    /* --------------------------------------------------
+       1. Forward image to Cloud Function
+    -------------------------------------------------- */
+
+    const form = new FormData();
+    form.append("file", req.file.buffer, {
+      filename: req.file.originalname || "selfie.jpg",
+      contentType: req.file.mimetype || "image/jpeg",
+    });
+
+    const cfResponse = await axios.post(
+      LIVENESS_FUNCTION_URL,
+      form,
+      {
+        headers: form.getHeaders(),
+        timeout: 60000,
+      }
+    );
+
+    const { success } = cfResponse.data;
+
+    if (!success) {
+      return res.status(400).json({
+        error: "Liveness check failed",
+      });
+    }
+
+    /* --------------------------------------------------
+       2. Store verification
+    -------------------------------------------------- */
+
+    await pool.query(
+      `
+      INSERT INTO verifications (
+        user_id,
+        type,
+        level,
+        passport_hash,
+        issued_at,
+        expires_at
+      )
+      VALUES ($1, 'liveness', 1, NULL, NOW(), NOW() + INTERVAL '7 days')
+      `,
+      [userId]
+    );
+
+    /* --------------------------------------------------
+       3. Update user tier
+    -------------------------------------------------- */
+
+    await pool.query(
+      `
+      UPDATE users
+      SET verification_tier = GREATEST(verification_tier, 1)
+      WHERE id = $1
+      `,
+      [userId]
+    );
+
+    return res.json({
+      success: true,
+      level: 1,
+      type: "liveness",
+    });
+
+  } catch (err) {
+    console.error("Liveness verification failed:", err);
+
+    return res.status(500).json({
+      error: "Liveness verification failed",
+    });
+  }
+};
+
+
+
 exports.verifyPassport = async (req, res) => {
   try {
     if (!req.file) {
@@ -33,7 +153,7 @@ exports.verifyPassport = async (req, res) => {
       issued_at,
       expires_at
     )
-    VALUES ($1, 'passport', 2, $2, NOW(), NOW() + INTERVAL '1 year')
+    VALUES ($1, 'passport', 2, $2, NOW(), NOW() + INTERVAL '6 months')
     `,
     [userId, proofHash]
   );
@@ -150,260 +270,97 @@ exports.verifyPassport = async (req, res) => {
     }
 };
 
-
-
-
-exports.verifyLiveness = async (req, res) => {
+exports.verifyResidence = async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
-
-    const userId = req.user.id; // from JWT middleware
+    const userId = req.user.id;
     if (!userId) {
       return res.status(400).json({ error: "Missing userId" });
     }
 
+    // Always fetch passport expiry first
+    const passportResult = await pool.query(`
+      SELECT expires_at
+      FROM verifications
+      WHERE user_id = $1
+      AND type = 'passport'
+      AND revoked = false
+      AND expires_at > NOW()
+      ORDER BY expires_at DESC
+      LIMIT 1
+    `, [userId]);
+
+    if (!passportResult.rows.length) {
+      return res.status(400).json({ error: "Passport required first" });
+    }
+
+    const passportExpiry = passportResult.rows[0].expires_at;
+
+    // MOCK MODE
     if (MOCK_VERIFICATION) {
-  await pool.query(
-    `
-    INSERT INTO verifications (
-      user_id,
-      type,
-      level,
-      passport_hash,
-      issued_at,
-      expires_at
-    )
-    VALUES ($1, 'liveness', 1, NULL, NOW(), NOW() + INTERVAL '1 year')
-    `,
-    [userId]
-  );
+      await pool.query(`
+        INSERT INTO verifications (
+          user_id,
+          type,
+          level,
+          issued_at,
+          expires_at
+        )
+        VALUES ($1, 'residence', 3, NOW(), $2)
+      `, [userId, passportExpiry]);
 
-  await pool.query(
-    `
-    UPDATE users
-    SET verification_tier = GREATEST(verification_tier, 1)
-    WHERE id = $1
-    `,
-    [userId]
-  );
+      await pool.query(`
+        UPDATE users
+        SET verification_tier = GREATEST(verification_tier, 3)
+        WHERE id = $1
+      `, [userId]);
 
-  return res.json({
-    success: true,
-    level: 1,
-    type: "liveness",
-    mock: true
-  });
-}
-
-    /* --------------------------------------------------
-       1. Forward image to Cloud Function
-    -------------------------------------------------- */
-
-    const form = new FormData();
-    form.append("file", req.file.buffer, {
-      filename: req.file.originalname || "selfie.jpg",
-      contentType: req.file.mimetype || "image/jpeg",
-    });
-
-    const cfResponse = await axios.post(
-      LIVENESS_FUNCTION_URL,
-      form,
-      {
-        headers: form.getHeaders(),
-        timeout: 60000,
-      }
-    );
-
-    const { success } = cfResponse.data;
-
-    if (!success) {
-      return res.status(400).json({
-        error: "Liveness check failed",
+      return res.json({
+        verified: true,
+        level: 3,
+        score: 100,
+        mock: true
       });
     }
 
-    /* --------------------------------------------------
-       2. Store verification
-    -------------------------------------------------- */
+    // REAL MODE
+    let score = 40; // base score for having passport
 
-    await pool.query(
-      `
-      INSERT INTO verifications (
-        user_id,
-        type,
-        level,
-        passport_hash,
-        issued_at,
-        expires_at
-      )
-      VALUES ($1, 'liveness', 1, NULL, NOW(), NOW() + INTERVAL '1 year')
-      `,
-      [userId]
-    );
-
-    /* --------------------------------------------------
-       3. Update user tier
-    -------------------------------------------------- */
-
-    await pool.query(
-      `
-      UPDATE users
-      SET verification_tier = GREATEST(verification_tier, 1)
-      WHERE id = $1
-      `,
-      [userId]
-    );
-
-    return res.json({
-      success: true,
-      level: 1,
-      type: "liveness",
-    });
-
-  } catch (err) {
-    console.error("Liveness verification failed:", err);
-
-    return res.status(500).json({
-      error: "Liveness verification failed",
-    });
-  }
-};
-
-exports.verifyResidence = async (req, res) => {
-  function normalizeIP(ip) {
-    
-    if (!ip) return null;
-
-    // IPv6-mapped IPv4
-    if (ip.startsWith('::ffff:')) {
-      return ip.replace('::ffff:', '');
-    }
-
-    return ip;
-  }
-
-  function isPrivateIP(ip) {
-    return (
-      ip.startsWith('192.168.') ||
-      ip.startsWith('10.') ||
-      ip.startsWith('172.16.') ||
-      ip === '127.0.0.1'
-    );
-  }
-
-  try {
-    const userId = req.user.id; // from JWT middleware
-    if (!userId) {
-      return res.status(400).json({ error: "Missing userId" });
-    }
-    if (MOCK_VERIFICATION) {
-  await pool.query(
-    `
-    INSERT INTO verifications (
-      user_id,
-      type,
-      level,
-      passport_hash,
-      issued_at,
-      expires_at
-    )
-    VALUES ($1, 'residence', 3, NULL, NOW(), NOW() + INTERVAL '1 year')
-    `,
-    [userId]
-  );
-
-  await pool.query(
-    `
-    UPDATE users
-    SET verification_tier = GREATEST(verification_tier, 3)
-    WHERE id = $1
-    `,
-    [userId]
-  );
-
-  return res.json({
-    verified: true,
-    level: 3,
-    score: 100,
-    ip_seen: "127.0.0.1",
-    country: "IE",
-    countryName: "Ireland (mock)",
-    devOverride: true,
-  });
-}
-
-    // 1. Get IP
     const rawIp =
       req.headers['x-forwarded-for']?.split(',')[0] ||
       req.socket.remoteAddress;
 
-    const ip = normalizeIP(rawIp);
+    const ip = rawIp?.replace('::ffff:', '');
 
-    let score = 0;
-    let country = null;
-    let countryName = null;
-    let devOverride = false;
-
-    // 2. Base confidence: Tier 2 already completed
-    score += 40;
-
-    // 3. Private IP = dev environment
-    if (isPrivateIP(ip)) {
-      devOverride = true;
-      score += 50; // enough to pass for testing
-      country = "IE";
-      countryName = "Ireland (dev)";
-    } else {
-      // 4. Public IP → Geo lookup
-      const geo = await axios.get(`https://ipapi.co/${ip}/json/`);
-      country = geo.data.country;
-      countryName = geo.data.country_name;
-
-      if (country === "IE") {
-        score += 40;
-      }
-
-      score += 10; // mobile / ISP assumption
+    const geo = await axios.get(`https://ipapi.co/${ip}/json/`);
+    if (geo.data.country === "IE") {
+      score += 40;
     }
 
     const verified = score >= 80;
 
     if (verified) {
-      await pool.query(
-        `
+      await pool.query(`
         INSERT INTO verifications (
           user_id,
           type,
           level,
-          passport_hash,
           issued_at,
           expires_at
         )
-        VALUES ($1, 'residence', 3, NULL,  NOW(), NOW() + INTERVAL '5 years')
-        `,
-        [userId]
-      );
+        VALUES ($1, 'residence', 3, NOW(), $2)
+      `, [userId, passportExpiry]);
 
-      await pool.query(
-        `
+      await pool.query(`
         UPDATE users
         SET verification_tier = GREATEST(verification_tier, 3)
         WHERE id = $1
-        `,
-        [userId]
-      );
+      `, [userId]);
     }
 
     return res.json({
-      verified: true,
-      level: 3,
-      score: 100,
-      ip_seen: "127.0.0.1",
-      country: "IE",
-      countryName: "Ireland (mock)",
-      devOverride: true,
+      verified,
+      level: verified ? 3 : 2,
+      score
     });
 
   } catch (err) {

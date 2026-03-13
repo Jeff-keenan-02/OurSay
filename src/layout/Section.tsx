@@ -1,6 +1,6 @@
 // src/layout/Section.tsx
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, ViewStyle } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { typography } from "../theme/typography";
 import { spacing } from "../theme/spacing";
@@ -10,12 +10,13 @@ interface SectionProps {
   label?: string;
   subtitle?: string;
   children: React.ReactNode;
+  style?: ViewStyle | ViewStyle[];
 }
-export function Section({ label, subtitle, children }: SectionProps) {
+export function Section({ label, subtitle, children, style }: SectionProps) {
   const theme = useTheme();
 
   return (
-    <View style={styles.section}>
+    <View style={styles.label}>
       {label && (
         <Text
           variant={typography.sectionTitle}
@@ -48,14 +49,14 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    marginBottom: spacing.sm, // proper space before content
+    marginBottom: spacing.xs, // proper space before content
   },
 
   subtitle: {
-    marginBottom: spacing.sm,
+    marginBottom: spacing.lg,
   },
 
   content: {
-    gap: spacing.sm, // slightly larger internal spacing
+    marginTop: spacing.sm,
   },
 });

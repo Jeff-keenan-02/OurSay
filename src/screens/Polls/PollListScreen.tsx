@@ -34,13 +34,6 @@ export default function PollListScreen() {
   const { topicId, title } = route.params;
 
   /* -------------------------------------------------
-     Derived Values
-     (Compute user tier safely)
-  --------------------------------------------------*/
-
-
-
-  /* -------------------------------------------------
      Query
      (Fetch poll groups for this topic)
   --------------------------------------------------*/
@@ -103,7 +96,7 @@ export default function PollListScreen() {
                   group={item}
                   state={state}
                   onPress={() => {
-                    if (state === "available") {
+                    if (state === "available" || state === "in_progress") {
                       openGroup(item);
                     }
                   }}

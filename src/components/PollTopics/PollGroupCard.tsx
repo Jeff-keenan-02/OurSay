@@ -1,12 +1,12 @@
 import React from "react";
-import { TouchableOpacity, StyleSheet } from "react-native";
+import { TouchableOpacity, StyleSheet, View } from "react-native";
 import { Card, Text, ProgressBar, List, useTheme } from "react-native-paper";
 import { PollGroup } from "../../types/PollGroup";
-import { FeatureAccessState } from "../../utils/accessTypes";
+import { PollAccessState } from "../../utils/pollAccess";
 
 type Props = {
   group: PollGroup;
-  state: FeatureAccessState; // only "locked_verification" | "available"
+  state: PollAccessState;
   onPress: () => void;
 };
 
@@ -17,52 +17,62 @@ export default function PollGroupCard({
 }: Props) {
   const theme = useTheme();
 
-  const {
-    title,
-    status,
-    progress,
-    completed_polls,
-    total_polls,
-  } = group;
+  const { title, progress, completed_polls, total_polls } = group;
 
   /* ----------------------------------------
-     Access Logic (verification only)
+     State Mapping
   ---------------------------------------- */
 
-  const isVerificationLocked = state === "locked_verification";
+  const isLocked = state === "locked";
+  const isCompleted = state === "completed";
+  const isInProgress = state === "in_progress";
 
-  /* ----------------------------------------
-     Progress Logic (business state)
-  ---------------------------------------- */
-
-  const isCompleted = status === 2;
+  const isDisabled = isLocked || isCompleted;
 
   const statusText =
-    status === 2
+    state === "completed"
       ? "Completed"
-      : status === 1
+      : state === "in_progress"
       ? "In Progress"
       : "Not Started";
 
   const statusColor =
-    status === 2
+    state === "completed"
       ? "#4caf50"
-      : status === 1
+      : state === "in_progress"
       ? "#ff9800"
       : "#9e9e9e";
 
   const icon =
-    status === 2
+    state === "completed"
       ? "check-circle-outline"
-      : status === 1
+      : state === "in_progress"
       ? "progress-clock"
       : "checkbox-blank-circle-outline";
 
   /* ----------------------------------------
-     Final Interaction Rule
+     Status Badge
   ---------------------------------------- */
 
-  const disabled = isVerificationLocked || isCompleted;
+  const renderStatusBadge = () => {
+    if (isLocked) {
+      return (
+        <Text style={[styles.statusText, { color: theme.colors.error }]}>
+          🔒 Verification required
+        </Text>
+      );
+    }
+
+    if (isCompleted) {
+      return (
+        <Text style={[styles.statusText, { color: "#4caf50" }]}>
+          ✅ Completed — Participation recorded
+        </Text>
+      );
+    }
+
+    return null;
+  };
 
   /* ----------------------------------------
      Render
@@ -70,16 +80,16 @@ export default function PollGroupCard({
 
   return (
     <TouchableOpacity
-      disabled={disabled}
+      disabled={isDisabled}
       onPress={onPress}
-      activeOpacity={disabled ? 1 : 0.8}
+      activeOpacity={isDisabled ? 1 : 0.85}
     >
       <Card
         style={[
           styles.card,
           {
             backgroundColor: theme.colors.surface,
-            opacity: isVerificationLocked ? 0.5 : 1,
+            opacity: isDisabled ? 0.65 : 1,
           },
         ]}
       >
@@ -93,23 +103,9 @@ export default function PollGroupCard({
           left={(props) => (
             <List.Icon {...props} icon={icon} color={statusColor} />
           )}
-          right={() => {
-            if (isVerificationLocked) {
-              return <List.Icon icon="lock-outline" />;
-            }
-
-            if (isCompleted) {
-              return (
-                <List.Icon
-                  icon="check-circle"
-                  color="#4caf50"
-                />
-              );
-            }
-
-            return null;
-          }}
         />
+
+        {renderStatusBadge()}
 
         <Card.Content>
           <ProgressBar
@@ -121,22 +117,11 @@ export default function PollGroupCard({
           <Text
             style={{
               color: theme.colors.onSurfaceVariant,
-              marginTop: 4,
+              marginTop: 6,
             }}
           >
             {statusText} — {completed_polls}/{total_polls} polls
           </Text>
-
-          {isVerificationLocked && (
-            <Text
-              style={{
-                marginTop: 6,
-                color: theme.colors.error,
-              }}
-            >
-              Verification required
-            </Text>
-          )}
         </Card.Content>
       </Card>
     </TouchableOpacity>
@@ -151,5 +136,10 @@ const styles = StyleSheet.create({
   progress: {
     height: 8,
     borderRadius: 6,
+  },
+  statusText: {
+    fontWeight: "600",
+    marginHorizontal: 16,
+    marginBottom: 6,
   },
 });

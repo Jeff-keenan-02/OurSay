@@ -23,8 +23,18 @@ export default function TrendingEngagementCard({
 }: Props) {
   const theme = useTheme();
 
+  const isPoll = data.type === "poll";
+
+  const isLocked =
+    isPoll && data.accessState === "locked";
+
+  const isCompleted =
+    isPoll && data.accessState === "completed";
+
+  const isDisabled = isLocked || isCompleted;
+
   /* --------------------------------------------------
-     Derived UI Values (Clean Separation of Logic)
+     Description
   ---------------------------------------------------*/
 
   const descriptionText = useMemo(() => {
@@ -42,6 +52,36 @@ export default function TrendingEngagementCard({
         return "";
     }
   }, [data]);
+
+  /* --------------------------------------------------
+     Status Badge (Poll Only)
+  ---------------------------------------------------*/
+
+  const renderStatusBadge = () => {
+    if (!isPoll) return null;
+
+    if (isLocked) {
+      return (
+        <Text style={[styles.statusText, { color: theme.colors.error }]}>
+          🔒 Verification required
+        </Text>
+      );
+    }
+
+    if (isCompleted) {
+      return (
+        <Text style={[styles.statusText, { color: "#4caf50" }]}>
+          ✅ Completed — Participation recorded
+        </Text>
+      );
+    }
+
+    return null;
+  };
+
+  /* --------------------------------------------------
+     Footer
+  ---------------------------------------------------*/
 
   const renderFooter = () => {
     switch (data.type) {
@@ -117,53 +157,60 @@ export default function TrendingEngagementCard({
   };
 
   /* --------------------------------------------------
-     Component Render
+     Render
   ---------------------------------------------------*/
 
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.9}>
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={isDisabled}
+      activeOpacity={isDisabled ? 1 : 0.9}
+    >
       <View style={styles.wrapper}>
         <Card
           mode="elevated"
           style={[
             styles.card,
-            { backgroundColor: theme.colors.surface },
+            {
+              backgroundColor: theme.colors.surface,
+              opacity: isDisabled ? 0.65 : 1,
+            },
           ]}
         >
           <View style={styles.tag}>
             <Text style={styles.tagText}>🔥 Trending</Text>
           </View>
 
-         <Card.Content style={styles.contentContainer}>
+          <Card.Content style={styles.contentContainer}>
+            <Text
+              numberOfLines={2}
+              ellipsizeMode="tail"
+              style={[styles.title, { color: theme.colors.onSurface }]}
+            >
+              {data.title}
+            </Text>
 
-  {/* TITLE */}
-  <Text
-    numberOfLines={2}
-    ellipsizeMode="tail"
-    style={[styles.title, { color: theme.colors.onSurface }]}
-  >
-    {data.title}
-  </Text>
+            {renderStatusBadge()}
 
-  {/* DESCRIPTION SLOT */}
-  <View style={styles.descriptionContainer}>
-    <Text
-      numberOfLines={2}
-      ellipsizeMode="tail"
-      style={[styles.description, { color: theme.colors.onSurfaceVariant }]}
-    >
-      {descriptionText}
-    </Text>
-  </View>
+            <View style={styles.descriptionContainer}>
+              <Text
+                numberOfLines={2}
+                ellipsizeMode="tail"
+                style={[
+                  styles.description,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+              >
+                {descriptionText}
+              </Text>
+            </View>
 
-  <Divider style={styles.divider} />
+            <Divider style={styles.divider} />
 
-  {/* METRICS SLOT */}
-  <View style={styles.metricsContainer}>
-    {renderFooter()}
-  </View>
-
-</Card.Content>
+            <View style={styles.metricsContainer}>
+              {renderFooter()}
+            </View>
+          </Card.Content>
         </Card>
       </View>
     </TouchableOpacity>
@@ -171,7 +218,7 @@ export default function TrendingEngagementCard({
 }
 
 /* --------------------------------------------------
-   Small Reusable Metric Component
+   Small Metric Component
 ---------------------------------------------------*/
 
 function Metric({
@@ -207,6 +254,10 @@ const styles = StyleSheet.create({
     width: 260,
     marginHorizontal: 6,
   },
+  statusText: {
+  fontWeight: "600",
+  marginBottom: 6,
+},
 
   card: {
     borderRadius: 18,

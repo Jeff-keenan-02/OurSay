@@ -169,7 +169,8 @@ exports.getTrending = async (req, res) => {
  */
 exports.postComment = async (req, res) => {
   const { id } = req.params;
-  const { body, userId } = req.body;
+  const { body } = req.body;
+  const userId = req.user.id;
 
   if (!body || body.trim() === '') {
     return res.status(400).json({ error: 'Comment body is required' });
@@ -201,15 +202,47 @@ exports.postComment = async (req, res) => {
 };
 
 /**
+ * POST a discussions for tier 3 users
+ */
+exports.createDiscussion = async (req, res) => {
+  const { title, body } = req.body;
+  const userId = req.user.id;
+
+  const COMMUNITY_TOPIC_ID = 8; // replace with actual ID
+
+  if (!title || !body) {
+    return res.status(400).json({ error: 'Title and body are required' });
+  }
+
+  if (title.length > 255) {
+    return res.status(400).json({ error: 'Title too long' });
+  }
+
+  try {
+    const result = await pool.query(
+      `
+      INSERT INTO discussions (topic_id, title, body, created_by)
+      VALUES ($1, $2, $3, $4)
+      RETURNING id, title, body, created_at
+      `,
+      [COMMUNITY_TOPIC_ID, title.trim(), body.trim(), userId]
+    );
+
+    res.status(201).json(result.rows[0]);
+
+  } catch (err) {
+    console.error('createDiscussion:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
  * POST /discussions/:id/vote
  */
 exports.voteDiscussion = async (req, res) => {
   const { id } = req.params;
-  const { userId, direction } = req.body;
-
-  if (!userId) {
-    return res.status(400).json({ error: 'userId is required' });
-  }
+  const {direction } = req.body;
+  const userId = req.user.id;
 
   if (!['up', 'down'].includes(direction)) {
     return res.status(400).json({ error: 'direction must be "up" or "down"' });
@@ -241,8 +274,8 @@ exports.voteDiscussion = async (req, res) => {
 
     res.json({
       id: Number(id),
-      upvotes: counts.rows[0].upvotes,
-      downvotes: counts.rows[0].downvotes
+      upvotes: Number(counts.rows[0].upvotes),
+      downvotes: Number(counts.rows[0].downvotes)
     });
   } catch (err) {
     console.error('voteDiscussion:', err);

@@ -1,12 +1,12 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Button, TextInput, useTheme } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Props {
   value: string;
   onChange: (v: string) => void;
   onSubmit: () => void;
-
   disabled?: boolean;
   placeholder?: string;
 }
@@ -21,50 +21,45 @@ export function StickyCommentBar({
   const theme = useTheme();
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: theme.colors.surface,
-          borderColor: theme.colors.outline,
-        },
-      ]}
-    >
-      <TextInput
-        mode="flat"
-        value={value}
-        onChangeText={onChange}
-        placeholder={placeholder}
-        editable={!disabled}
-        placeholderTextColor={theme.colors.onSurfaceVariant}
+      <View
         style={[
-          styles.input,
-          { backgroundColor: theme.colors.background },
+          styles.container,
+          {
+            backgroundColor: theme.colors.surface,
+            borderColor: theme.colors.outline,
+          },
         ]}
-      />
-
-      <Button
-        mode="contained"
-        onPress={onSubmit}
-        disabled={disabled}
-        style={styles.button}
       >
-        Post
-      </Button>
-    </View>
+        <TextInput
+          mode="flat"
+          value={value}
+          onChangeText={onChange}
+          placeholder={placeholder}
+          editable={!disabled}
+          placeholderTextColor={theme.colors.onSurfaceVariant}
+          style={[
+            styles.input,
+            { backgroundColor: theme.colors.background },
+          ]}
+        />
+
+        <Button
+          mode="contained"
+          onPress={onSubmit}
+          disabled={disabled}
+          style={styles.button}
+        >
+          Post
+        </Button>
+      </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
     flexDirection: "row",
     padding: 8,
     borderTopWidth: 1,
-    elevation: 10,
   },
   input: {
     flex: 1,

@@ -15,6 +15,8 @@ router.get('/weekly',requireAuth, controller.getWeeklyDiscussion);
 router.post('/:id/comments',requireAuth, requireTier(2), controller.postComment);
 router.post('/:id/vote', requireAuth, controller.voteDiscussion);
 
+router.post('/', requireAuth, requireTier(3), controller.createDiscussion);
+
 // ⚠️ MUST be last
 router.get('/:id', requireAuth, controller.getDiscussion);
 

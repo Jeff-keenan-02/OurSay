@@ -71,7 +71,8 @@ const { vote } = useDiscussionVote(user, trendingQuery.updateData);
   --------------------------------------------------*/
 
   return (
-    <Screen scroll>
+    <Screen scroll       title="Discussions"
+      subtitle="Join the conversation on issues that matter to you">
 
       {/* --------------- Weekly Disscussion  ------------ */}
         <QuerySection

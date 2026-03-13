@@ -8,17 +8,16 @@ module.exports = function requireTier(minTier) {
       }
 
       const userId = req.user.id;
-      
-      const result = await pool.query(
-        "SELECT verification_tier FROM users WHERE id = $1",
-        [userId]
-      );
 
-      if (result.rowCount === 0) {
-        return res.status(401).json({ error: "User not found" });
-      }
+      const result = await pool.query(`
+        SELECT COALESCE(MAX(level), 0) AS tier
+        FROM verifications
+        WHERE user_id = $1
+        AND revoked = false
+        AND expires_at > NOW()
+      `, [userId]);
 
-      const tier = result.rows[0].verification_tier;
+      const tier = Number(result.rows[0].tier);
 
       if (tier < minTier) {
         return res.status(403).json({

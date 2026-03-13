@@ -7,14 +7,10 @@ import { WeeklyEngagementCard } from "../../components/common/WeeklyEngagementCa
 import { QuerySection } from "../../components/common/QuerySection";
 
 import { getGreeting } from "../../utils/greeting";
-
-
 import { useWeeklyPoll } from "../../hooks/polls/useWeeklyPoll";
 import { useWeeklyDiscussion } from "../../hooks/discussions/useWeeklyDiscussion";
 import { useWeeklyPetition } from "../../hooks/petitions/useWeeklyPetition";
-
 import {mapPollToWeekly, mapDiscussionToWeekly, mapPetitionToWeekly} from "../../mappers/weeklyCardMapper";
-
 import {WeeklyDiscussion} from "../../types/Discussion";
 import { Petition } from "../../types/Petition";
 import { PollGroup } from "../../types/PollGroup";
@@ -37,36 +33,23 @@ export default function HomeScreen() {
   /* -------------------------------------------------
      Navigation Handlers
   --------------------------------------------------*/
-
   const openWeeklyPoll = (poll: PollGroup) => {
-
-
-    navigation.navigate("Polls", {
-      screen: "SwipePoll",
-      params: {
-        groupId: poll.id,
-        title: poll.title,
-      },
+    navigation.navigate("SwipePoll", {
+      groupId: poll.id,
+      title: poll.title,
     });
   };
 
   const openWeeklyDiscussion = (discussion: WeeklyDiscussion) => {
-    navigation.navigate("Discussions", {
-      screen: "DiscussionDetail",
-      params: {
-        id: discussion.id,
-        title: discussion.title,
-      },
+    navigation.navigate("DiscussionDetail", {
+      id: discussion.id,
+      title: discussion.title,
     });
   };
 
   const openWeeklyPetition = (petition: Petition) => {
-    navigation.navigate("Petitions", {
-      screen: "PetitionDetail",
-      params: {
-        id: petition.id,
-        title: petition.title,
-      },
+    navigation.navigate("PetitionDetail", {
+      petitionId: petition.id,
     });
   };
 
@@ -104,21 +87,25 @@ export default function HomeScreen() {
         query={weeklyPollQuery}
       >
       {(poll) => {
+         /* ----------------------------------
+            Access Control
+         ---------------------------------- */
         const userTier = user?.verification_tier ?? 0;
-
         const state = getPollAccessState(userTier, poll);
 
         return (
           <WeeklyEngagementCard
             data={mapPollToWeekly(poll)}
+            state={state}
             onPress={() => {
-              if (state === "available") {
+              if (state === "available" || state === "in_progress") {
                 openWeeklyPoll(poll);
               }
             }}
           />
         );
       }}
+      
       </QuerySection>
 
       {/* --------------- Weekly Discussion ------------ */}

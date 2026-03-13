@@ -110,6 +110,77 @@ exports.getPetitionsByTopic = async (req, res) => {
 
 
 /* ------------------------------
+   Post a single petition
+------------------------------ */
+exports.createPetition = async (req, res) => {
+  try {
+    const {
+      title,
+      description,
+      required_verification_tier,
+      signature_goal,
+    } = req.body;
+
+    // 🔒 Basic Validation
+    if (!title || !description) {
+      return res.status(400).json({
+        error: "Title and description are required",
+      });
+    }
+
+    if (![2, 3].includes(required_verification_tier)) {
+      return res.status(400).json({
+        error: "Invalid verification tier",
+      });
+    }
+
+    if (
+      !signature_goal ||
+      isNaN(signature_goal) ||
+      Number(signature_goal) <= 0
+    ) {
+      return res.status(400).json({
+        error: "Signature goal must be a positive number",
+      });
+    }
+
+    // 🏛 Hardcoded topic_id = 8
+    const topicId = 8;
+
+    const result = await pool.query(
+      `
+      INSERT INTO petitions (
+        topic_id,
+        title,
+        description,
+        required_verification_tier,
+        signature_goal
+      )
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING id
+      `,
+      [
+        topicId,
+        title.trim(),
+        description.trim(),
+        required_verification_tier,
+        signature_goal,
+      ]
+    );
+
+    return res.status(201).json({
+      id: result.rows[0].id,
+    });
+  } catch (err) {
+    console.error("Create petition error:", err);
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+};
+
+
+/* ------------------------------
    GET single petition
 ------------------------------ */
 exports.getPetition = async (req, res) => {

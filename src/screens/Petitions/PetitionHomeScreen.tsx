@@ -48,7 +48,8 @@ export default function PetitionHomeScreen() {
   --------------------------------------------------*/
 
   return (
-    <Screen scroll>
+    <Screen scroll title="Petitions"
+      subtitle="Take action on issues that matter to you">
 
       {/* ---------------- Weekly Petition ---------------- */}
       <QuerySection

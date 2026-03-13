@@ -12,6 +12,7 @@ interface ScreenProps {
   scroll?: boolean;
   center?: boolean;
   showBack?: boolean;
+  bottom?: React.ReactNode; 
   children: React.ReactNode;
 }
 
@@ -21,6 +22,7 @@ export function Screen({
   scroll = false,
   center = false,
   showBack = false,
+  bottom,
   children,
 }: ScreenProps) {
   const theme = useTheme();
@@ -82,16 +84,17 @@ export function Screen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
+    paddingHorizontal: spacing.sm,
+    paddingTop: spacing.sm,
   },
   scrollContent: {
-    paddingBottom: spacing.lg,
+    paddingBottom: spacing.sm,
   },
   headerWrapper: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   content: {
-    gap: spacing.lg,
+    flex: 1,
+    gap: spacing.sm,
   },
 });

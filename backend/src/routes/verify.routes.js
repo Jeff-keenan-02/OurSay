@@ -15,4 +15,13 @@ router.post('/passport', requireAuth, requireTier(1),  upload.single('file'), co
 
 router.post('/residence', requireAuth, requireTier(2), controller.verifyResidence);
 
+router.get("/summary", requireAuth, controller.getVerificationSummary);
+
 module.exports = router;
+
+
+
+
+// research part requriement anaylsis part 
+// valuation startegy 
+// code qualtitiy or calarity 

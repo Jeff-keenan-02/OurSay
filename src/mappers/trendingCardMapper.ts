@@ -1,7 +1,8 @@
 import { DiscussionListItem } from "../types/discussion";
-import { Poll } from "../types/poll";
 import { Petition } from "../types/petition";
 import { TrendingCardData } from "../types/trendingCardData";
+import { getPollAccessState } from "../utils/pollAccess";
+import { PollGroup } from "../types/PollGroup";
 
 
 
@@ -20,25 +21,22 @@ export function mapDiscussionToTrending(
   };
 }
 
-
-export function mapPollToTrending(
-  poll: {
-    id: number;
-    title: string;
-    completed_polls: number;
-    total_polls: number;
-    progress: number;
-    status: 0 | 1 | 2;
-  }
+export function mapPollGroupToTrending(
+  group: PollGroup,
+  userTier: number
 ): TrendingCardData {
+
+  const accessState = getPollAccessState(userTier, group);
+
   return {
     type: "poll",
-    id: poll.id,
-    title: poll.title,
-    progress: poll.progress,
-    total_polls: poll.total_polls,
-    completed_polls: poll.completed_polls,
-    status: poll.status,
+    id: group.id,
+    title: group.title,
+    progress: group.progress,
+    total_polls: group.total_polls,
+    completed_polls: group.completed_polls,
+    status: group.status,
+    accessState,
   };
 }
 

@@ -2,8 +2,8 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, useTheme } from "react-native-paper";
-import { typography } from "../theme/typography";
 import { spacing } from "../theme/spacing";
+import { typography } from "../theme/typography";
 
 type Props = {
   title: string;
@@ -12,54 +12,52 @@ type Props = {
 
 export function AppHeader({ title, subtitle }: Props) {
   const theme = useTheme();
-
   return (
     <View
       style={[
-        styles.wrapper,
-        { borderBottomColor: theme.colors.outline },
+        styles.container,
+        { borderBottomColor: theme.colors.outline }
       ]}
     >
       <Text
         variant={typography.screenTitle}
         style={[
           styles.title,
-          { color: theme.colors.onBackground },
+          { color: theme.colors.onBackground }
         ]}
       >
         {title}
       </Text>
-
-      {subtitle && (
+      {subtitle ? (
         <Text
           variant={typography.body}
           style={[
             styles.subtitle,
-            { color: theme.colors.onSurfaceVariant },
+            { color: theme.colors.onSurfaceVariant }
           ]}
         >
           {subtitle}
         </Text>
-      )}
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
+  container: {
+    flexDirection: "column",
     paddingTop: spacing.md,
-    paddingBottom: spacing.xl,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
+    paddingBottom: spacing.sm,           // tighter bottom spacing
+    paddingHorizontal: spacing.md,
 
+  },
   title: {
-    textAlign: "center",
-    marginBottom: spacing.sm,   // slightly more breathing
-    letterSpacing: 0.4,
+    marginBottom: 2,                     // small space between title and subtitle
+    fontWeight: "600",
+    textAlign: "left"
   },
-
   subtitle: {
-    textAlign: "center",
-    paddingHorizontal: spacing.lg,
-  },
+    fontWeight: "400",
+    textAlign: "left"
+  }
 });

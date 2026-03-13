@@ -1,29 +1,31 @@
 import { PollGroup } from "../types/PollGroup";
-import { VerificationTier } from "../types/verification";
-import { FeatureAccessState } from "./accessTypes";
-import { permissions } from "./permissions";
 
+export type PollAccessState =
+  | "locked"
+  | "available"
+  | "in_progress"
+  | "completed";
 
 export function getPollAccessState(
-  userTier: VerificationTier,
+  userTier: number,
   poll: Pick<PollGroup, "required_verification_tier" | "status">
-): FeatureAccessState {
+): PollAccessState {
 
-  // 🔒 Verification lock
-  if (
-    !permissions.canVotePoll(
-      userTier,
-      poll.required_verification_tier
-    )
-  ) {
-    return "locked_verification";
+  // Locked by tier
+  if (userTier < poll.required_verification_tier) {
+    return "locked";
   }
 
-  // ✅ Already completed
+  // Completed
   if (poll.status === 2) {
     return "completed";
   }
 
-  // 🚀 Available
+  // In Progress
+  if (poll.status === 1) {
+    return "in_progress";
+  }
+
+  // Available
   return "available";
 }

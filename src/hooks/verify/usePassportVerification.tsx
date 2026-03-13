@@ -4,7 +4,8 @@ import { useApiClient } from "../common/useApiClient";
 
 import { PhotoAsset } from "../../types/Photo";
 import { User } from "../../types/User";
-import { VerificationResponse } from "../../types/VerificationType";
+import { VerificationResponse } from "../../types/verification";
+
 
 type UsePassportVerificationResult = {
   photo: PhotoAsset | null;

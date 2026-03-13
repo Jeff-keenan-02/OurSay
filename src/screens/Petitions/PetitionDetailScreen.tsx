@@ -23,6 +23,9 @@ import { usePetition } from "../../hooks/petitions/usePetition";
 import { useSignPetition } from "../../hooks/petitions/useSignPetition";
 import { QuerySection } from "../../components/common/QuerySection";
 import { VERIFICATION_TIERS, VerificationTier } from "../../types/verification";
+import { StyleSheet, View } from "react-native";
+import { typography } from "../../theme/typography";
+import { spacing } from "../../theme/spacing";
 
 /* =====================================================
    Types
@@ -55,11 +58,12 @@ export default function PetitionDetailScreen() {
   );
 
   return (
-    <Screen title="Petition" showBack>
+    <Screen showBack >
       <QuerySection
         label="Petition"
-        query={petitionQuery}
-      >
+        query={petitionQuery}>
+          
+
         {(petition) => {
           const userTier =
             user?.verification_tier ?? 0;
@@ -93,91 +97,150 @@ export default function PetitionDetailScreen() {
           };
 
           return (
-            <>
-              <Text variant="headlineSmall">
+          <>
+            {/* PETITION CARD */}
+          <Text
+            variant="bodyMedium"
+            style={styles.introText}
+          >
+            This petition outlines a proposed initiative submitted to the community.
+            Review the details below and choose whether to add your support.
+          </Text>
+
+          <View style={styles.sectionDivider} />
+            
+            <View style={styles.petitionCard}>
+              <Text variant="headlineSmall" style={styles.title}>
                 {petition.title}
               </Text>
 
-              <Text
-                variant="bodyMedium"
-                style={{
-                  color: theme.colors.onSurfaceVariant,
-                  marginVertical: 16,
-                }}
-              >
+              <Text variant="bodyMedium" style={styles.description}>
                 {petition.description}
               </Text>
 
-              <Divider />
+              <View style={styles.innerDivider} />
 
-              <Text variant="titleMedium">
-                {petition.signatures} signatures
+              <ProgressBar
+                progress={petition.progress}
+                style={styles.progress}
+              />
+
+              <Text style={styles.metaText}>
+                {petition.signatures.toLocaleString()} of{" "}
+                {petition.signature_goal.toLocaleString()} signatures
               </Text>
 
-              <Text
-                variant="bodySmall"
-                style={{
-                  color: theme.colors.onSurfaceVariant,
-                }}
-              >
-                Requires {requiredTierInfo.label}
+              <Text style={styles.metaText}>
+                Verification required: {requiredTierInfo.label}
               </Text>
+            </View>
 
+            {/* ACTION AREA */}
+            <View style={styles.fixedAction}>
               <Button
                 mode="contained"
                 disabled={!isActionAvailable || signMutation.loading}
                 loading={signMutation.loading}
                 onPress={handleSign}
-                style={{ marginTop: 16 }}
+                style={styles.button}
               >
                 {hasSigned
-                  ? "Already Signed"
+                  ? "Signed"
                   : canSign
                   ? "Sign Petition"
                   : `Requires ${requiredTierInfo.label}`}
               </Button>
 
-                {hasSigned && (
-              <Text
-                variant="bodySmall"
-                style={{
-                  color: theme.colors.primary,
-                  marginTop: 8,
-                }}
-              >
-                You have already signed this petition.
-              </Text>
-            )}
+              {hasSigned && (
+                <Text style={styles.successText}>
+                  You have signed this petition.
+                </Text>
+              )}
 
-            {!hasSigned && !canSign && (
-              <Text
-                variant="bodySmall"
-                style={{
-                  color: theme.colors.error,
-                  marginTop: 8,
-                }}
-              >
-                {requiredTierInfo.next}
-              </Text>
-            )}
+              {!hasSigned && !canSign && (
+                <Text style={styles.errorText}>
+                  {requiredTierInfo.next}
+                </Text>
+              )}
+            </View>
 
-              <ProgressBar
-                progress={petition.progress}
-                color={theme.colors.primary}
-                style={{
-                  height: 8,
-                  borderRadius: 6,
-                  marginVertical: 12,
-                }}
-              />
-
-              <Text variant="bodySmall">
-                {petition.signatures} / {petition.signature_goal} signatures
-              </Text>
-            </>
+          </>
           );
         }}
       </QuerySection>
     </Screen>
   );
 }
+const styles = StyleSheet.create({
+petitionCard: {
+  backgroundColor: "rgba(255,255,255,0.04)",
+  borderWidth: 1,
+  borderColor: "rgba(255,255,255,0.06)",
+  padding: 20,
+  borderRadius: 16,
+  marginBottom: 20,
+},
+  title: {
+    marginBottom: 12,
+    fontWeight: "600",
+  },
+
+  description: {
+    marginBottom: 20,
+    opacity: 0.85,
+    lineHeight: 22,
+  },
+
+  innerDivider: {
+    height: 1,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    marginBottom: 20,
+  },
+
+  progress: {
+    height: 6,
+    borderRadius: 4,
+    marginBottom: 12,
+  },
+
+  metaText: {
+    opacity: 0.7,
+    marginBottom: 4,
+  },
+
+  actionBlock: {
+    marginTop: 8,
+  },
+
+  button: {
+    marginTop: spacing.md, 
+    marginBottom: 12,
+  },
+
+  successText: {
+    color: "#4CAF50",
+    textAlign: "center",
+  },
+
+  errorText: {
+    color: "#EF5350",
+    textAlign: "center",
+  },
+  fixedAction: {
+  padding: 16,
+  borderTopWidth: StyleSheet.hairlineWidth,
+  borderTopColor: "rgba(255,255,255,0.08)",
+},
+introText: {
+  opacity: 0.75,
+  lineHeight: 20,
+  marginBottom: 12,
+},
+
+sectionDivider: {
+  height: StyleSheet.hairlineWidth,
+  backgroundColor: "rgba(255,255,255,0.08)",
+    marginBottom: spacing.lg,
+},
+
+});
