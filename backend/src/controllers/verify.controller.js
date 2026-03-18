@@ -368,3 +368,40 @@ exports.verifyResidence = async (req, res) => {
     res.status(500).json({ error: "Residence verification failed" });
   }
 };
+
+
+exports.getVerificationSummary = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const result = await pool.query(
+      `
+      SELECT level, expires_at
+      FROM verifications
+      WHERE user_id = $1
+      AND revoked = false
+      ORDER BY level DESC
+      LIMIT 1
+      `,
+      [userId]
+    );
+
+    if (!result.rows.length) {
+      return res.json({
+        currentTier: 0,
+        expiresAt: null,
+      });
+    }
+
+    const latest = result.rows[0];
+
+    return res.json({
+      currentTier: latest.level,
+      expiresAt: latest.expires_at,
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch summary" });
+  }
+};

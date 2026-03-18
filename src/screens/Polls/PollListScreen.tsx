@@ -102,7 +102,7 @@ export default function PollListScreen() {
                   }}
                 />
               );
-            }}
+            }}  
           />
         )}
       </QuerySection>

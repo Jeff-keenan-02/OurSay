@@ -3,14 +3,12 @@ import { View, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { Text, useTheme, Avatar, ActivityIndicator } from "react-native-paper";
 import { Screen } from "../../layout/Screen";
 import { spacing } from "../../theme/spacing";
-import { AuthContext } from "../../context/AuthContext";
-
 import { VerificationTier } from "../../types/verification";
 import { resolveVerificationStatus } from "../../utils/verificationProgress";
 import { useVerificationSummary } from "../../hooks/verify/useVerificationSummary";
 import { VERIFICATION_TIERS } from "../../types/verification";
 import { TierAccessCard } from "../../hooks/common/TierAccessCard";
-import { typography } from "../../theme/typography";
+
 
 type VerificationOption = {
   key: string;

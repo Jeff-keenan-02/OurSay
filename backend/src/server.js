@@ -8,6 +8,8 @@ const discussionRoutes = require('./routes/discussion.routes');
 const pollRoutes = require('./routes/poll.routes');
 const petitionRoutes = require("./routes/petition.routes");
 const topicRoutes = require("./routes/topic.routes");
+const analyticsRoutes = require("./routes/analytics.routes");
+
 
 
 
@@ -21,6 +23,8 @@ app.use('/discussions', discussionRoutes);
 app.use('/poll', pollRoutes);
 app.use("/petitions", petitionRoutes);
 app.use("/topics", topicRoutes);
+app.use("/analytics", analyticsRoutes);
+
 
 const PORT = process.env.PORT || 3000;
 

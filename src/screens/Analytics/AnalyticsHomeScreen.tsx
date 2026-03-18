@@ -18,14 +18,14 @@ export default function AnalyticsHomeScreen({ navigation }: any) {
           icon="chart-bar"
           title="Poll Analytics"
           description="View aggregated poll voting results."
-          onPress={() => navigation.navigate("PollAnalytics")}
+          onPress={() => navigation.navigate("PollAnalyticsList")}
         />
 
         <AnalyticsCard
           icon="file-document-outline"
           title="Petition Analytics"
           description="View petition support statistics."
-          onPress={() => navigation.navigate("PetitionAnalytics")}
+          onPress={() => navigation.navigate("PetitionAnalyticsList")}
         />
       </View>
     </Screen>
