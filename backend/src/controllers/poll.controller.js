@@ -36,7 +36,7 @@ exports.getWeeklyPoll = async (req, res) => {
         ON pp.poll_id = p.id
         AND pp.user_id = $1
 
-      WHERE t.is_weekly = true
+      WHERE t.source = 'weekly'
       GROUP BY pg.id, pg.title, pg.required_verification_tier
       ORDER BY pg.created_at DESC
       LIMIT 1;
@@ -230,6 +230,6 @@ exports.votePoll = async (req, res) => {
     res.json(result);
 
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    return res.status(err.status || 400).json({ error: err.message });
   }
 };

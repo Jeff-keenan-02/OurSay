@@ -82,9 +82,10 @@ exports.signPetition = async ({ userId, petitionId }) => {
     await client.query('ROLLBACK');
 
     if (err.code === '23505') {
-      throw new Error('This identity has already signed this petition');
+      const conflictError = new Error('This identity has already signed this petition');
+      conflictError.status = 409;
+      throw conflictError;
     }
-
     throw err;
 
   } finally {

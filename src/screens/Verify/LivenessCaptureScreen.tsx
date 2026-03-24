@@ -11,7 +11,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { useApiClient } from "../../hooks/common/useApiClient";
 import { VerificationResponse } from "../../types/VerificationType";
 
-export default function LivenessCaptureScreen() {
+export default function LivenessCaptureScreen({ navigation }: any) {
   const { user, updateUser } = useContext(AuthContext);
   const api = useApiClient();
   const [uploading, setUploading] = useState(false);
@@ -62,7 +62,9 @@ export default function LivenessCaptureScreen() {
         );
 
           updateUser({ verification_tier: data.level });
-          Alert.alert("✅ Liveness verified");
+          Alert.alert("✅ Liveness verified", "", [
+            { text: "OK", onPress: () => navigation.navigate("VerificationHome") },
+          ]);
 
         } catch (err: any) {
           Alert.alert(err.message || "Liveness failed");

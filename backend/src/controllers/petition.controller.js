@@ -57,7 +57,7 @@ exports.getWeeklyPetition = async (req, res) => {
       JOIN topics t ON t.id = p.topic_id
       LEFT JOIN petition_signatures ps
         ON ps.petition_id = p.id
-      WHERE t.is_weekly = true
+      WHERE t.source = 'weekly'
       GROUP BY p.id, p.title, p.description, p.required_verification_tier, p.signature_goal
       ORDER BY p.created_at DESC
       LIMIT 1;
@@ -259,6 +259,6 @@ exports.signPetition = async (req, res) => {
     return res.json(result);
 
   } catch (err) {
-    return res.status(400).json({ error: err.message });
+    return res.status(err.status || 400).json({ error: err.message });
   }
 };

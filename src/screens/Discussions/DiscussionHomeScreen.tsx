@@ -1,7 +1,7 @@
 import React, { useContext, useCallback } from "react";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Screen } from "../../layout/Screen";
-import { TopicCard } from "../../components/common/TopicCard";
+import { TopicBrowser } from "../../components/common/TopicBrowser";
 import { WeeklyEngagementCard } from "../../components/common/WeeklyEngagementCard";
 import TrendingEngagementCard from "../../components/common/TrendingEngagementCard";
 import { AuthContext } from "../../context/AuthContext";
@@ -14,7 +14,6 @@ import { mapDiscussionToWeekly } from "../../mappers/weeklyCardMapper";
 import { mapDiscussionToTrending } from "../../mappers/trendingCardMapper";
 import { QuerySection } from "../../components/common/QuerySection";
 import { HorizontalList } from "../../components/common/HorizontalList";
-import { VerticalList } from "../../components/common/VerticalList";
 
 
 export default function DiscussionHomeScreen() {
@@ -72,11 +71,10 @@ const { vote } = useDiscussionVote(user, trendingQuery.updateData);
 
   return (
     <Screen scroll       title="Discussions"
-      subtitle="Join the conversation on issues that matter to you">
+>
 
       {/* --------------- Weekly Disscussion  ------------ */}
         <QuerySection
-        label="Featured This Week"
         query={weeklyDiscussionQuery}
       >
         {(data) => (
@@ -115,18 +113,7 @@ const { vote } = useDiscussionVote(user, trendingQuery.updateData);
       query={topicsQuery}
     >
       {(data) => (
-        <VerticalList
-          data={data}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <TopicCard
-              title={item.title}
-              description={item.description}
-              icon="dots-grid"
-              onPress={() => openTopic(item)}
-            />
-          )}
-        />
+        <TopicBrowser topics={data} onPress={openTopic} />
       )}
     </QuerySection>
 

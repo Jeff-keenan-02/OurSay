@@ -10,16 +10,18 @@ import { spacing } from "../../theme/spacing";
 
 
 
-export default function PassportCaptureScreen(){
+export default function PassportCaptureScreen({ navigation }: any){
   const theme = useTheme();
   const { updateUser } = useContext(AuthContext);
-  
+
   const handleUpload = async () => {
   const data = await uploadPassport();
 
   if (data?.success) {
     updateUser({ verification_tier: data.level });
-    Alert.alert("✅ Passport verified");
+    Alert.alert("✅ Passport verified", "", [
+      { text: "OK", onPress: () => navigation.navigate("VerificationHome") },
+    ]);
   }
 };
 

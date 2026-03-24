@@ -3,9 +3,9 @@ const pool = require('../db/pool');
 exports.getTopics = async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, title, description
+      `SELECT id, title, description, source
        FROM topics
-       ORDER BY title`
+       ORDER BY source DESC, title`
     );
 
     res.json(result.rows);

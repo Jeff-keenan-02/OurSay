@@ -22,8 +22,8 @@ CREATE TABLE topics (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,
   description TEXT,
-  -- optional platform-wide flags
-  is_weekly BOOLEAN DEFAULT FALSE,
+  -- 'official' = platform curated, 'weekly' = this week's featured, 'community' = user created
+  source TEXT NOT NULL DEFAULT 'community' CHECK (source IN ('official', 'weekly', 'community')),
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -238,21 +238,16 @@ VALUES
 ('charlie', 'hash3', 0);
 
 
-INSERT INTO topics (title, description, is_weekly)
+INSERT INTO topics (title, description, source)
 VALUES
-('Housing & Cost of Living', 'Rent, mortgages, affordability', FALSE),
-('Transport & Infrastructure', 'Public transport, roads, cycling', FALSE),
-('Healthcare & Wellbeing', 'Hospitals, mental health, services', FALSE),
-('Climate & Environment', 'Climate action and sustainability', FALSE),
-('Education', 'Schools, universities, student life', FALSE),
-('Technology & Society', 'AI, privacy, digital rights', FALSE),
-('Weekly Public Opinion', 'This week’s featured national topic', TRUE);
-
-
--- Comunity topic for user created discussions or petitions
-INSERT INTO topics (title, description, is_weekly)
-VALUES
-('Community & Local Issues', 'Local civic matters and grassroots discussions', FALSE);
+('Housing & Cost of Living', 'Rent, mortgages, affordability', 'official'),
+('Transport & Infrastructure', 'Public transport, roads, cycling', 'official'),
+('Healthcare & Wellbeing', 'Hospitals, mental health, services', 'official'),
+('Climate & Environment', 'Climate action and sustainability', 'official'),
+('Education', 'Schools, universities, student life', 'official'),
+('Technology & Society', 'AI, privacy, digital rights', 'official'),
+('Weekly Public Opinion', 'This weeks featured national topic', 'weekly'),
+('Community & Local Issues', 'Local civic matters and grassroots discussions', 'community');
 
 INSERT INTO poll_groups (topic_id, title, required_verification_tier)
 VALUES
@@ -345,7 +340,7 @@ VALUES
 
 INSERT INTO comments ( discussion_id, user_id, body, verification_tier)
 VALUES
-(1, 1, 'Absolutely agree — it’s a huge issue.', 2),
+(1, 1, 'Absolutely agree — it''s a huge issue.', 2),
 (1, 3, 'Taxing them might push owners to sell or rent.', 0),
 (2, 2, 'Free transport works in other countries.', 1),
 (2, 1, 'But funding has to come from somewhere.', 2),
@@ -425,3 +420,4 @@ WITH new_tokens AS (
 INSERT INTO petition_signatures (petition_id, token_hash)
 SELECT 3, token_hash
 FROM new_tokens;
+

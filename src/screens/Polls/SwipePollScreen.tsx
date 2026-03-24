@@ -12,6 +12,7 @@ import { usePollVote } from "../../hooks/polls/usePollVote";
 
 import SwipeDeck from "../../components/SwipeDeck/SwipeDeck";
 import { BackRow } from "../../components/common/BackRow";
+import { getProgressColor } from "../../utils/progressColor";
 
 
 
@@ -183,7 +184,7 @@ useEffect(() => {
 
         <ProgressBar
           progress={progressValue}
-          color={theme.colors.primary}
+          color={getProgressColor(progressValue, progressValue >= 1)}
           style={styles.topProgress}
         />
 

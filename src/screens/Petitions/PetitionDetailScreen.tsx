@@ -13,6 +13,7 @@ import {
 } from "@react-navigation/native";
 
 import { Screen } from "../../layout/Screen";
+import { getProgressColor } from "../../utils/progressColor";
 
 
 import { AuthContext } from "../../context/AuthContext";
@@ -122,6 +123,7 @@ export default function PetitionDetailScreen() {
 
               <ProgressBar
                 progress={petition.progress}
+                color={getProgressColor(petition.progress, petition.signatures >= petition.signature_goal)}
                 style={styles.progress}
               />
 

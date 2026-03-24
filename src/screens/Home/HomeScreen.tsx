@@ -80,40 +80,25 @@ export default function HomeScreen() {
       title={greeting}
       subtitle="Take part in this week's public opinion poll."
     >
-      {/* ---------------- Weekly Poll ---------------- */}
-
-      <QuerySection
-        label="This Week's Poll"
-        query={weeklyPollQuery}
-      >
-      {(poll) => {
-         /* ----------------------------------
-            Access Control
-         ---------------------------------- */
-        const userTier = user?.verification_tier ?? 0;
-        const state = getPollAccessState(userTier, poll);
-
-        return (
-          <WeeklyEngagementCard
-            data={mapPollToWeekly(poll)}
-            state={state}
-            onPress={() => {
-              if (state === "available" || state === "in_progress") {
-                openWeeklyPoll(poll);
-              }
-            }}
-          />
-        );
-      }}
-      
+      <QuerySection label="" query={weeklyPollQuery}>
+        {(poll) => {
+          const userTier = user?.verification_tier ?? 0;
+          const state = getPollAccessState(userTier, poll);
+          return (
+            <WeeklyEngagementCard
+              data={mapPollToWeekly(poll)}
+              state={state}
+              onPress={() => {
+                if (state === "available" || state === "in_progress") {
+                  openWeeklyPoll(poll);
+                }
+              }}
+            />
+          );
+        }}
       </QuerySection>
 
-      {/* --------------- Weekly Discussion ------------ */}
-
-      <QuerySection
-        label="This Week's Discussion"
-        query={weeklyDiscussionQuery}
-      >
+      <QuerySection label="" query={weeklyDiscussionQuery}>
         {(discussion) => (
           <WeeklyEngagementCard
             data={mapDiscussionToWeekly(discussion)}
@@ -122,12 +107,7 @@ export default function HomeScreen() {
         )}
       </QuerySection>
 
-      {/* --------------- Weekly Petition -------------- */}
-
-      <QuerySection
-        label="This Week's Petition"
-        query={weeklyPetitionQuery}
-      >
+      <QuerySection label="" query={weeklyPetitionQuery}>
         {(petition) => (
           <WeeklyEngagementCard
             data={mapPetitionToWeekly(petition)}

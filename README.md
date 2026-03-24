@@ -1,97 +1,190 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# OurSay
 
-# Getting Started
+A privacy-preserving civic engagement platform built as a Final Year Project at TU Dublin. Citizens can vote on polls, sign petitions, and engage with local issues — with identity verification enforced but votes and signatures kept anonymous through a layered anonymisation model.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Architecture
 
-## Step 1: Start Metro
+- **Mobile App** — React Native CLI (TypeScript), iOS & Android
+- **Backend** — Node.js / Express REST API
+- **Database** — PostgreSQL 15
+- **Auth** — JWT (stateless auth, dynamic tier resolution per request)
+- **Verification** — Tiered identity model (liveness → passport → residence)
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+---
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+## Prerequisites
 
-```sh
-# Using npm
-npm start
+| Tool | Version |
+|------|---------|
+| Node.js | 20+ |
+| npm | 10+ |
+| PostgreSQL | 15 |
+| Docker & Docker Compose | any recent |
+| Ruby | 3.x (iOS only) |
+| CocoaPods | 1.13+ (iOS only) |
+| Xcode | latest stable (iOS only) |
+| Android Studio + SDK | latest stable (Android only) |
 
-# OR using Yarn
-yarn start
+---
+
+## Quick Start (Docker — Recommended)
+
+The fastest way to get the backend and database running together:
+
+```bash
+git clone https://github.com/your-username/OurSay.git
+cd OurSay
+docker compose up --build
 ```
 
-## Step 2: Build and run your app
+This starts:
+- PostgreSQL on port `5431`
+- Express API on port `3000`
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+The database schema must be applied manually on first run (see [Database Setup](#database-setup) below).
 
-### Android
+---
 
-```sh
-# Using npm
-npm run android
+## Manual Setup
 
-# OR using Yarn
-yarn android
+### 1. Database
+
+Start PostgreSQL locally and create the database:
+
+```bash
+psql -U postgres
 ```
 
-### iOS
+```sql
+CREATE USER oursay WITH PASSWORD 'RILEY2015';
+CREATE DATABASE oursaydb OWNER oursay;
+\q
+```
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+Apply the schema:
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+```bash
+psql -U oursay -d oursaydb -f backend/src/db/schema.sql
+```
 
-```sh
+### 2. Backend
+
+```bash
+cd backend
+npm install
+```
+
+Create a `.env` file in the `backend/` directory:
+
+```env
+DB_HOST=localhost
+DB_PORT=5431
+DB_USER=oursay
+DB_PASSWORD=RILEY2015
+DB_NAME=oursaydb
+JWT_SECRET=your_jwt_secret_here
+PASSWORD_SALT=your_salt_here
+```
+
+Start the server:
+
+```bash
+node src/server.js
+```
+
+The API will be available at `http://localhost:3000`.
+
+### 3. Mobile App
+
+Install dependencies from the project root:
+
+```bash
+npm install
+```
+
+#### iOS
+
+```bash
 bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
 bundle exec pod install
+npx react-native run-ios
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+#### Android
 
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
+```bash
+npx react-native run-android
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+> Make sure an emulator is running or a device is connected before running the above commands.
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+---
 
-## Step 3: Modify your app
+## Database Setup
 
-Now that you have successfully run the app, let's make changes!
+The schema file is located at `backend/src/db/schema.sql`. It defines all tables including:
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+- `users`, `verifications`
+- `topics`, `poll_groups`, `polls`, `poll_votes`, `poll_participation`, `poll_identity_usage`
+- `petitions`, `petition_signatures`, `petition_participation`, `petition_identity_usage`
+- `action_tokens`, `discussions`, `comments`
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+To apply:
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+```bash
+psql -U oursay -d oursaydb -f backend/src/db/schema.sql
+```
 
-## Congratulations! :tada:
+---
 
-You've successfully run and modified your React Native App. :partying_face:
+## Environment Variables
 
-### Now what?
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DB_HOST` | PostgreSQL host | `localhost` |
+| `DB_PORT` | PostgreSQL port | `5431` |
+| `DB_USER` | Database user | `oursay` |
+| `DB_PASSWORD` | Database password | — |
+| `DB_NAME` | Database name | `oursaydb` |
+| `JWT_SECRET` | Secret for signing JWTs | — |
+| `PASSWORD_SALT` | Salt for password hashing | — |
+| `DATABASE_URL` | Full connection string (overrides above, used on Render) | — |
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+---
 
-# Troubleshooting
+## Project Structure
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+```
+OurSay/
+├── src/                    # React Native app source
+│   ├── screens/
+│   ├── components/
+│   ├── navigation/
+│   └── services/
+├── backend/
+│   └── src/
+│       ├── controllers/    # Route handlers
+│       ├── services/       # Business logic + transactions
+│       ├── middleware/      # Auth, tier enforcement
+│       ├── routes/
+│       └── db/             # Pool config + schema.sql
+├── docker-compose.yml
+└── __tests__/              # Jest test suite
+```
 
-# Learn More
+---
 
-To learn more about React Native, take a look at the following resources:
+## Running Tests
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+```bash
+# From project root
+npm test
+```
+
+---
+
+## Notes
+
+- Liveness verification is currently in **mock mode** — it simulates approval without calling an external provider. In a production deployment this would be replaced by a provider such as Onfido.
+- Passport OCR uses Google Cloud Vision. The integration is present but the service is disabled by default; mock mode is used instead.
+- The `topic_id` in `createPetition` is hardcoded to `8` — this is a known placeholder for a future topic-selection flow.

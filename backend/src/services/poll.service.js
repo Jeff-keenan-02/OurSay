@@ -86,11 +86,13 @@ exports.votePoll = async ({ userId, pollId, choice }) => {
 
     return { success: true };
 
-  } catch (err) {
+} catch (err) {
     await client.query('ROLLBACK');
 
     if (err.code === '23505') {
-      throw new Error('This identity has already voted in this poll');
+      const conflictError = new Error('This identity has already voted in this poll');
+      conflictError.status = 409;
+      throw conflictError;
     }
 
     throw err;

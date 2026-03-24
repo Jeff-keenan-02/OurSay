@@ -15,7 +15,7 @@ exports.getWeeklyDiscussion = async (req, res) => {
     JOIN topics t ON t.id = d.topic_id
     JOIN users u ON u.id = d.created_by
     LEFT JOIN comments c ON c.discussion_id = d.id
-    WHERE t.is_weekly = true
+    WHERE t.source = 'weekly'
     GROUP BY d.id, u.username
     ORDER BY d.created_at DESC
     LIMIT 1;

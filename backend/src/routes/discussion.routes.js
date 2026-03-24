@@ -12,7 +12,7 @@ router.get('/by-topic/:topicId', requireAuth, controller.getDisscussionByTopic);
 router.get('/weekly',requireAuth, controller.getWeeklyDiscussion);
 
 // Interactions
-router.post('/:id/comments',requireAuth, requireTier(2), controller.postComment);
+router.post('/:id/comments',requireAuth, requireTier(1), controller.postComment);
 router.post('/:id/vote', requireAuth, controller.voteDiscussion);
 
 router.post('/', requireAuth, requireTier(3), controller.createDiscussion);

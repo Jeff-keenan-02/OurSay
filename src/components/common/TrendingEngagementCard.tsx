@@ -9,6 +9,8 @@ import {
   ProgressBar,
 } from "react-native-paper";
 import { TrendingCardData } from "../../types/trendingCardData";
+import { CONTENT_TYPES, ContentType } from "../../types/contentTypes";
+import { getProgressColor } from "../../utils/progressColor";
 
 type Props = {
   data: TrendingCardData;
@@ -22,6 +24,7 @@ export default function TrendingEngagementCard({
   onVote,
 }: Props) {
   const theme = useTheme();
+  const meta = CONTENT_TYPES[data.type as ContentType] ?? CONTENT_TYPES.poll;
 
   const isPoll = data.type === "poll";
 
@@ -113,10 +116,10 @@ export default function TrendingEngagementCard({
           <>
             <ProgressBar
               progress={data.progress}
-              color={theme.colors.primary}
+              color={getProgressColor(data.progress, isCompleted)}
               style={styles.progressBar}
             />
-            <Text style={[styles.subText, { color: theme.colors.primary }]}>
+            <Text style={[styles.subText, { color: theme.colors.onSurfaceVariant }]}>
               {data.completed_polls}/{data.total_polls} completed
             </Text>
           </>
@@ -127,7 +130,7 @@ export default function TrendingEngagementCard({
           <>
             <ProgressBar
               progress={data.progress}
-              color={theme.colors.primary}
+              color={getProgressColor(data.progress, data.signatures >= data.signature_goal)}
               style={styles.progressBar}
             />
             <View style={styles.petitionMetaRow}>
@@ -173,6 +176,7 @@ export default function TrendingEngagementCard({
             styles.card,
             {
               backgroundColor: theme.colors.surface,
+              borderLeftColor: meta.color,
               opacity: isDisabled ? 0.65 : 1,
             },
           ]}
@@ -263,6 +267,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1,
     borderColor: "#ffffff22",
+    borderLeftWidth: 4,
     shadowColor: "#000",
     shadowOpacity: 0.2,
     shadowRadius: 8,

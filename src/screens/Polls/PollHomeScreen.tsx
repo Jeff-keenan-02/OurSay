@@ -6,10 +6,9 @@ import { Screen } from "../../layout/Screen";
 
 import { WeeklyEngagementCard } from "../../components/common/WeeklyEngagementCard";
 import TrendingEngagementCard from "../../components/common/TrendingEngagementCard";
-import { TopicCard } from "../../components/common/TopicCard";
 import { QuerySection } from "../../components/common/QuerySection";
 import { HorizontalList } from "../../components/common/HorizontalList";
-import { VerticalList } from "../../components/common/VerticalList";
+import { TopicBrowser } from "../../components/common/TopicBrowser";
 
 import { useWeeklyPoll } from "../../hooks/polls/useWeeklyPoll";
 import { useTrendingPoll } from "../../hooks/polls/useTrendingPoll";
@@ -144,18 +143,7 @@ export default function PollHomeScreen() {
         query={topicsQuery}
       >
         {(data) => (
-          <VerticalList
-            data={data}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-              <TopicCard
-                title={item.title}
-                description={item.description}
-                icon="dots-grid"
-                onPress={() => openTopic(item)}
-              />
-            )}
-          />
+          <TopicBrowser topics={data} onPress={openTopic} />
         )}
       </QuerySection>
 

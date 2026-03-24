@@ -380,6 +380,7 @@ exports.getVerificationSummary = async (req, res) => {
       FROM verifications
       WHERE user_id = $1
       AND revoked = false
+      AND expires_at > NOW()
       ORDER BY level DESC
       LIMIT 1
       `,

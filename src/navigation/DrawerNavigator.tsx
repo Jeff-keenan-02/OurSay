@@ -28,12 +28,7 @@ export default function DrawerNavigator() {
 
         headerRight: () =>
           user ? (
-            <TierBadge
-              tier={user.verification_tier}
-              onPress={() =>
-                navigation.navigate("Tabs", { screen: "Verify" })
-              }
-            />
+            <TierBadge tier={user.verification_tier} />
           ) : null,
       })}
     >

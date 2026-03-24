@@ -1,5 +1,6 @@
-import React, { useContext } from "react";
+import React, { useContext, useCallback } from "react";
 import { View, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { Text, useTheme, Avatar, ActivityIndicator } from "react-native-paper";
 import { Screen } from "../../layout/Screen";
 import { spacing } from "../../theme/spacing";
@@ -25,7 +26,13 @@ export default function VerificationHomeScreen({ navigation }: any) {
   const theme = useTheme();
 
 
-  const { data, loading } = useVerificationSummary();
+  const { data, loading, reload } = useVerificationSummary();
+
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+    }, [])
+  );
 
 
   if (loading) {

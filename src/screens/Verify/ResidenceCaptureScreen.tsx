@@ -7,7 +7,7 @@ import { Section } from "../../layout/Section";
 import { AuthContext } from "../../context/AuthContext";
 import { useApiClient } from "../../hooks/common/useApiClient";
 
-export default function ResidenceCaptureScreen() {
+export default function ResidenceCaptureScreen({ navigation }: any) {
   const { user, updateUser } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<null | {
@@ -35,6 +35,7 @@ export default function ResidenceCaptureScreen() {
 
     if (data.verified) {
       updateUser({ verification_tier: 3 });
+      navigation.navigate("VerificationHome");
     }
 
   } catch (err: any) {
