@@ -1,29 +1,43 @@
-// src/layout/Section.tsx
 import React from "react";
 import { View, StyleSheet, ViewStyle } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { typography } from "../theme/typography";
 import { spacing } from "../theme/spacing";
 
-
 interface SectionProps {
   label?: string;
   subtitle?: string;
   children: React.ReactNode;
   style?: ViewStyle | ViewStyle[];
+  titleColor?: string;
+  titleRight?: React.ReactNode;
 }
-export function Section({ label, subtitle, children, style }: SectionProps) {
+
+export function Section({
+  label,
+  subtitle,
+  children,
+  style,
+  titleColor,
+  titleRight,
+}: SectionProps) {
   const theme = useTheme();
 
+  const resolvedTitleColor = titleColor || theme.colors.primary;
+
   return (
-    <View style={styles.label}>
+    <View style={[styles.section, style]}>
       {label && (
-        <Text
-          variant={typography.sectionTitle}
-          style={styles.label}
-        >
-          {label}
-        </Text>
+        <View style={styles.headerRow}>
+          <Text
+            variant={typography.sectionTitle}
+            style={[styles.label, { color: resolvedTitleColor }]}
+          >
+            {label}
+          </Text>
+
+          {titleRight}
+        </View>
       )}
 
       {subtitle && (
@@ -45,11 +59,18 @@ export function Section({ label, subtitle, children, style }: SectionProps) {
 
 const styles = StyleSheet.create({
   section: {
-    marginBottom: spacing.sm, // more breathing between sections
+    marginBottom: spacing.sm,
+  },
+
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: spacing.xs,
   },
 
   label: {
-    marginBottom: spacing.xs, // proper space before content
+    fontWeight: "700",
   },
 
   subtitle: {

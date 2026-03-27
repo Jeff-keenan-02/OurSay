@@ -25,6 +25,8 @@ app.use("/petitions", petitionRoutes);
 app.use("/topics", topicRoutes);
 app.use("/analytics", analyticsRoutes);
 
+app.use(express.static('public'));
+
 
 const PORT = process.env.PORT || 3000;
 

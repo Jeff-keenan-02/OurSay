@@ -1,6 +1,6 @@
 // hooks/petitions/usePetitionsByTopic.ts
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Petition } from "../../types/Petition";
 import { useApiClient } from "../common/useApiClient";
 
@@ -15,6 +15,9 @@ export function usePetitionsByTopic(topicId: number | null) {
   const [error, setError] = useState<string | null>(null);
 
   const api = useApiClient();
+  const apiRef = useRef(api);
+  apiRef.current = api;
+  const initialized = useRef(false);
 
   /* -------------------------------------------------
      Reload Function
@@ -28,23 +31,19 @@ export function usePetitionsByTopic(topicId: number | null) {
     }
 
     try {
-      setLoading(true);
+      if (!initialized.current) setLoading(true);
       setError(null);
 
-      const json =
-        await api.get<Petition[]>(
-          `/petitions/topics/${topicId}`
-        );
+      const json = await apiRef.current.get<Petition[]>(
+        `/petitions/topics/${topicId}`
+      );
 
       setData(Array.isArray(json) ? json : []);
+      initialized.current = true;
 
     } catch (err: any) {
       console.error("Failed to load petitions:", err);
-
-      setError(
-        err.message || "Could not load petitions"
-      );
-
+      setError(err.message || "Could not load petitions");
       setData([]);
 
     } finally {

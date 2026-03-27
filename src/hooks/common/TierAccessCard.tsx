@@ -77,21 +77,19 @@ export function TierAccessCard({
         ))}
       </View>
 
-      {expiresAt && (
-        <>
-          <View style={styles.divider} />
-          <View style={styles.footerRow}>
-            <Text
-              style={[
-                styles.expiry,
-                { color: tierInfo.color },
-              ]}
-            >
-              Expires {formatExpiry(expiresAt)}
-            </Text>
-          </View>
-        </>
-      )}
+      <View style={styles.divider} />
+      <View style={styles.footerRow}>
+        <Text style={[styles.expiryLabel, { color: theme.colors.onSurfaceVariant }]}>
+          Access expiry
+        </Text>
+        <Text style={[styles.expiry, { color: tierInfo.color }]}>
+          {tier === 0
+            ? "∞  No expiry"
+            : expiresAt
+            ? `Expires ${formatExpiry(expiresAt)}`
+            : "—"}
+        </Text>
+      </View>
     </View>
   );
 }
@@ -142,7 +140,14 @@ const styles = StyleSheet.create({
   },
 
   footerRow: {
-    alignItems: "flex-end",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  expiryLabel: {
+    fontSize: 12,
+    opacity: 0.6,
   },
 
   expiry: {

@@ -9,6 +9,8 @@ export type TrendingCardData =
       upvotes: number;
       downvotes: number;
       comment_count: number;
+      created_by?: string;
+      created_at?: string;
     }
   | {
       type: "poll";
@@ -17,6 +19,7 @@ export type TrendingCardData =
       progress: number;
       total_polls: number;
       completed_polls: number;
+      respondent_count: number;
       status: 0 | 1 | 2;
       accessState: PollAccessState;
       required_verification_tier?: number;
@@ -29,5 +32,6 @@ export type TrendingCardData =
       signature_goal: number;
       signatures: number;
       progress: number;
+      has_signed?: boolean;
       required_verification_tier?: number;
     };

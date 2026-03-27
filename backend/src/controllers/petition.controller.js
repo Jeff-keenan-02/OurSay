@@ -7,6 +7,7 @@ const petitionService = require('../services/petition.service');
    GET trending by Petiton
 ------------------------------ */
 exports.getTrendingPetition = async (req, res) => {
+  const userId = req.user.id;
   try {
     const result = await pool.query(`
       SELECT
@@ -19,14 +20,18 @@ exports.getTrendingPetition = async (req, res) => {
         CASE
           WHEN p.signature_goal = 0 THEN 0
           ELSE COUNT(ps.id)::float / p.signature_goal
-        END AS progress
+        END AS progress,
+        EXISTS (
+          SELECT 1 FROM petition_participation pp
+          WHERE pp.petition_id = p.id AND pp.user_id = $1
+        ) AS has_signed
       FROM petitions p
       LEFT JOIN petition_signatures ps
         ON ps.petition_id = p.id
       GROUP BY p.id, p.title, p.description, p.required_verification_tier, p.signature_goal
       ORDER BY signatures DESC
       LIMIT 3;
-    `);
+    `, [userId]);
 
     res.json(result.rows);
 
@@ -41,6 +46,7 @@ exports.getTrendingPetition = async (req, res) => {
 ------------------------------ */
 
 exports.getWeeklyPetition = async (req, res) => {
+  const userId = req.user.id;
   try {
     const result = await pool.query(`
       SELECT
@@ -48,11 +54,16 @@ exports.getWeeklyPetition = async (req, res) => {
         p.title,
         p.description,
         p.signature_goal,
+        p.required_verification_tier,
         COUNT(ps.id)::int AS signatures,
         CASE
           WHEN p.signature_goal = 0 THEN 0
           ELSE COUNT(ps.id)::float / p.signature_goal
-        END AS progress
+        END AS progress,
+        EXISTS (
+          SELECT 1 FROM petition_participation pp
+          WHERE pp.petition_id = p.id AND pp.user_id = $1
+        ) AS has_signed
       FROM petitions p
       JOIN topics t ON t.id = p.topic_id
       LEFT JOIN petition_signatures ps
@@ -61,7 +72,7 @@ exports.getWeeklyPetition = async (req, res) => {
       GROUP BY p.id, p.title, p.description, p.required_verification_tier, p.signature_goal
       ORDER BY p.created_at DESC
       LIMIT 1;
-    `);
+    `, [userId]);
 
     res.json(result.rows[0] ?? null);
   } catch (err) {
@@ -74,6 +85,7 @@ exports.getWeeklyPetition = async (req, res) => {
 ------------------------------ */
 exports.getPetitionsByTopic = async (req, res) => {
   const topicId = Number(req.params.id);
+  const userId = req.user.id;
 
   if (!topicId || isNaN(topicId)) {
     return res.status(400).json({ error: "Invalid topic ID" });
@@ -87,18 +99,23 @@ exports.getPetitionsByTopic = async (req, res) => {
         p.title,
         p.description,
         p.signature_goal,
+        p.required_verification_tier,
         COUNT(ps.id)::int AS signatures,
         CASE
           WHEN p.signature_goal = 0 THEN 0
           ELSE COUNT(ps.id)::float / p.signature_goal
-        END AS progress
+        END AS progress,
+        EXISTS (
+          SELECT 1 FROM petition_participation pp
+          WHERE pp.petition_id = p.id AND pp.user_id = $2
+        ) AS has_signed
       FROM petitions p
       LEFT JOIN petition_signatures ps ON ps.petition_id = p.id
       WHERE p.topic_id = $1
-      GROUP BY p.id, p.title, p.description, p.signature_goal
+      GROUP BY p.id, p.title, p.description, p.signature_goal, p.required_verification_tier
       ORDER BY p.created_at DESC;
       `,
-      [topicId]
+      [topicId, userId]
     );
 
     res.json(result.rows);

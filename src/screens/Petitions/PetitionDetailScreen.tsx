@@ -8,12 +8,14 @@ import {
 } from "react-native-paper";
 import {
   useRoute,
+  useNavigation,
   useFocusEffect,
   RouteProp,
 } from "@react-navigation/native";
 
 import { Screen } from "../../layout/Screen";
 import { getProgressColor } from "../../utils/progressColor";
+import { AccessStatusChip } from "../../components/common/AccessStatusChip";
 
 
 import { AuthContext } from "../../context/AuthContext";
@@ -24,7 +26,8 @@ import { usePetition } from "../../hooks/petitions/usePetition";
 import { useSignPetition } from "../../hooks/petitions/useSignPetition";
 import { QuerySection } from "../../components/common/QuerySection";
 import { VERIFICATION_TIERS, VerificationTier } from "../../types/verification";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, TouchableOpacity } from "react-native";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { typography } from "../../theme/typography";
 import { spacing } from "../../theme/spacing";
 
@@ -44,6 +47,7 @@ type RouteParams = {
 export default function PetitionDetailScreen() {
   const theme = useTheme();
   const { user } = useContext(AuthContext);
+  const navigation = useNavigation<any>();
 
   const route =
     useRoute<RouteProp<RouteParams, "PetitionDetail">>();
@@ -59,7 +63,7 @@ export default function PetitionDetailScreen() {
   );
 
   return (
-    <Screen showBack >
+    <Screen showBack scroll >
       <QuerySection
         label="Petition"
         query={petitionQuery}>
@@ -104,7 +108,6 @@ export default function PetitionDetailScreen() {
             variant="bodyMedium"
             style={styles.introText}
           >
-            This petition outlines a proposed initiative submitted to the community.
             Review the details below and choose whether to add your support.
           </Text>
 
@@ -132,9 +135,10 @@ export default function PetitionDetailScreen() {
                 {petition.signature_goal.toLocaleString()} signatures
               </Text>
 
-              <Text style={styles.metaText}>
-                Verification required: {requiredTierInfo.label}
-              </Text>
+              <View style={styles.cardFooterRow}>
+                <AccessStatusChip variant="tier" requiredTier={requiredTier} />
+                <AccessStatusChip variant={hasSigned ? "signed" : "unsigned"} />
+              </View>
             </View>
 
             {/* ACTION AREA */}
@@ -153,17 +157,29 @@ export default function PetitionDetailScreen() {
                   : `Requires ${requiredTierInfo.label}`}
               </Button>
 
-              {hasSigned && (
-                <Text style={styles.successText}>
-                  You have signed this petition.
-                </Text>
+              {!hasSigned && !canSign && (
+                <AccessStatusChip variant="locked" requiredTier={requiredTier} />
               )}
 
-              {!hasSigned && !canSign && (
-                <Text style={styles.errorText}>
-                  {requiredTierInfo.next}
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate("PetitionAnalyticsDetail", {
+                    petitionId: petition.id,
+                    title: petition.title,
+                  })
+                }
+                activeOpacity={0.7}
+                style={styles.analyticsButton}
+              >
+                <MaterialCommunityIcons
+                  name="chart-bar"
+                  size={16}
+                  color={theme.colors.primary}
+                />
+                <Text style={[styles.analyticsButtonText, { color: theme.colors.primary }]}>
+                  View Analytics
                 </Text>
-              )}
+              </TouchableOpacity>
             </View>
 
           </>
@@ -209,6 +225,12 @@ petitionCard: {
     opacity: 0.7,
     marginBottom: 4,
   },
+  cardFooterRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 8,
+  },
 
   actionBlock: {
     marginTop: 8,
@@ -219,15 +241,6 @@ petitionCard: {
     marginBottom: 12,
   },
 
-  successText: {
-    color: "#4CAF50",
-    textAlign: "center",
-  },
-
-  errorText: {
-    color: "#EF5350",
-    textAlign: "center",
-  },
   fixedAction: {
   padding: 16,
   borderTopWidth: StyleSheet.hairlineWidth,
@@ -242,7 +255,21 @@ introText: {
 sectionDivider: {
   height: StyleSheet.hairlineWidth,
   backgroundColor: "rgba(255,255,255,0.08)",
-    marginBottom: spacing.lg,
+  marginBottom: spacing.lg,
 },
-
+analyticsButton: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: spacing.xs,
+  marginTop: spacing.md,
+  paddingVertical: spacing.sm,
+  borderRadius: 10,
+  borderWidth: 1,
+  borderColor: "rgba(128,128,128,0.2)",
+},
+analyticsButtonText: {
+  fontSize: 14,
+  fontWeight: "600",
+},
 });

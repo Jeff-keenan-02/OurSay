@@ -1,23 +1,28 @@
 import React from "react";
 import { TouchableOpacity, StyleSheet, View } from "react-native";
 import { Card, Text, ProgressBar, List, useTheme } from "react-native-paper";
+
 import { PollGroup } from "../../types/PollGroup";
 import { PollAccessState } from "../../utils/pollAccess";
+import { AccessStatusChip } from "../common/AccessStatusChip";
+import { VerificationTier } from "../../types/verification";
 
 type Props = {
   group: PollGroup;
   state: PollAccessState;
   onPress: () => void;
+  onViewAnalytics?: () => void;
 };
 
 export default function PollGroupCard({
   group,
   state,
   onPress,
+  onViewAnalytics,
 }: Props) {
   const theme = useTheme();
 
-  const { title, progress, completed_polls, total_polls } = group;
+  const { title, progress, completed_polls, total_polls, respondent_count } = group;
 
   /* ----------------------------------------
      State Mapping
@@ -55,22 +60,10 @@ export default function PollGroupCard({
   ---------------------------------------- */
 
   const renderStatusBadge = () => {
-    if (isLocked) {
-      return (
-        <Text style={[styles.statusText, { color: theme.colors.error }]}>
-          🔒 Verification required
-        </Text>
-      );
-    }
-
-    if (isCompleted) {
-      return (
-        <Text style={[styles.statusText, { color: "#4caf50" }]}>
-          ✅ Completed — Participation recorded
-        </Text>
-      );
-    }
-
+    const tier = (group.required_verification_tier ?? 0) as VerificationTier;
+    if (isLocked)    return <AccessStatusChip variant="locked" requiredTier={tier} />;
+    if (isCompleted) return <AccessStatusChip variant="completed" />;
+    if (tier > 0)    return <AccessStatusChip variant="tier" requiredTier={tier} />;
     return null;
   };
 
@@ -93,37 +86,53 @@ export default function PollGroupCard({
           },
         ]}
       >
-        <Card.Title
-          title={title}
-          titleStyle={{
-            color: theme.colors.onSurface,
-            fontSize: 20,
-            fontWeight: "600",
-          }}
-          left={(props) => (
-            <List.Icon {...props} icon={icon} color={statusColor} />
-          )}
-        />
-
-        {renderStatusBadge()}
-
         <Card.Content>
+          {/* Header row: status icon + title + tier/status badge */}
+          <View style={styles.headerRow}>
+            <List.Icon icon={icon} color={statusColor} style={styles.headerIcon} />
+            <Text
+              style={[styles.title, { color: theme.colors.onSurface }]}
+              numberOfLines={2}
+            >
+              {title}
+            </Text>
+            {renderStatusBadge()}
+          </View>
+
           <ProgressBar
             progress={progress}
             color={statusColor}
             style={styles.progress}
           />
 
-          <Text
-            style={{
-              color: theme.colors.onSurfaceVariant,
-              marginTop: 6,
-            }}
-          >
-            {statusText} — {completed_polls}/{total_polls} polls
-          </Text>
+          {/* Footer: questions progress + participants */}
+          <View style={styles.metaRow}>
+            <Text style={[styles.metaText, { color: theme.colors.onSurfaceVariant }]}>
+              {completed_polls}/{total_polls} questions
+            </Text>
+            <Text style={[styles.metaText, { color: theme.colors.onSurfaceVariant }]}>
+              {(respondent_count ?? 0).toLocaleString()} participant{respondent_count === 1 ? "" : "s"}
+            </Text>
+          </View>
+
+          {onViewAnalytics && (
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                onViewAnalytics();
+              }}
+              activeOpacity={0.7}
+              style={styles.analyticsChip}
+            >
+              <List.Icon icon="chart-bar" style={styles.analyticsChipIcon} color={theme.colors.primary} />
+              <Text style={[styles.analyticsChipText, { color: theme.colors.primary }]}>
+                View Analytics
+              </Text>
+            </TouchableOpacity>
+          )}
         </Card.Content>
       </Card>
+
     </TouchableOpacity>
   );
 }
@@ -133,13 +142,56 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 18,
   },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+    gap: 4,
+  },
+  headerIcon: {
+    margin: 0,
+    width: 36,
+    height: 36,
+  },
+  title: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: "600",
+    lineHeight: 24,
+  },
   progress: {
     height: 8,
     borderRadius: 6,
   },
-  statusText: {
+  metaRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  metaText: {
+    fontSize: 12,
+    opacity: 0.7,
+  },
+  analyticsChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    marginTop: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(128,128,128,0.2)",
+  },
+  analyticsChipIcon: {
+    margin: 0,
+    width: 20,
+    height: 20,
+  },
+  analyticsChipText: {
+    fontSize: 13,
     fontWeight: "600",
-    marginHorizontal: 16,
-    marginBottom: 6,
+    marginLeft: 4,
   },
 });

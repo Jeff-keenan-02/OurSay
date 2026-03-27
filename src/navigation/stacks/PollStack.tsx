@@ -2,6 +2,8 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import SwipePollScreen from "../../screens/Polls/SwipePollScreen";
 import PollHomeScreen from "../../screens/Polls/PollHomeScreen";
 import PollListScreen from "../../screens/Polls/PollListScreen";
+import PollAnalyticsDetailScreen from "../../screens/Analytics/PollAnalyticsDetailScreen";
+import PollGroupAnalyticsScreen from "../../screens/Analytics/PollGroupAnalyticsScreen";
 
 
 const Stack = createNativeStackNavigator();
@@ -29,8 +31,18 @@ export default function PollStack() {
       <Stack.Screen
         name="SwipePoll"
         component={SwipePollScreen}
-        // Prevents swiping of screen for swipe polls 
+        // Prevents swiping of screen for swipe polls
         options={{ gestureEnabled: false,}}
+      />
+
+      <Stack.Screen
+        name="PollAnalyticsDetail"
+        component={PollAnalyticsDetailScreen}
+      />
+
+      <Stack.Screen
+        name="PollGroupAnalytics"
+        component={PollGroupAnalyticsScreen}
       />
     </Stack.Navigator>
   );

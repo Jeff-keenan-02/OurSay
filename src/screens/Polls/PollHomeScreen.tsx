@@ -95,6 +95,11 @@ export default function PollHomeScreen() {
                   openPollGroup(card.id, card.title);
                 }
               }}
+              onViewAnalytics={() =>
+                navigation.navigate("PollGroupAnalytics", {
+                  groupId: card.id,
+                })
+              }
               />
           );
         }}
@@ -122,14 +127,19 @@ export default function PollHomeScreen() {
                 <TrendingEngagementCard
                   data={item}
                   onPress={() => {
-                  if (
-                    item.type === "poll" &&
-                    (item.accessState === "available" ||
-                      item.accessState === "in_progress")
-                  ) {
-                    openPollGroup(item.id, item.title);
-                  }
+                    if (
+                      item.type === "poll" &&
+                      (item.accessState === "available" ||
+                        item.accessState === "in_progress")
+                    ) {
+                      openPollGroup(item.id, item.title);
+                    }
                   }}
+                  onViewAnalytics={() =>
+                    navigation.navigate("PollGroupAnalytics", {
+                      groupId: item.id,
+                    })
+                  }
                 />
               )}
             />
@@ -143,7 +153,7 @@ export default function PollHomeScreen() {
         query={topicsQuery}
       >
         {(data) => (
-          <TopicBrowser topics={data} onPress={openTopic} />
+          <TopicBrowser topics={data} onPress={openTopic} showCommunity={false} />
         )}
       </QuerySection>
 

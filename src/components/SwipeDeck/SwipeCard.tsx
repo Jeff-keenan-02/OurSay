@@ -2,7 +2,7 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 
-export default function SwipeCard({ card }: { card: any }) {
+export default function SwipeCard({ card, index }: { card: any; index?: number }) {
   const theme = useTheme();
 
   if (!card) {
@@ -26,6 +26,11 @@ export default function SwipeCard({ card }: { card: any }) {
       ]}
     >
       <View style={styles.inner}>
+        {index != null && (
+          <Text style={[styles.questionLabel, { color: theme.colors.primary }]}>
+            Question {index + 1}
+          </Text>
+        )}
         <Text
           style={[
             styles.title,
@@ -50,7 +55,7 @@ export default function SwipeCard({ card }: { card: any }) {
 
 const styles = StyleSheet.create({
   card: {
-    height: 420,
+    height: 340,
     borderRadius: 22,
     padding: 24,
     justifyContent: "center",
@@ -82,6 +87,14 @@ const styles = StyleSheet.create({
     opacity: 0.85,
   },
 
+  questionLabel: {
+    fontSize: 16,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 1.5,
+    marginBottom: 14,
+    opacity: 0.9,
+  },
   loading: {
     fontSize: 20,
     fontWeight: "600",

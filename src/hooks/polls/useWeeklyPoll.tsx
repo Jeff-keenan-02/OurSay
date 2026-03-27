@@ -1,6 +1,6 @@
 // hooks/polls/useWeeklyPoll.ts
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { User } from "../../types/User";
 import { PollGroup } from "../../types/PollGroup";
 import { useApiClient } from "../common/useApiClient";
@@ -16,6 +16,8 @@ export function useWeeklyPoll(user: User | null) {
   const [error, setError] = useState<string | null>(null);
 
   const api = useApiClient();
+  const initialized = useRef(false);
+
   /* -------------------------------------------------
      Reload
   --------------------------------------------------*/
@@ -28,7 +30,7 @@ export function useWeeklyPoll(user: User | null) {
     }
 
     try {
-      setLoading(true);
+      if (!initialized.current) setLoading(true);
       setError(null);
 
       const json = await api.get<PollGroup | null>(
@@ -36,6 +38,7 @@ export function useWeeklyPoll(user: User | null) {
       );
 
       setData(json ?? null);
+      initialized.current = true;
 
     } catch (err: any) {
       console.error("Error loading weekly poll:", err);

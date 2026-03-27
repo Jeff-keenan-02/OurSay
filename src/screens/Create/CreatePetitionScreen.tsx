@@ -1,37 +1,33 @@
 import React, { useState } from "react";
-import { TextInput, Button, Text } from "react-native-paper";
+import { TextInput, Button, Text, SegmentedButtons, useTheme } from "react-native-paper";
 import { Screen } from "../../layout/Screen";
 import { Section } from "../../layout/Section";
 import { useApiClient } from "../../hooks/common/useApiClient";
 import { StyleSheet } from "react-native";
 import { spacing } from "../../theme/spacing";
-
-
 import {
   Keyboard,
   View,
   Pressable,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
-import { SegmentedButtons } from "react-native-paper";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
+const PETITION_COLOR = "#f59e0b";
+
+const GOAL_MAP: Record<"local" | "regional" | "national", number> = {
+  local: 100,
+  regional: 1000,
+  national: 10000,
+};
 
 export default function CreatePetitionScreen({ navigation }: any) {
+  const theme = useTheme();
   const api = useApiClient();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
-
-  // required level to support petition 
   const [requiredTier, setRequiredTier] = useState<2 | 3>(2);
-  //goal of the petition in terms of number of supporters
-  const GOAL_MAP: Record<"local" | "regional" | "national", number> = {
-  local: 100,
-  regional: 1000,
-  national: 10000,
-};
   const [goalTier, setGoalTier] = useState<"local" | "regional" | "national">("local");
 
   const submit = async () => {
@@ -40,7 +36,6 @@ export default function CreatePetitionScreen({ navigation }: any) {
     try {
       setLoading(true);
 
-      // Endpoint not implemented yet
       const data = await api.post<{ id: number }>("/petitions", {
         title: title.trim(),
         description: description.trim(),
@@ -48,11 +43,10 @@ export default function CreatePetitionScreen({ navigation }: any) {
         signature_goal: GOAL_MAP[goalTier],
       });
 
-navigation.navigate("Petitions", {
-  screen: "PetitionDetail",
-  params: { petitionId: data.id },
-});
-
+      navigation.navigate("Petitions", {
+        screen: "PetitionDetail",
+        params: { petitionId: data.id },
+      });
     } catch (err: any) {
       console.error("Create petition failed:", err);
     } finally {
@@ -61,141 +55,164 @@ navigation.navigate("Petitions", {
   };
 
   return (
-<Screen title="New Petition" scroll showBack>
-  <KeyboardAvoidingView
-    style={styles.container}
-    behavior={Platform.OS === "ios" ? "padding" : undefined}
-  >
-    <Pressable style={styles.container} onPress={Keyboard.dismiss}>
-      <Section>
+    <Screen title="New Petition" scroll showBack>
+      <Pressable onPress={Keyboard.dismiss}>
 
-        {/* Title & Description Group */}
-        <View style={styles.group}>
-          <TextInput
-            label="Petition Title"
-            value={title}
-            onChangeText={setTitle}
-            style={styles.input}
-          />
+          {/* Coloured hero banner */}
+          <View style={[styles.heroBanner, { backgroundColor: PETITION_COLOR + "18", borderColor: PETITION_COLOR + "40" }]}>
+            <View style={[styles.heroIconBox, { backgroundColor: PETITION_COLOR + "25" }]}>
+              <MaterialCommunityIcons name="file-sign" size={30} color={PETITION_COLOR} />
+            </View>
+            <View style={styles.heroText}>
+              <Text style={[styles.heroTitle, { color: PETITION_COLOR }]}>Launch a Petition</Text>
+              <Text style={[styles.heroSubtitle, { color: theme.colors.onSurfaceVariant }]}>
+                Set a goal, require verified support, and drive real civic action.
+              </Text>
+            </View>
+          </View>
 
-          <TextInput
-            label="Description"
-            value={description}
-            onChangeText={setDescription}
-            multiline
-            numberOfLines={5}
-          />
-        </View>
+          <Section>
 
-        {/* Verification Group */}
-        <View style={styles.group}>
-          <Text style={styles.label}>
-            VERIFICATION REQUIRED
-          </Text>
+            {/* Title & Description */}
+            <View style={styles.group}>
+              <Text style={[styles.label, { color: PETITION_COLOR }]}>PETITION DETAILS</Text>
+              <Text style={styles.helperDescription}>
+                Give your petition a clear title and explain what you want to achieve.
+              </Text>
 
-          <Text style={styles.helperDescription}>
-            Minimum identity level required to support this petition.
-          </Text>
+              <TextInput
+                label="Petition Title"
+                value={title}
+                onChangeText={setTitle}
+                style={styles.input}
+              />
 
-          <SegmentedButtons
-            value={requiredTier.toString()}
-            onValueChange={(value) =>
-              setRequiredTier(Number(value) as 2 | 3)
-            }
-            buttons={[
-              { value: "2", label: "Tier 2 (Passport)" },
-              { value: "3", label: "Tier 3 (Full Verification)" },
-            ]}
-            style={styles.segmented}
-          />
-        </View>
+              <TextInput
+                label="Description"
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                numberOfLines={5}
+              />
+            </View>
 
-        {/* Goal Group */}
-        <View style={styles.group}>
-          <Text style={styles.label}>
-            SIGNATURE GOAL
-          </Text>
+            {/* Verification Required */}
+            <View style={styles.group}>
+              <Text style={[styles.label, { color: PETITION_COLOR }]}>VERIFICATION REQUIRED</Text>
+              <Text style={styles.helperDescription}>
+                Minimum identity level required to sign this petition.
+              </Text>
 
-          <Text style={styles.helperDescription}>
-            The number of verified supporters needed for this petition to succeed.
-          </Text>
+              <SegmentedButtons
+                value={requiredTier.toString()}
+                onValueChange={(value) => setRequiredTier(Number(value) as 2 | 3)}
+                buttons={[
+                  { value: "2", label: "Tier 2 (Passport)" },
+                  { value: "3", label: "Tier 3 (Full)" },
+                ]}
+                style={styles.segmented}
+              />
+            </View>
 
-          <SegmentedButtons
-            value={goalTier}
-            onValueChange={(value) =>
-              setGoalTier(value as "local" | "regional" | "national")
-            }
-            buttons={[
-              { value: "local", label: "Local" },
-              { value: "regional", label: "Regional" },
-              { value: "national", label: "National" },
-            ]}
-          />
+            {/* Signature Goal */}
+            <View style={styles.group}>
+              <Text style={[styles.label, { color: PETITION_COLOR }]}>SIGNATURE GOAL</Text>
+              <Text style={styles.helperDescription}>
+                How many verified supporters does this petition need to succeed?
+              </Text>
 
-          <Text variant="bodySmall" style={styles.helperText}>
-            Local (100) • Regional (1,000) • National (10,000)
-          </Text>
-        </View>
+              <SegmentedButtons
+                value={goalTier}
+                onValueChange={(value) => setGoalTier(value as "local" | "regional" | "national")}
+                buttons={[
+                  { value: "local", label: "Local" },
+                  { value: "regional", label: "Regional" },
+                  { value: "national", label: "National" },
+                ]}
+              />
 
-        <Button
-          mode="contained"
-          style={styles.button}
-          onPress={() => {
-            Keyboard.dismiss();
-            submit();
-          }}
-          loading={loading}
-          disabled={loading}
-        >
-          Publish Petition
-        </Button>
+              <Text variant="bodySmall" style={styles.helperText}>
+                Local (100)  •  Regional (1,000)  •  National (10,000)
+              </Text>
+            </View>
 
-      </Section>
-    </Pressable>
-  </KeyboardAvoidingView>
-</Screen>
+            <Button
+              mode="contained"
+              buttonColor={PETITION_COLOR}
+              textColor="#000"
+              style={styles.button}
+              onPress={() => {
+                Keyboard.dismiss();
+                submit();
+              }}
+              loading={loading}
+              disabled={loading}
+            >
+              Publish Petition
+            </Button>
+
+          </Section>
+      </Pressable>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  heroBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    padding: spacing.md,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: spacing.lg,
+  },
+  heroIconBox: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  heroText: {
     flex: 1,
   },
-
+  heroTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    marginBottom: 2,
+  },
+  heroSubtitle: {
+    fontSize: 13,
+    lineHeight: 18,
+    opacity: 0.85,
+  },
   group: {
     marginBottom: spacing.lg,
   },
-
   label: {
     fontSize: 12,
-    fontWeight: "600",
+    fontWeight: "700",
     letterSpacing: 1,
-    opacity: 0.75,
     marginBottom: spacing.xs,
   },
-
+  helperDescription: {
+    opacity: 0.6,
+    fontSize: 13,
+    marginBottom: spacing.md,
+  },
   input: {
     marginBottom: spacing.md,
   },
-
   segmented: {
     marginBottom: spacing.md,
   },
-
   helperText: {
     opacity: 0.55,
     textAlign: "center",
     marginTop: spacing.xs,
-    marginBottom: spacing.xs,
   },
-  helperDescription: {
-  opacity: 0.6,
-  fontSize: 13,
-  marginBottom: spacing.md,
-},
-
   button: {
     marginTop: spacing.xl,
   },
-  
 });

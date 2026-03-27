@@ -7,7 +7,8 @@ const requireTier = require("../middleware/tier.middleware");
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.post('/liveness', requireAuth, requireTier(0), upload.single('file'), controller.verifyLiveness);
+router.post('/liveness/session', requireAuth, controller.createLivenessSession);
+router.post('/liveness/confirm', requireAuth, controller.confirmLiveness);
 
 
 router.post('/passport', requireAuth, requireTier(1),  upload.single('file'), controller.verifyPassport);
@@ -16,6 +17,8 @@ router.post('/passport', requireAuth, requireTier(1),  upload.single('file'), co
 router.post('/residence', requireAuth, requireTier(2), controller.verifyResidence);
 
 router.get("/summary", requireAuth, controller.getVerificationSummary);
+
+
 
 module.exports = router;
 

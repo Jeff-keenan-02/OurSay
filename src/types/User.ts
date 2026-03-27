@@ -1,4 +1,5 @@
-import { VerificationTier } from "./VerificationTier";
+import { VerificationTier } from "./verification";
+
 
 export type User = {
   id: number;

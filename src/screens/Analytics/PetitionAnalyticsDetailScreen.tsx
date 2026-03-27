@@ -1,113 +1,199 @@
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { Text, Card } from "react-native-paper";
+import { Text, useTheme, ActivityIndicator } from "react-native-paper";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { Screen } from "../../layout/Screen";
 import { spacing } from "../../theme/spacing";
 import { useApiClient } from "../../hooks/common/useApiClient";
 
-export default function PetitionAnalyticsDetailScreen({ route }: any) {
-  const { petitionId } = route.params;
-  const api = useApiClient();
+type PetitionData = {
+  totalSignatures: number;
+  goal: number;
+  percentage: number;
+  remaining: number;
+};
 
-  const [data, setData] = useState<any>(null);
+export default function PetitionAnalyticsDetailScreen({ route }: any) {
+  const { petitionId, title } = route.params;
+  const api = useApiClient();
+  const theme = useTheme();
+
+  const [data, setData] = useState<PetitionData | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     api.get(`/analytics/petitions/${petitionId}`).then((res: any) => {
       setData(res);
+      setLoading(false);
     });
   }, []);
 
-  if (!data) return null;
+  const progressColor = data
+    ? data.percentage >= 100
+      ? "#22c55e"
+      : data.percentage >= 50
+      ? "#3b82f6"
+      : "#f97316"
+    : "#3b82f6";
+
+  const clampedPct = data ? Math.min(data.percentage, 100) : 0;
 
   return (
-    <Screen
-      scroll
-      title="Petition Analytics"
-      subtitle="Anonymous aggregated support."
-    >
-      {/* 🔹 Summary */}
-      <Card style={styles.summaryCard}>
-        <Card.Content>
-          <Text style={styles.summaryTitle}>Total Support</Text>
-          <Text style={styles.summaryValue}>{data.totalSignatures}</Text>
-          <Text style={styles.goalText}>Goal: {data.goal}</Text>
-        </Card.Content>
-      </Card>
+    <Screen scroll title="Petition Analytics" showBack>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator />
+        </View>
+      ) : data ? (
+        <View style={styles.container}>
+          {/* Title */}
+          {title ? (
+            <Text
+              variant="titleLarge"
+              style={[styles.titleText, { color: theme.colors.onBackground }]}
+            >
+              {title}
+            </Text>
+          ) : null}
 
-      {/* 🔹 Progress */}
-      <Card style={styles.card}>
-        <Card.Content>
-          <Text style={styles.label}>Progress</Text>
+          {/* Stats row */}
+          <View style={styles.statsRow}>
+            <View style={[styles.statCard, { backgroundColor: theme.colors.surface }]}>
+              <MaterialCommunityIcons name="account-group" size={22} color={progressColor} />
+              <Text variant="headlineMedium" style={{ fontWeight: "700" }}>
+                {data.totalSignatures.toLocaleString()}
+              </Text>
+              <Text variant="bodySmall" style={{ opacity: 0.6 }}>
+                Signatures
+              </Text>
+            </View>
 
-          <View style={styles.barContainer}>
-            <View
-              style={[
-                styles.barFill,
-                { width: `${data.percentage}%` },
-              ]}
-            />
+            <View style={[styles.statCard, { backgroundColor: theme.colors.surface }]}>
+              <MaterialCommunityIcons name="flag-outline" size={22} color={theme.colors.secondary} />
+              <Text variant="headlineMedium" style={{ fontWeight: "700" }}>
+                {data.goal.toLocaleString()}
+              </Text>
+              <Text variant="bodySmall" style={{ opacity: 0.6 }}>
+                Goal
+              </Text>
+            </View>
           </View>
 
-          <Text style={styles.percent}>{data.percentage}% complete</Text>
-          <Text style={styles.remaining}>
-            {data.remaining} remaining
-          </Text>
-        </Card.Content>
-      </Card>
+          {/* Progress card */}
+          <View style={[styles.progressCard, { backgroundColor: theme.colors.surface }]}>
+            <View style={styles.progressHeader}>
+              <View>
+                <Text variant="labelLarge" style={{ fontWeight: "700", color: theme.colors.onSurfaceVariant, fontSize: 11, letterSpacing: 0.8 }}>
+                  SIGNATURES TOWARD GOAL
+                </Text>
+                <Text variant="bodySmall" style={{ opacity: 0.55, marginTop: 2 }}>
+                  {data.totalSignatures.toLocaleString()} of {data.goal.toLocaleString()} needed
+                </Text>
+              </View>
+              <Text
+                variant="headlineSmall"
+                style={{ fontWeight: "800", color: progressColor }}
+              >
+                {clampedPct}%
+              </Text>
+            </View>
+
+            {/* Track */}
+            <View style={[styles.track, { backgroundColor: progressColor + "20" }]}>
+              <View
+                style={[
+                  styles.fill,
+                  { width: `${clampedPct}%`, backgroundColor: progressColor },
+                ]}
+              />
+            </View>
+
+            {/* Supporting stats */}
+            <View style={styles.supportRow}>
+              <View style={styles.supportItem}>
+                <Text variant="titleMedium" style={{ fontWeight: "700" }}>
+                  {data.remaining.toLocaleString()}
+                </Text>
+                <Text variant="bodySmall" style={{ opacity: 0.6 }}>
+                  Remaining
+                </Text>
+              </View>
+
+              <View style={[styles.supportDivider, { backgroundColor: theme.colors.outline }]} />
+
+              <View style={styles.supportItem}>
+                <MaterialCommunityIcons
+                  name={data.percentage >= 100 ? "check-circle" : "clock-outline"}
+                  size={24}
+                  color={data.percentage >= 100 ? "#22c55e" : theme.colors.onSurfaceVariant}
+                />
+                <Text variant="bodySmall" style={{ opacity: 0.6 }}>
+                  {data.percentage >= 100 ? "Goal Reached" : "In Progress"}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      ) : null}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  summaryCard: {
-    marginTop: spacing.md,
-    borderRadius: 20,
+  loadingContainer: {
+    paddingTop: spacing.lg,
+    alignItems: "center",
   },
-
-  summaryTitle: {
-    opacity: 0.6,
+  container: {
+    gap: spacing.md,
   },
-
-  summaryValue: {
-    fontSize: 28,
+  titleText: {
     fontWeight: "700",
+    lineHeight: 30,
   },
-
-  goalText: {
-    opacity: 0.6,
-    marginTop: 4,
+  statsRow: {
+    flexDirection: "row",
+    gap: spacing.sm,
   },
-
-  card: {
-    marginTop: spacing.lg,
-    borderRadius: 20,
+  statCard: {
+    flex: 1,
+    borderRadius: 16,
+    padding: spacing.md,
+    gap: 4,
+    alignItems: "flex-start",
   },
-
-  label: {
-    fontWeight: "600",
-    marginBottom: spacing.sm,
+  progressCard: {
+    borderRadius: 16,
+    padding: spacing.md,
+    gap: spacing.md,
   },
-
-  barContainer: {
-    height: 10,
-    backgroundColor: "#E5E7EB",
+  progressHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  track: {
+    height: 14,
     borderRadius: 10,
     overflow: "hidden",
   },
-
-  barFill: {
+  fill: {
     height: "100%",
-    backgroundColor: "#3B82F6",
     borderRadius: 10,
   },
-
-  percent: {
-    marginTop: spacing.sm,
-    fontWeight: "600",
+  supportRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingTop: spacing.xs,
   },
-
-  remaining: {
-    opacity: 0.6,
-    marginTop: 2,
+  supportItem: {
+    flex: 1,
+    alignItems: "center",
+    gap: 4,
+  },
+  supportDivider: {
+    width: 1,
+    height: 40,
+    opacity: 0.2,
   },
 });

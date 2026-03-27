@@ -70,7 +70,7 @@ const { vote } = useDiscussionVote(user, trendingQuery.updateData);
   --------------------------------------------------*/
 
   return (
-    <Screen scroll       title="Discussions"
+    <Screen scroll title="Discussions"
 >
 
       {/* --------------- Weekly Disscussion  ------------ */}
@@ -113,7 +113,7 @@ const { vote } = useDiscussionVote(user, trendingQuery.updateData);
       query={topicsQuery}
     >
       {(data) => (
-        <TopicBrowser topics={data} onPress={openTopic} />
+        <TopicBrowser topics={data} onPress={openTopic} communityColor="#6366f1" />
       )}
     </QuerySection>
 

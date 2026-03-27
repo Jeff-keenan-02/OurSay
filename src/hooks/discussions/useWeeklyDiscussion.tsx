@@ -1,6 +1,6 @@
 // hooks/discussions/useWeeklyDiscussion.ts
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { WeeklyDiscussion } from "../../types/Discussion";
 import { useApiClient } from "../common/useApiClient";
 
@@ -15,13 +15,15 @@ export function useWeeklyDiscussion() {
   const [error, setError] = useState<string | null>(null);
 
   const api = useApiClient();
+  const initialized = useRef(false);
+
   /* -------------------------------------------------
      Reload Function
   --------------------------------------------------*/
 
   const reload = useCallback(async () => {
     try {
-      setLoading(true);
+      if (!initialized.current) setLoading(true);
       setError(null);
 
       const json =
@@ -30,6 +32,7 @@ export function useWeeklyDiscussion() {
         );
 
       setData(json);
+      initialized.current = true;
 
     } catch (err: any) {
       console.error(

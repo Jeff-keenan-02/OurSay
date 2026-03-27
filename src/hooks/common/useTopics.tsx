@@ -1,6 +1,6 @@
 // hooks/common/useTopics.ts
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Topic } from "../../types/Topic";
 import { useApiClient } from "../common/useApiClient";
 
@@ -19,6 +19,7 @@ export function useTopics() {
   const [error, setError] = useState<string | null>(null);
 
   const api = useApiClient();
+  const initialized = useRef(false);
 
   /* -------------------------------------------------
      Reload Function
@@ -26,12 +27,13 @@ export function useTopics() {
 
   const reload = useCallback(async () => {
     try {
-      setLoading(true);
+      if (!initialized.current) setLoading(true);
       setError(null);
 
       const json = await api.get<Topic[]>("/topics");
 
       setData(json);
+      initialized.current = true;
 
     } catch (err: any) {
       console.error("useTopics error:", err);

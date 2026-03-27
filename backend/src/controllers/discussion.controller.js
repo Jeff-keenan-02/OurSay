@@ -41,10 +41,14 @@ exports.getDisscussionByTopic = async (req, res) => {
         d.id,
         d.title,
         d.body,
+        d.created_at,
+        u.username AS created_by,
+        u.verification_tier,
         COALESCE(v.upvotes, 0) AS upvotes,
         COALESCE(v.downvotes, 0) AS downvotes,
         COALESCE(c.comment_count, 0) AS comment_count
       FROM discussions d
+      JOIN users u ON u.id = d.created_by
       LEFT JOIN (
         SELECT
           discussion_id,
@@ -80,16 +84,20 @@ exports.getDiscussion = async (req, res) => {
   try {
     const discussionResult = await pool.query(
       `
-      SELECT 
+      SELECT
         d.id,
         d.title,
         d.body,
         d.created_at,
         u.username AS created_by,
-        u.verification_tier
+        u.verification_tier,
+        COALESCE(SUM(CASE WHEN dv.value = 1 THEN 1 ELSE 0 END), 0) AS upvotes,
+        COALESCE(SUM(CASE WHEN dv.value = -1 THEN 1 ELSE 0 END), 0) AS downvotes
       FROM discussions d
       LEFT JOIN users u ON u.id = d.created_by
+      LEFT JOIN discussion_votes dv ON dv.discussion_id = d.id
       WHERE d.id = $1
+      GROUP BY d.id, d.title, d.body, d.created_at, u.username, u.verification_tier
       `,
       [id]
     );
@@ -135,10 +143,13 @@ exports.getTrending = async (req, res) => {
         d.id,
         d.title,
         d.body,
+        d.created_at,
+        u.username AS created_by,
         COALESCE(v.upvotes, 0) AS upvotes,
         COALESCE(v.downvotes, 0) AS downvotes,
         COALESCE(c.comment_count, 0) AS comment_count
       FROM discussions d
+      JOIN users u ON u.id = d.created_by
       LEFT JOIN (
         SELECT
           discussion_id,

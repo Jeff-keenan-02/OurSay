@@ -5,6 +5,7 @@ const controller = require("../controllers/analytics.controller");
 const requireAuth = require("../middleware/auth.middleware");
 
 router.get("/polls", requireAuth, controller.getPolls);
+router.get("/poll-groups/:groupId", requireAuth, controller.getPollGroupResults);
 router.get("/polls/:pollId", requireAuth, controller.getPollResults);
 
 router.get("/petitions", requireAuth, controller.getPetitions);

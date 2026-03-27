@@ -5,6 +5,7 @@ import PollAnalyticsListScreen from "../../screens/Analytics/PollAnalyticsListSc
 import PetitionAnalyticsListScreen from "../../screens/Analytics/PetitionAnalyticsListScreen";
 import PollAnalyticsDetailScreen from "../../screens/Analytics/PollAnalyticsDetailScreen";
 import PetitionAnalyticsDetailScreen from "../../screens/Analytics/PetitionAnalyticsDetailScreen";
+import PollGroupAnalyticsScreen from "../../screens/Analytics/PollGroupAnalyticsScreen";
 
 
 const Stack = createNativeStackNavigator();
@@ -39,6 +40,11 @@ export default function AnalyticsStack() {
       <Stack.Screen
         name="PetitionAnalyticsDetail"
         component={PetitionAnalyticsDetailScreen}
+      />
+
+      <Stack.Screen
+        name="PollGroupAnalytics"
+        component={PollGroupAnalyticsScreen}
       />
     </Stack.Navigator>
   );

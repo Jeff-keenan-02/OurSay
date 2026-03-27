@@ -1,6 +1,6 @@
 // hooks/discussions/useTrendingDiscussions.ts
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { DiscussionListItem } from "../../types/Discussion";
 import { useApiClient } from "../common/useApiClient";
@@ -16,6 +16,7 @@ export function useTrendingDiscussions() {
   const [error, setError] = useState<string | null>(null);
 
   const api = useApiClient();
+  const initialized = useRef(false);
 
   /* -------------------------------------------------
      Reload Function
@@ -23,7 +24,7 @@ export function useTrendingDiscussions() {
 
   const reload = useCallback(async () => {
     try {
-      setLoading(true);
+      if (!initialized.current) setLoading(true);
       setError(null);
 
       const json = await api.get<DiscussionListItem[]>(
@@ -31,6 +32,7 @@ export function useTrendingDiscussions() {
       );
 
       setData(json ?? []);
+      initialized.current = true;
 
     } catch (err: any) {
       console.error("Failed to load trending discussions:", err);

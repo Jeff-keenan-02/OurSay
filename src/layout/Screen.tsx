@@ -1,6 +1,5 @@
-// src/layout/Screen.tsx
 import React from "react";
-import { View, ScrollView, StyleSheet } from "react-native";
+import { View, ScrollView, StyleSheet, ViewStyle, StyleProp } from "react-native";
 import { useTheme } from "react-native-paper";
 import { AppHeader } from "./AppHeader";
 import { BackRow } from "../components/common/BackRow";
@@ -12,8 +11,10 @@ interface ScreenProps {
   scroll?: boolean;
   center?: boolean;
   showBack?: boolean;
-  bottom?: React.ReactNode; 
+  bottom?: React.ReactNode;
   children: React.ReactNode;
+  titleColor?: string;
+  contentStyle?: StyleProp<ViewStyle>;
 }
 
 export function Screen({
@@ -24,59 +25,59 @@ export function Screen({
   showBack = false,
   bottom,
   children,
+  titleColor,
+  contentStyle,
 }: ScreenProps) {
   const theme = useTheme();
 
-  const content = (
+  const screenBody = (
     <>
-      {/* Back button */}
-      {showBack && <BackRow />}
-
-      {/* Header */}
-      {title && (
-        <View style={styles.headerWrapper}>
-          <AppHeader title={title} subtitle={subtitle} />
+      {showBack && (
+        <View style={styles.backRowWrap}>
+          <BackRow />
         </View>
       )}
 
-      {/* Page Content */}
+      {title && (
+        <View style={styles.headerWrapper}>
+          <AppHeader
+            title={title}
+            subtitle={subtitle}
+          />
+        </View>
+      )}
+
       <View
         style={[
           styles.content,
-          center && {
-            justifyContent: "center",
-            alignItems: "center",
-          },
+          center && styles.centerContent,
+          contentStyle,
         ]}
       >
         {children}
       </View>
+
+      {bottom ? <View style={styles.bottom}>{bottom}</View> : null}
     </>
   );
 
   if (scroll) {
     return (
       <ScrollView
-        style={[
-          styles.container,
-          { backgroundColor: theme.colors.background },
-        ]}
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
       >
-        {content}
+        {screenBody}
       </ScrollView>
     );
   }
 
   return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor: theme.colors.background },
-      ]}
-    >
-      {content}
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      {screenBody}
     </View>
   );
 }
@@ -88,7 +89,11 @@ const styles = StyleSheet.create({
     paddingTop: spacing.sm,
   },
   scrollContent: {
-    paddingBottom: spacing.sm,
+    flexGrow: 1,
+    paddingBottom: spacing.lg,
+  },
+  backRowWrap: {
+    marginBottom: spacing.xs,
   },
   headerWrapper: {
     marginBottom: spacing.md,
@@ -96,5 +101,13 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     gap: spacing.sm,
+  },
+  centerContent: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  bottom: {
+    marginTop: spacing.md,
+    paddingBottom: spacing.sm,
   },
 });

@@ -12,6 +12,8 @@ export function mapPollToWeekly(poll: PollGroup): WeeklyCardData {
     title: poll.title,
     progress: poll.progress,
     footerText: `${poll.completed_polls}/${poll.total_polls} questions answered`,
+    respondent_count: poll.respondent_count,
+    required_verification_tier: poll.required_verification_tier,
   };
 }
 
@@ -43,5 +45,7 @@ export function mapPetitionToWeekly(
     progress: petition.progress,
     signatures: petition.signatures,
     signature_goal: petition.signature_goal,
+    has_signed: petition.has_signed,
+    required_verification_tier: petition.required_verification_tier,
   };
 }

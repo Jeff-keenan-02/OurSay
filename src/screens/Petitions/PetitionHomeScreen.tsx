@@ -1,5 +1,5 @@
-import React from "react";
-import { useNavigation } from "@react-navigation/native";
+import React, { useCallback } from "react";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 
 import { Screen } from "../../layout/Screen";
 import { QuerySection } from "../../components/common/QuerySection";
@@ -26,6 +26,13 @@ export default function PetitionHomeScreen() {
   const weeklyPetitionQuery = useWeeklyPetition();
   const trendingPetitionsQuery = useTrendingPetition();
   const topicsQuery = useTopics();
+
+  useFocusEffect(
+    useCallback(() => {
+      weeklyPetitionQuery.reload();
+      trendingPetitionsQuery.reload();
+    }, [weeklyPetitionQuery.reload, trendingPetitionsQuery.reload])
+  );
 
   /* -------------------------------------------------
      Navigation Handlers
@@ -59,6 +66,12 @@ export default function PetitionHomeScreen() {
           <WeeklyEngagementCard
             data={mapPetitionToWeekly(data)}
             onPress={() => openPetition(data.id)}
+            onViewAnalytics={() =>
+              navigation.navigate("PetitionAnalyticsDetail", {
+                petitionId: data.id,
+                title: data.title,
+              })
+            }
           />
         )}
       </QuerySection>
@@ -76,6 +89,12 @@ export default function PetitionHomeScreen() {
               <TrendingEngagementCard
                 data={item}
                 onPress={() => openPetition(item.id)}
+                onViewAnalytics={() =>
+                  navigation.navigate("PetitionAnalyticsDetail", {
+                    petitionId: item.id,
+                    title: item.title,
+                  })
+                }
               />
             )}
           />

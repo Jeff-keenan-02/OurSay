@@ -2,7 +2,7 @@
 
 import React from "react";
 import { FAB } from "react-native-paper";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 type Props = {
   onYes: () => void;
@@ -16,46 +16,37 @@ export default function SwipeActions({
   disabled = false,
 }: Props) {
   return (
-    <>
+    <View style={styles.row}>
       <FAB
         icon="close"
         color="white"
-        style={[
-          styles.fab,
-          styles.noButton,
-          disabled && styles.disabled,
-        ]}
+        style={[styles.noButton, disabled && styles.disabled]}
         disabled={disabled}
         onPress={onNo}
       />
-
       <FAB
         icon="check"
         color="white"
-        style={[
-          styles.fab,
-          styles.yesButton,
-          disabled && styles.disabled,
-        ]}
+        style={[styles.yesButton, disabled && styles.disabled]}
         disabled={disabled}
         onPress={onYes}
       />
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  fab: {
-    position: "absolute",
-    bottom: 20,
-    zIndex: 30,
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 40,
+    paddingBottom: 40,
+    paddingTop: 12,
   },
   noButton: {
-    left: 40,
     backgroundColor: "#b54949",
   },
   yesButton: {
-    right: 40,
     backgroundColor: "#4caf50",
   },
   disabled: {

@@ -15,7 +15,7 @@ export const VERIFICATION_TIERS: Record<VerificationTier, TierInfo> = {
     label: "Unverified",
     description: "Read-only access",
     icon: "shield-outline",
-    color: "#9e9e9e",
+    color: "#6b7280",
     next: "Complete liveness check",
     permissions: [
       "View discussions",
@@ -24,10 +24,10 @@ export const VERIFICATION_TIERS: Record<VerificationTier, TierInfo> = {
   },
 
   1: {
-    label: "Tier 1 ",
+    label: "Tier 1",
     description: "Human presence confirmed",
-    icon: "shield-outline",
-    color: "#cd7f32",
+    icon: "shield",
+    color: "#f97316",
     next: "Verify passport",
     permissions: [
       "Comment on discussions"
@@ -37,8 +37,8 @@ export const VERIFICATION_TIERS: Record<VerificationTier, TierInfo> = {
   2: {
     label: "Tier 2 Verified",
     description: "Identity verified",
-    icon: "shield-outline",
-    color: "#c0c0c0",
+    icon: "shield-check",
+    color: "#3b82f6",
     next: "Confirm residence",
     permissions: [
       "Comment on discussions",
@@ -50,7 +50,7 @@ export const VERIFICATION_TIERS: Record<VerificationTier, TierInfo> = {
   3: {
     label: "Tier 3 Verified",
     description: "Fully verified citizen",
-    icon: "shield-outline",
+    icon: "shield-star",
     color: "#ffd700",
     next: null,
     permissions: [

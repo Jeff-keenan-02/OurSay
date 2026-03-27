@@ -1,8 +1,9 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, useTheme } from "react-native-paper";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { timeAgo } from "../../utils/timeAgo";
-import { VerificationTier } from "../../types/VerificationTier";
+import { VerificationTier } from "../../types/verification";
 import { TierBadge } from "../common/TierBadge";
 
 interface Props {
@@ -16,48 +17,30 @@ export function CommentCard({ username, body, created_at, verificationTier }: Pr
   const theme = useTheme();
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: theme.colors.surface,
-          borderColor: theme.colors.outline,
-        },
-      ]}
-    >
+    <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
 
-    
-    {/* LEFT SIDE → Username + Badge */}
-    <View style={styles.userRow}>
-      <Text
-        style={[styles.username, { color: theme.colors.primary }]}
-      >
-        {username ?? "Anonymous"}
+      {/* Header: icon + username + tier badge */}
+      <View style={styles.header}>
+        <View style={styles.userRow}>
+          <MaterialCommunityIcons name="account-circle-outline" size={15} color={theme.colors.primary} />
+          <Text style={[styles.username, { color: theme.colors.primary }]}>
+            {username ?? "Anonymous"}
+          </Text>
+        </View>
+        <TierBadge tier={verificationTier} />
+      </View>
+
+      {/* Body */}
+      <Text style={[styles.body, { color: theme.colors.onSurface }]}>
+        {body}
       </Text>
 
-      <TierBadge
-        tier={verificationTier}
-        onPress={() => {}}
-      />
-    </View>
-
-      {/* COMMENT BODY */}
-    <Text style={[styles.body, { color: theme.colors.onSurface }]}>
-      {body}
-    </Text>
-
-    {/* FOOTER ROW */}
-    <View style={styles.footerRow}>
-      <Text
-        style={[styles.time, { color: theme.colors.onSurfaceVariant }]}
-      >
+      {/* Time */}
+      <Text style={[styles.time, { color: theme.colors.onSurfaceVariant }]}>
         {timeAgo(created_at)}
       </Text>
+
     </View>
-  </View>
-
- 
-
   );
 }
 
@@ -77,10 +60,16 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
 
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
   userRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 6,
   },
 
   username: {
@@ -90,11 +79,10 @@ const styles = StyleSheet.create({
 
   time: {
     fontSize: 12,
+    marginTop: 8,
+    textAlign: "right",
+    opacity: 0.5,
   },
-  footerRow: {
-  marginTop: 8,
-  alignItems: "flex-end",
-},
 
   body: {
     fontSize: 15,

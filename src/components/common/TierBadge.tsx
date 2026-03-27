@@ -5,7 +5,7 @@ import {
   Modal,
   Pressable,
 } from "react-native";
-import { Text, useTheme } from "react-native-paper";
+import { Text, useTheme, ActivityIndicator } from "react-native-paper";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { VERIFICATION_TIERS, VerificationTier } from "../../types/verification";
 import { TierAccessCard } from "../../hooks/common/TierAccessCard";
@@ -18,7 +18,7 @@ type Props = {
 export function TierBadge({ tier }: Props) {
   const theme = useTheme();
   const [visible, setVisible] = useState(false);
-  const { data } = useVerificationSummary();
+  const { data, loading } = useVerificationSummary();
 
   const tierInfo = VERIFICATION_TIERS[tier] ?? VERIFICATION_TIERS[0];
 
@@ -46,7 +46,7 @@ export function TierBadge({ tier }: Props) {
           variant="labelMedium"
           style={[styles.text, { color: tierInfo.color }]}
         >
-          T{tier}
+          Tier {tier}
         </Text>
       </TouchableOpacity>
 
@@ -58,10 +58,14 @@ export function TierBadge({ tier }: Props) {
       >
         <Pressable style={styles.backdrop} onPress={() => setVisible(false)}>
           <Pressable style={styles.cardWrapper} onPress={() => {}}>
-            <TierAccessCard
-              tier={tier}
-              expiresAt={data?.expiresAt ?? null}
-            />
+            {loading ? (
+              <ActivityIndicator style={{ padding: 32 }} />
+            ) : (
+              <TierAccessCard
+                tier={tier}
+                expiresAt={data?.expiresAt ?? null}
+              />
+            )}
           </Pressable>
         </Pressable>
       </Modal>

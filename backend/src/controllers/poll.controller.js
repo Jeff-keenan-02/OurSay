@@ -27,7 +27,15 @@ exports.getWeeklyPoll = async (req, res) => {
           WHEN COUNT(DISTINCT pp.poll_id) = 0 THEN 0
           WHEN COUNT(DISTINCT pp.poll_id) < COUNT(DISTINCT p.id) THEN 1
           ELSE 2
-        END AS status
+        END AS status,
+
+        (
+          SELECT COUNT(DISTINCT pv.token_hash)
+          FROM polls p2
+          JOIN poll_votes pv ON pv.poll_id = p2.id
+          WHERE p2.poll_group_id = pg.id
+        ) AS respondent_count
+
 
       FROM poll_groups pg
       JOIN topics t ON t.id = pg.topic_id
@@ -73,7 +81,15 @@ exports.getTrendingPoll = async (req, res) => {
           WHEN COUNT(DISTINCT pp.poll_id) = 0 THEN 0
           WHEN COUNT(DISTINCT pp.poll_id) < COUNT(DISTINCT p.id) THEN 1
           ELSE 2
-        END AS status
+        END AS status,
+
+        (
+          SELECT COUNT(DISTINCT pv.token_hash)
+          FROM polls p2
+          JOIN poll_votes pv ON pv.poll_id = p2.id
+          WHERE p2.poll_group_id = pg.id
+        ) AS respondent_count
+
 
       FROM poll_groups pg
       LEFT JOIN polls p

@@ -1,4 +1,3 @@
-// src/layout/AppHeader.tsx
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, useTheme } from "react-native-paper";
@@ -12,6 +11,7 @@ type Props = {
 
 export function AppHeader({ title, subtitle }: Props) {
   const theme = useTheme();
+
   return (
     <View
       style={[
@@ -23,11 +23,12 @@ export function AppHeader({ title, subtitle }: Props) {
         variant={typography.screenTitle}
         style={[
           styles.title,
-          { color: theme.colors.onBackground }
+          { color: theme.colors.primary }
         ]}
       >
         {title}
       </Text>
+
       {subtitle ? (
         <Text
           variant={typography.body}
@@ -47,17 +48,16 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "column",
     paddingTop: spacing.md,
-    paddingBottom: spacing.sm,           // tighter bottom spacing
+    paddingBottom: spacing.sm,
     paddingHorizontal: spacing.md,
-
   },
   title: {
-    marginBottom: 2,                     // small space between title and subtitle
+    marginBottom: 2,
     fontWeight: "600",
-    textAlign: "left"
+    textAlign: "left",
   },
   subtitle: {
     fontWeight: "400",
-    textAlign: "left"
-  }
+    textAlign: "left",
+  },
 });

@@ -8,6 +8,8 @@ import { spacing } from "../../theme/spacing";
 type Props = {
   topics: Topic[];
   onPress: (topic: Topic) => void;
+  communityColor?: string;
+  showCommunity?: boolean;
 };
 
 type OfficialMeta = { icon: string; color: string };
@@ -23,7 +25,7 @@ const OFFICIAL_META: Record<string, OfficialMeta> = {
 
 const FALLBACK: OfficialMeta = { icon: "folder", color: "#64748b" };
 
-export function TopicBrowser({ topics, onPress }: Props) {
+export function TopicBrowser({ topics, onPress, communityColor = "#f97316", showCommunity = true }: Props) {
   const theme = useTheme();
 
   const official  = topics.filter((t) => t.source === "official");
@@ -68,15 +70,15 @@ export function TopicBrowser({ topics, onPress }: Props) {
       )}
 
       {/* ── Community: rows with left accent ── */}
-      {community.length > 0 && (
+      {showCommunity && community.length > 0 && (
         <View>
           <View style={styles.sectionHeader}>
             <MaterialCommunityIcons
               name="account-group"
               size={14}
-              color={theme.colors.onSurfaceVariant}
+              color={theme.colors.primary}
             />
-            <Text style={[styles.sectionLabel, { color: theme.colors.onSurfaceVariant }]}>
+            <Text style={[styles.sectionLabel, { color: theme.colors.primary}]}>
               Community Topics
             </Text>
           </View>
@@ -89,12 +91,12 @@ export function TopicBrowser({ topics, onPress }: Props) {
                 activeOpacity={0.85}
               >
                 <View style={[styles.communityRow, { backgroundColor: theme.colors.surface }]}>
-                  <View style={[styles.communityAccent, { backgroundColor: "#f97316" }]} />
-                  <View style={[styles.communityIconCircle, { backgroundColor: "#f9731618" }]}>
+                  <View style={[styles.communityAccent, { backgroundColor: communityColor }]} />
+                  <View style={[styles.communityIconCircle, { backgroundColor: communityColor + "18" }]}>
                     <MaterialCommunityIcons
                       name="account-group-outline"
                       size={18}
-                      color="#f97316"
+                      color={communityColor}
                     />
                   </View>
                   <View style={styles.communityBody}>

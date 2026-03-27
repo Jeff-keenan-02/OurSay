@@ -15,6 +15,8 @@ export type WeeklyCardData =
       title: string;
       progress: number;
       footerText: string; // "2/5 completed"
+      respondent_count: number;
+      required_verification_tier?: number;
     }
   | {
       type: "petition";
@@ -25,4 +27,6 @@ export type WeeklyCardData =
       progress: number;
       signatures: number;
       signature_goal: number;
+      has_signed?: boolean;
+      required_verification_tier?: number;
     };
