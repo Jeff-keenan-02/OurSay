@@ -202,10 +202,17 @@ exports.verifyPassport = async (req, res) => {
       return new Date(str);
     }
 
-    const passportExpiry = parseTextractDate(expirationDate)
-      || new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000);
+    if (!expirationDate) {
+      return res.status(400).json({ error: "Could not read passport expiry date — please use a clearer image" });
+    }
 
-    if (expirationDate && passportExpiry < new Date()) {
+    const passportExpiry = parseTextractDate(expirationDate);
+
+    if (!passportExpiry || isNaN(passportExpiry.getTime())) {
+      return res.status(400).json({ error: "Could not read passport expiry date — please use a clearer image" });
+    }
+
+    if (passportExpiry < new Date()) {
       return res.status(400).json({ error: "Passport has expired — please use a valid passport" });
     }
 
