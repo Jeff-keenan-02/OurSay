@@ -24,7 +24,9 @@ export default function LivenessCaptureScreen({ navigation }: any) {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
+    navigation.setOptions({ headerShown: false });
     createSession();
+    return () => navigation.setOptions({ headerShown: true });
   }, []);
 
   async function createSession() {
@@ -55,7 +57,7 @@ export default function LivenessCaptureScreen({ navigation }: any) {
   function handleWebViewMessage(event: any) {
     try {
       const data = JSON.parse(event.nativeEvent.data);
-      if (data.type === "LIVENESS_COMPLETE" && data.success && data.sessionId) {
+if (data.type === "LIVENESS_COMPLETE" && data.success && data.sessionId) {
         confirmSession(data.sessionId);
         return;
       }
@@ -144,7 +146,7 @@ export default function LivenessCaptureScreen({ navigation }: any) {
 
   // WebView (ready)
   return (
-    <View style={[styles.fullscreen, { backgroundColor: "#fff" }]}>
+    <View style={styles.fullscreen}>
       <WebView
         source={{ uri: livenessUrl }}
         onMessage={handleWebViewMessage}
@@ -160,12 +162,8 @@ export default function LivenessCaptureScreen({ navigation }: any) {
         style={styles.webView}
       />
       <View style={styles.backRow}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-          activeOpacity={0.8}
-        >
-          <MaterialCommunityIcons name="arrow-left" size={20} color="#333" />
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.8}>
+          <MaterialCommunityIcons name="arrow-left" size={18} color="#333" />
           <Text style={styles.floatingBackText}>Back</Text>
         </TouchableOpacity>
       </View>
@@ -186,6 +184,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
+    borderTopWidth: 1,
+    borderTopColor: "rgba(0,0,0,0.08)",
   },
   backButton: {
     flexDirection: "row",
@@ -197,26 +197,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.1)",
-  },
-  webViewWrapper: {
-    flex: 1,
-    margin: spacing.md,
-    borderRadius: 20,
-    overflow: "hidden",
-  },
-  floatingBack: {
-    position: "absolute",
-    bottom: 36,
-    alignSelf: "center",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: "rgba(30,30,30,0.9)",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
   },
   floatingBackText: {
     color: "#333",
