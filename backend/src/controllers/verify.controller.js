@@ -200,14 +200,25 @@ exports.verifyPassport = async (req, res) => {
       .update(proofString)
       .digest("hex");
 
-    // Textract returns dates as MM/DD/YYYY — parse safely
+    // Parse Textract dates — handles multiple formats:
+    // "28 AIB/APR 2021" (Irish bilingual), "MM/DD/YYYY", "YYYY-MM-DD"
     function parseTextractDate(str) {
       if (!str) return null;
-      const parts = str.split("/");
-      if (parts.length === 3) {
-        const [month, day, year] = parts;
+
+      // Irish bilingual format: "28 AIB/APR 2021" — take English month after /
+      const bilingualMatch = str.match(/(\d{1,2})\s+\w+\/(\w+)\s+(\d{4})/);
+      if (bilingualMatch) {
+        const [, day, engMonth, year] = bilingualMatch;
+        return new Date(`${day} ${engMonth} ${year}`);
+      }
+
+      // MM/DD/YYYY
+      const slashParts = str.split("/");
+      if (slashParts.length === 3) {
+        const [month, day, year] = slashParts;
         return new Date(`${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`);
       }
+
       return new Date(str);
     }
 

@@ -19,7 +19,7 @@ export default function PassportCaptureScreen({ navigation }: any) {
   const { updateUser } = useContext(AuthContext);
   const { photo, loading, error, captureFromCamera, uploadPassport, clearPhoto } = usePassportVerification();
   const [success, setSuccess] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [captureError, setCaptureError] = useState("");
 
   const { hasPermission, requestPermission } = useCameraPermission();
   const device = useCameraDevice("back");
@@ -30,25 +30,25 @@ export default function PassportCaptureScreen({ navigation }: any) {
   }, []);
 
   const handleCapture = useCallback(async () => {
+    setCaptureError("");
     if (!cameraRef.current) return;
     try {
       const file = await cameraRef.current.takePhoto({ flash: "off" });
       captureFromCamera(file.path);
     } catch (err) {
-      setErrorMessage("Failed to capture photo. Please try again.");
+      setCaptureError("Failed to capture photo. Please try again.");
     }
   }, [captureFromCamera]);
 
   const handleUpload = async () => {
-    setErrorMessage("");
     const data = await uploadPassport();
     if (data?.success) {
       updateUser({ verification_tier: data.level });
       setSuccess(true);
-    } else {
-      setErrorMessage(error || "Passport verification failed. Please try again.");
     }
   };
+
+  const errorMessage = captureError || error || "";
 
   if (success) {
     return (
