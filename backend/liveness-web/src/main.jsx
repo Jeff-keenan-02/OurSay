@@ -4,6 +4,7 @@ import { Amplify } from "aws-amplify";
 import { FaceLivenessDetector } from "@aws-amplify/ui-react-liveness";
 import { ThemeProvider, createTheme } from "@aws-amplify/ui-react";
 import "@aws-amplify/ui-react/styles.css";
+import "./index.css";
 
 Amplify.configure({
   Auth: {

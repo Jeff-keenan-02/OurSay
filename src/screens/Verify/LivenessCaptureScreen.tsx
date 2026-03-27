@@ -142,7 +142,7 @@ export default function LivenessCaptureScreen({ navigation }: any) {
     );
   }
 
-  // WebView (ready) — fullscreen with floating back button
+  // WebView (ready)
   return (
     <View style={[styles.fullscreen, { backgroundColor: "#0f0f0f" }]}>
       <WebView
@@ -157,16 +157,18 @@ export default function LivenessCaptureScreen({ navigation }: any) {
         allowsInlineMediaPlayback
         allowsProtectedMedia
         mediaCapturePermissionGrantType="grant"
-        style={{ flex: 1, backgroundColor: "#0f0f0f" }}
+        style={styles.webView}
       />
-      <TouchableOpacity
-        style={styles.floatingBack}
-        onPress={() => navigation.goBack()}
-        activeOpacity={0.8}
-      >
-        <MaterialCommunityIcons name="arrow-left" size={20} color="#fff" />
-        <Text style={styles.floatingBackText}>Back</Text>
-      </TouchableOpacity>
+      <View style={styles.backRow}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.8}
+        >
+          <MaterialCommunityIcons name="arrow-left" size={20} color="#fff" />
+          <Text style={styles.floatingBackText}>Back</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -174,6 +176,27 @@ export default function LivenessCaptureScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   fullscreen: {
     flex: 1,
+  },
+  webView: {
+    flex: 1,
+    backgroundColor: "#0f0f0f",
+  },
+  backRow: {
+    height: 70,
+    backgroundColor: "#0f0f0f",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
   },
   webViewWrapper: {
     flex: 1,
