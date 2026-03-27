@@ -14,7 +14,6 @@ Amplify.configure({
   },
 });
 
-
 function App() {
   const params    = new URLSearchParams(window.location.search);
   const sessionId = params.get("sessionId");
@@ -73,6 +72,7 @@ function App() {
         region="eu-west-1"
         onAnalysisComplete={handleAnalysisComplete}
         onError={handleError}
+        disableStartScreen
       />
     </div>
   );

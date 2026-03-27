@@ -17,9 +17,3 @@ html, body {
   display: flex;
   flex-direction: column;
 }
-
-/* Scale down the entire liveness detector to fit screen */
-[class*="amplify-liveness"] {
-  transform: scale(0.82);
-  transform-origin: top center;
-}
