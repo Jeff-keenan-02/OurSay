@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { Amplify } from "aws-amplify";
 import { FaceLivenessDetector } from "@aws-amplify/ui-react-liveness";
-import { ThemeProvider, createTheme } from "@aws-amplify/ui-react";
 import "@aws-amplify/ui-react/styles.css";
 import "./index.css";
 
@@ -15,45 +14,6 @@ Amplify.configure({
   },
 });
 
-const darkTheme = createTheme({
-  name: "dark-liveness",
-  overrides: [
-    {
-      colorMode: "dark",
-      tokens: {
-        colors: {
-          background: {
-            primary: { value: "#0f0f0f" },
-            secondary: { value: "#1a1a1a" },
-          },
-          font: {
-            primary: { value: "#ffffff" },
-            secondary: { value: "#a0a0a0" },
-          },
-          border: {
-            primary: { value: "#2a2a2a" },
-          },
-        },
-        components: {
-          button: {
-            primary: {
-              backgroundColor: { value: "#6366f1" },
-              color: { value: "#ffffff" },
-              fontSize: { value: "18px" },
-              fontWeight: { value: "700" },
-              paddingBlockStart: { value: "16px" },
-              paddingBlockEnd: { value: "16px" },
-              borderRadius: { value: "14px" },
-              _hover: {
-                backgroundColor: { value: "#4f46e5" },
-              },
-            },
-          },
-        },
-      },
-    },
-  ],
-});
 
 function App() {
   const params    = new URLSearchParams(window.location.search);
@@ -108,14 +68,12 @@ function App() {
 
   return (
     <div style={styles.container}>
-      <ThemeProvider theme={darkTheme} colorMode="dark">
-        <FaceLivenessDetector
-          sessionId={sessionId}
-          region="eu-west-1"
-          onAnalysisComplete={handleAnalysisComplete}
-          onError={handleError}
-        />
-      </ThemeProvider>
+      <FaceLivenessDetector
+        sessionId={sessionId}
+        region="eu-west-1"
+        onAnalysisComplete={handleAnalysisComplete}
+        onError={handleError}
+      />
     </div>
   );
 }
@@ -125,14 +83,14 @@ const styles = {
     width: "100vw",
     height: "100vh",
     overflow: "hidden",
-    backgroundColor: "#0f0f0f",
+    backgroundColor: "#fff",
   },
   center: {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     height: "100vh",
-    backgroundColor: "#0f0f0f",
+    backgroundColor: "#fff",
   },
   errorText: {
     color: "#ef4444",

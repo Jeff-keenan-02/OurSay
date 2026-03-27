@@ -144,7 +144,7 @@ export default function LivenessCaptureScreen({ navigation }: any) {
 
   // WebView (ready)
   return (
-    <View style={[styles.fullscreen, { backgroundColor: "#0f0f0f" }]}>
+    <View style={[styles.fullscreen, { backgroundColor: "#fff" }]}>
       <WebView
         source={{ uri: livenessUrl }}
         onMessage={handleWebViewMessage}
@@ -165,7 +165,7 @@ export default function LivenessCaptureScreen({ navigation }: any) {
           onPress={() => navigation.goBack()}
           activeOpacity={0.8}
         >
-          <MaterialCommunityIcons name="arrow-left" size={20} color="#fff" />
+          <MaterialCommunityIcons name="arrow-left" size={20} color="#333" />
           <Text style={styles.floatingBackText}>Back</Text>
         </TouchableOpacity>
       </View>
@@ -179,11 +179,11 @@ const styles = StyleSheet.create({
   },
   webView: {
     flex: 1,
-    backgroundColor: "#0f0f0f",
+    backgroundColor: "#fff",
   },
   backRow: {
     height: 70,
-    backgroundColor: "#0f0f0f",
+    backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -191,12 +191,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "rgba(0,0,0,0.06)",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
+    borderColor: "rgba(0,0,0,0.1)",
   },
   webViewWrapper: {
     flex: 1,
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.12)",
   },
   floatingBackText: {
-    color: "#fff",
+    color: "#333",
     fontWeight: "600",
     fontSize: 14,
   },
