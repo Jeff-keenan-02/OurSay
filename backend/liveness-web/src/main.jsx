@@ -38,6 +38,14 @@ const darkTheme = createTheme({
             primary: {
               backgroundColor: { value: "#6366f1" },
               color: { value: "#ffffff" },
+              fontSize: { value: "18px" },
+              fontWeight: { value: "700" },
+              paddingBlockStart: { value: "16px" },
+              paddingBlockEnd: { value: "16px" },
+              borderRadius: { value: "14px" },
+              _hover: {
+                backgroundColor: { value: "#4f46e5" },
+              },
             },
           },
         },
