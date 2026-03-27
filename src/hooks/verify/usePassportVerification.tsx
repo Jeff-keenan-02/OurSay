@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import * as ImagePicker from "react-native-image-picker";
+
 import { useApiClient } from "../common/useApiClient";
 
 import { PhotoAsset } from "../../types/Photo";
@@ -11,7 +11,7 @@ type UsePassportVerificationResult = {
   photo: PhotoAsset | null;
   loading: boolean;
   error: string | null;
-  capturePassport: () => void;
+  captureFromCamera: (path: string) => void;
   uploadPassport: () => Promise<VerificationResponse | null>;
   clearPhoto: () => void;
 };
@@ -28,36 +28,13 @@ export function usePassportVerification(): UsePassportVerificationResult {
      Capture Passport
   --------------------------------------------------*/
 
-  const capturePassport = useCallback(() => {
-    ImagePicker.launchCamera(
-      {
-        mediaType: "photo",
-        cameraType: "back",
-        saveToPhotos: false,
-        includeBase64: false,
-        quality: 0.9,
-      },
-      (response) => {
-        if (response.didCancel) return;
-
-        if (response.errorCode) {
-          setError(response.errorMessage ?? "Camera error");
-          return;
-        }
-
-        const asset = response.assets?.[0];
-        if (!asset?.uri) {
-          setError("No image was captured");
-          return;
-        }
-
-        setPhoto({
-          uri: asset.uri,
-          type: asset.type ?? "image/jpeg",
-          fileName: asset.fileName ?? "passport.jpg",
-        });
-      }
-    );
+  const captureFromCamera = useCallback((path: string) => {
+    setPhoto({
+      uri: path,
+      type: "image/jpeg",
+      fileName: "passport.jpg",
+    });
+    setError(null);
   }, []);
 
   /* -------------------------------------------------
@@ -85,8 +62,9 @@ export function usePassportVerification(): UsePassportVerificationResult {
       setError(null);
 
       const form = new FormData();
+      const uri = photo.uri.startsWith("file://") ? photo.uri : `file://${photo.uri}`;
       form.append("file", {
-        uri: photo.uri,
+        uri,
         type: photo.type,
         name: photo.fileName,
       } as any);
@@ -114,7 +92,7 @@ export function usePassportVerification(): UsePassportVerificationResult {
     photo,
     loading,
     error,
-    capturePassport,
+    captureFromCamera,
     uploadPassport,
     clearPhoto,
   };

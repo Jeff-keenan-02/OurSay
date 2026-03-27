@@ -31,12 +31,10 @@ export default function LivenessCaptureScreen({ navigation }: any) {
     try {
       setState("loading");
       setErrorMessage("");
-
       const response = await api.post<{ sessionId: string }>("/verify/liveness/session", {});
       setSessionId(response.sessionId);
       setState("ready");
     } catch (err) {
-      console.error("Create liveness session failed:", err);
       setErrorMessage("Could not start liveness session. Please try again.");
       setState("error");
     }
@@ -45,15 +43,10 @@ export default function LivenessCaptureScreen({ navigation }: any) {
   async function confirmSession(completedSessionId: string) {
     try {
       setState("checking");
-
-      await api.post("/verify/liveness/confirm", {
-        sessionId: completedSessionId,
-      });
-
+      await api.post("/verify/liveness/confirm", { sessionId: completedSessionId });
       updateUser({ verification_tier: 1 });
       setState("success");
     } catch (err: any) {
-      console.error("Confirm liveness failed:", err);
       setErrorMessage(err?.message || "Liveness check failed. Please try again.");
       setState("error");
     }
@@ -62,18 +55,15 @@ export default function LivenessCaptureScreen({ navigation }: any) {
   function handleWebViewMessage(event: any) {
     try {
       const data = JSON.parse(event.nativeEvent.data);
-
       if (data.type === "LIVENESS_COMPLETE" && data.success && data.sessionId) {
         confirmSession(data.sessionId);
         return;
       }
-
       if (data.type === "LIVENESS_ERROR") {
         setErrorMessage(data.message || "Something went wrong during the check.");
         setState("error");
       }
-    } catch (err) {
-      console.error("Failed to parse WebView message:", err);
+    } catch {
       setErrorMessage("Unexpected response from liveness check.");
       setState("error");
     }
@@ -84,88 +74,67 @@ export default function LivenessCaptureScreen({ navigation }: any) {
     return `${LIVENESS_BASE_URL}?sessionId=${encodeURIComponent(sessionId)}`;
   }, [sessionId]);
 
-  const retry = () => {
-    createSession();
-  };
-
+  // Success
   if (state === "success") {
     return (
       <Screen scroll showBack title="Human Verification">
-        <View style={styles.resultContainer}>
+        <View style={[styles.resultCard, { backgroundColor: theme.colors.surface }]}>
           <View style={[styles.resultIcon, { backgroundColor: "#22c55e18" }]}>
-            <MaterialCommunityIcons name="check-circle" size={64} color="#22c55e" />
+            <MaterialCommunityIcons name="check-circle" size={56} color="#22c55e" />
           </View>
-          <Text variant="headlineSmall" style={{ fontWeight: "700", textAlign: "center" }}>
+          <Text variant="headlineSmall" style={{ fontWeight: "700", color: theme.colors.onSurface, textAlign: "center" }}>
             Verified!
           </Text>
-          <Text
-            variant="bodyMedium"
-            style={{
-              color: theme.colors.onSurfaceVariant,
-              textAlign: "center",
-              lineHeight: 20,
-            }}
-          >
+          <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, textAlign: "center", lineHeight: 20 }}>
             Your liveness check passed. You have unlocked Tier 1 access.
           </Text>
-          <TouchableOpacity
-            style={[styles.cta, { backgroundColor: "#22c55e" }]}
-            onPress={() => navigation.navigate("VerificationHome")}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.ctaText}>Back to Verification</Text>
-            <MaterialCommunityIcons name="arrow-right" size={18} color="#fff" />
-          </TouchableOpacity>
         </View>
+        <TouchableOpacity
+          style={[styles.cta, { backgroundColor: "#22c55e" }]}
+          onPress={() => navigation.navigate("VerificationHome")}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.ctaText}>Back to Verification</Text>
+          <MaterialCommunityIcons name="arrow-right" size={18} color="#fff" />
+        </TouchableOpacity>
       </Screen>
     );
   }
 
+  // Error
   if (state === "error") {
     return (
       <Screen scroll showBack title="Human Verification">
-        <View style={styles.resultContainer}>
+        <View style={[styles.resultCard, { backgroundColor: theme.colors.surface }]}>
           <View style={[styles.resultIcon, { backgroundColor: "#ef444418" }]}>
-            <MaterialCommunityIcons name="alert-circle" size={64} color="#ef4444" />
+            <MaterialCommunityIcons name="alert-circle" size={56} color="#ef4444" />
           </View>
-          <Text variant="headlineSmall" style={{ fontWeight: "700", textAlign: "center" }}>
+          <Text variant="headlineSmall" style={{ fontWeight: "700", color: theme.colors.onSurface, textAlign: "center" }}>
             Check Failed
           </Text>
-          <Text
-            variant="bodyMedium"
-            style={{
-              color: theme.colors.onSurfaceVariant,
-              textAlign: "center",
-              lineHeight: 20,
-            }}
-          >
+          <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, textAlign: "center", lineHeight: 20 }}>
             {errorMessage}
           </Text>
-          <TouchableOpacity
-            style={[styles.cta, { backgroundColor: COLOR }]}
-            onPress={retry}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.ctaText}>Try Again</Text>
-            <MaterialCommunityIcons name="refresh" size={18} color="#fff" />
-          </TouchableOpacity>
         </View>
+        <TouchableOpacity
+          style={[styles.cta, { backgroundColor: COLOR }]}
+          onPress={() => createSession()}
+          activeOpacity={0.85}
+        >
+          <MaterialCommunityIcons name="refresh" size={18} color="#fff" />
+          <Text style={styles.ctaText}>Try Again</Text>
+        </TouchableOpacity>
       </Screen>
     );
   }
 
+  // Loading / checking
   if (state === "loading" || state === "checking" || !livenessUrl) {
     return (
       <Screen showBack title="Human Verification">
-        <View style={styles.loadingContainer}>
+        <View style={[styles.resultCard, { backgroundColor: theme.colors.surface }]}>
           <ActivityIndicator color={COLOR} size="large" />
-          <Text
-            variant="bodyMedium"
-            style={{
-              color: theme.colors.onSurfaceVariant,
-              marginTop: spacing.md,
-            }}
-          >
+          <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginTop: spacing.md, textAlign: "center" }}>
             {state === "loading" ? "Preparing liveness check…" : "Verifying result…"}
           </Text>
         </View>
@@ -173,8 +142,9 @@ export default function LivenessCaptureScreen({ navigation }: any) {
     );
   }
 
+  // WebView (ready) — fullscreen with floating back button
   return (
-    <View style={styles.detectorContainer}>
+    <View style={[styles.fullscreen, { backgroundColor: "#0f0f0f" }]}>
       <WebView
         source={{ uri: livenessUrl }}
         onMessage={handleWebViewMessage}
@@ -187,30 +157,58 @@ export default function LivenessCaptureScreen({ navigation }: any) {
         allowsInlineMediaPlayback
         allowsProtectedMedia
         mediaCapturePermissionGrantType="grant"
+        style={{ flex: 1, backgroundColor: "#0f0f0f" }}
       />
+      <TouchableOpacity
+        style={styles.floatingBack}
+        onPress={() => navigation.goBack()}
+        activeOpacity={0.8}
+      >
+        <MaterialCommunityIcons name="arrow-left" size={20} color="#fff" />
+        <Text style={styles.floatingBackText}>Back</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  detectorContainer: {
+  fullscreen: {
     flex: 1,
   },
-  loadingContainer: {
+  webViewWrapper: {
     flex: 1,
+    margin: spacing.md,
+    borderRadius: 20,
+    overflow: "hidden",
+  },
+  floatingBack: {
+    position: "absolute",
+    top: 56,
+    left: spacing.md,
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: spacing.xl,
+    gap: 6,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
   },
-  resultContainer: {
+  floatingBackText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  resultCard: {
+    borderRadius: 20,
+    padding: spacing.lg,
     alignItems: "center",
     gap: spacing.md,
-    paddingTop: spacing.lg,
+    marginBottom: spacing.md,
   },
   resultIcon: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -222,7 +220,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 14,
     paddingHorizontal: spacing.xl,
-    marginTop: spacing.sm,
+    marginHorizontal: spacing.md,
   },
   ctaText: {
     color: "#fff",

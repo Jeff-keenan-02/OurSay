@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { Amplify } from "aws-amplify";
 import { FaceLivenessDetector } from "@aws-amplify/ui-react-liveness";
+import { ThemeProvider, createTheme } from "@aws-amplify/ui-react";
 import "@aws-amplify/ui-react/styles.css";
 
 Amplify.configure({
@@ -13,11 +14,43 @@ Amplify.configure({
   },
 });
 
+const darkTheme = createTheme({
+  name: "dark-liveness",
+  overrides: [
+    {
+      colorMode: "dark",
+      tokens: {
+        colors: {
+          background: {
+            primary: { value: "#0f0f0f" },
+            secondary: { value: "#1a1a1a" },
+          },
+          font: {
+            primary: { value: "#ffffff" },
+            secondary: { value: "#a0a0a0" },
+          },
+          border: {
+            primary: { value: "#2a2a2a" },
+          },
+        },
+        components: {
+          button: {
+            primary: {
+              backgroundColor: { value: "#6366f1" },
+              color: { value: "#ffffff" },
+            },
+          },
+        },
+      },
+    },
+  ],
+});
+
 function App() {
   const params    = new URLSearchParams(window.location.search);
   const sessionId = params.get("sessionId");
 
-  const [status, setStatus] = useState("ready"); // ready | done | error
+  const [status, setStatus] = useState("ready");
   const [errorDetail, setErrorDetail] = useState("");
 
   useEffect(() => {
@@ -66,12 +99,14 @@ function App() {
 
   return (
     <div style={styles.container}>
-      <FaceLivenessDetector
-        sessionId={sessionId}
-        region="eu-west-1"
-        onAnalysisComplete={handleAnalysisComplete}
-        onError={handleError}
-      />
+      <ThemeProvider theme={darkTheme} colorMode="dark">
+        <FaceLivenessDetector
+          sessionId={sessionId}
+          region="eu-west-1"
+          onAnalysisComplete={handleAnalysisComplete}
+          onError={handleError}
+        />
+      </ThemeProvider>
     </div>
   );
 }
@@ -81,14 +116,14 @@ const styles = {
     width: "100vw",
     height: "100vh",
     overflow: "hidden",
-    backgroundColor: "#000",
+    backgroundColor: "#0f0f0f",
   },
   center: {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     height: "100vh",
-    backgroundColor: "#000",
+    backgroundColor: "#0f0f0f",
   },
   errorText: {
     color: "#ef4444",

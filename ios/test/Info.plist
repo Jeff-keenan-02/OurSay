@@ -3,6 +3,8 @@
 <plist version="1.0">
 <dict>
 	<key>NSCameraUsageDescription</key>
+	<string>Camera access is needed to capture your passport</string>
+	<key>NSCameraUsageDescription</key>
 	<string>This app uses the camera to verify your identity.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
