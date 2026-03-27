@@ -1,7 +1,8 @@
 import React, { useState, useContext } from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity, PermissionsAndroid, Platform } from "react-native";
 import { Text, ActivityIndicator, useTheme } from "react-native-paper";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import Geolocation from "@react-native-community/geolocation";
 import { Screen } from "../../layout/Screen";
 import { spacing } from "../../theme/spacing";
 import { AuthContext } from "../../context/AuthContext";
@@ -10,26 +11,61 @@ import { VERIFICATION_TIERS } from "../../types/verification";
 
 const COLOR = VERIFICATION_TIERS[3].color;
 
-type State = "idle" | "checking" | "success" | "failed";
+type State = "idle" | "locating" | "checking" | "success" | "failed";
 
 export default function ResidenceCaptureScreen({ navigation }: any) {
   const { user, updateUser } = useContext(AuthContext);
   const api = useApiClient();
   const theme = useTheme();
   const [state, setState] = useState<State>("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const runCheck = async () => {
     if (!user) return;
-    setState("checking");
+    setErrorMessage("");
+    setState("locating");
+
     try {
-      const data = await api.post<{ verified: boolean; level?: number }>("/verify/residence");
-      if (data.verified) {
-        updateUser({ verification_tier: 3 });
-        setState("success");
-      } else {
-        setState("failed");
+      if (Platform.OS === "android") {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+        );
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          setErrorMessage("Location permission is required to verify residency.");
+          setState("failed");
+          return;
+        }
       }
+
+      Geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          setState("checking");
+          try {
+            const data = await api.post<{ verified: boolean; level?: number }>(
+              "/verify/residence",
+              { latitude, longitude }
+            );
+            if (data.verified) {
+              updateUser({ verification_tier: 3 });
+              setState("success");
+            } else {
+              setErrorMessage("Your location does not appear to be within Ireland.");
+              setState("failed");
+            }
+          } catch (err: any) {
+            setErrorMessage(err?.message || "Verification failed. Please try again.");
+            setState("failed");
+          }
+        },
+        (err) => {
+          setErrorMessage("Could not get your location. Please allow location access and try again.");
+          setState("failed");
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      );
     } catch {
+      setErrorMessage("Something went wrong. Please try again.");
       setState("failed");
     }
   };
@@ -64,14 +100,24 @@ export default function ResidenceCaptureScreen({ navigation }: any) {
     <Screen scroll showBack title="Network Check" subtitle="Confirming your location via network signals">
       {/* Status area */}
       <View style={[styles.statusArea, { backgroundColor: theme.colors.surface, borderColor: state === "failed" ? "#ef444440" : COLOR + "25" }]}>
-        {state === "checking" ? (
+        {state === "locating" ? (
           <View style={styles.checkingContent}>
             <ActivityIndicator size="large" color={COLOR} />
             <Text variant="titleSmall" style={{ color: theme.colors.onSurface, fontWeight: "600", marginTop: spacing.md }}>
-              Running check…
+              Getting your location…
             </Text>
             <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, textAlign: "center" }}>
-              Analysing network signals. This only takes a moment.
+              Please allow location access when prompted.
+            </Text>
+          </View>
+        ) : state === "checking" ? (
+          <View style={styles.checkingContent}>
+            <ActivityIndicator size="large" color={COLOR} />
+            <Text variant="titleSmall" style={{ color: theme.colors.onSurface, fontWeight: "600", marginTop: spacing.md }}>
+              Verifying location…
+            </Text>
+            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, textAlign: "center" }}>
+              Confirming you are within Ireland.
             </Text>
           </View>
         ) : state === "failed" ? (
@@ -81,33 +127,33 @@ export default function ResidenceCaptureScreen({ navigation }: any) {
               Check did not pass
             </Text>
             <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, textAlign: "center", lineHeight: 18 }}>
-              We could not confirm your location. Make sure you are connected to your usual local network and try again.
+              {errorMessage || "We could not confirm your location is within Ireland."}
             </Text>
           </View>
         ) : (
           <View style={styles.checkingContent}>
             <View style={[styles.iconCircle, { backgroundColor: COLOR + "18" }]}>
-              <MaterialCommunityIcons name="wifi" size={40} color={COLOR} />
+              <MaterialCommunityIcons name="map-marker" size={40} color={COLOR} />
             </View>
             <Text variant="titleSmall" style={{ color: theme.colors.onSurface, fontWeight: "600", marginTop: spacing.md }}>
               Ready to check
             </Text>
             <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, textAlign: "center", lineHeight: 18 }}>
-              Tap the button below to run the network check. Make sure you are on your usual home or local Wi-Fi.
+              Tap below to confirm your location. Your device GPS will be used once and no location data is stored.
             </Text>
           </View>
         )}
       </View>
 
       {/* CTA */}
-      {state !== "checking" && (
+      {state !== "locating" && state !== "checking" && (
         <TouchableOpacity
           style={[styles.cta, { backgroundColor: state === "failed" ? "#ef4444" : COLOR }]}
           onPress={runCheck}
           activeOpacity={0.85}
         >
-          <Text style={styles.ctaText}>{state === "failed" ? "Try Again" : "Run Network Check"}</Text>
-          <MaterialCommunityIcons name="arrow-right" size={18} color="#fff" />
+          <Text style={styles.ctaText}>{state === "failed" ? "Try Again" : "Verify My Location"}</Text>
+          <MaterialCommunityIcons name="map-marker-check" size={18} color="#fff" />
         </TouchableOpacity>
       )}
     </Screen>

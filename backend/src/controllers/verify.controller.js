@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const axios = require('axios');
 const pool = require('../db/pool');
 const {
   RekognitionClient,
@@ -312,20 +311,19 @@ exports.verifyResidence = async (req, res) => {
       return res.json({ verified: true, level: 3, score: 100, mock: true });
     }
 
-    // Real mode — IP geolocation check
-    let score = 40;
+    // GPS bounding box for Ireland
+    const { latitude, longitude } = req.body;
 
-    const rawIp =
-      req.headers['x-forwarded-for']?.split(',')[0] ||
-      req.socket.remoteAddress;
-    const ip = rawIp?.replace('::ffff:', '');
-
-    const geo = await axios.get(`https://ipapi.co/${ip}/json/`);
-    if (geo.data.country === "IE") {
-      score += 40;
+    if (latitude === undefined || longitude === undefined) {
+      return res.status(400).json({ error: "Location coordinates are required" });
     }
 
-    const verified = score >= 80;
+    const inIreland = (
+      latitude >= 51.3 && latitude <= 55.5 &&
+      longitude >= -10.7 && longitude <= -5.9
+    );
+
+    const verified = inIreland;
 
     if (verified) {
       await pool.query(
