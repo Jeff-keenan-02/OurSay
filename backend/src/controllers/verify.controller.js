@@ -173,6 +173,15 @@ exports.verifyPassport = async (req, res) => {
       }
     }
 
+    // Log all fields returned by Textract for debugging
+    console.log("Textract raw fields:", JSON.stringify(
+      doc.IdentityDocumentFields.map(f => ({
+        key: f.Type?.Text,
+        value: f.ValueDetection?.Text,
+        confidence: f.ValueDetection?.Confidence,
+      }))
+    ));
+
     const documentNumber = fields["DOCUMENT_NUMBER"];
     const dateOfBirth = fields["DATE_OF_BIRTH"];
     const expirationDate = fields["EXPIRATION_DATE"];
