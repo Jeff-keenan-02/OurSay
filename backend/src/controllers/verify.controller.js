@@ -185,10 +185,17 @@ exports.verifyPassport = async (req, res) => {
       .update(proofString)
       .digest("hex");
 
-    // Use real expiry if detected, otherwise default to 10 years
-    const expiresAt = expirationDate
+    // Parse expiry and reject if passport is expired
+    const passportExpiry = expirationDate
       ? new Date(expirationDate)
       : new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000);
+
+    if (expirationDate && passportExpiry < new Date()) {
+      return res.status(400).json({ error: "Passport has expired — please use a valid passport" });
+    }
+
+    const sixMonthsFromNow = new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000);
+    const expiresAt = passportExpiry < sixMonthsFromNow ? passportExpiry : sixMonthsFromNow;
 
     await pool.query(
       `INSERT INTO verifications (user_id, type, level, passport_hash, issued_at, expires_at)

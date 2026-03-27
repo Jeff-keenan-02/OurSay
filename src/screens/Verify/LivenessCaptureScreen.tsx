@@ -10,7 +10,7 @@ import { useApiClient } from "../../hooks/common/useApiClient";
 import { VERIFICATION_TIERS } from "../../types/verification";
 
 const COLOR = VERIFICATION_TIERS[1].color;
-const LIVENESS_BASE_URL = "https://eleven-peaches-stop.loca.lt/liveness/";
+const LIVENESS_BASE_URL = "https://oursay-0ixb.onrender.com/liveness/";
 
 type State = "loading" | "ready" | "checking" | "success" | "error";
 
