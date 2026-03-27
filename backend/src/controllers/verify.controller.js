@@ -145,15 +145,21 @@ exports.verifyPassport = async (req, res) => {
     }
 
     // Real AWS Textract AnalyzeID
-    const command = new AnalyzeIDCommand({
-      DocumentPages: [{ Bytes: req.file.buffer }],
-    });
+    let textractResult;
+    try {
+      const command = new AnalyzeIDCommand({
+        DocumentPages: [{ Bytes: req.file.buffer }],
+      });
+      textractResult = await textract.send(command);
+    } catch (textractErr) {
+      console.error("Textract error:", textractErr);
+      return res.status(400).json({ error: "Could not analyse image — please upload a clear photo of your passport" });
+    }
 
-    const textractResult = await textract.send(command);
     const doc = textractResult.IdentityDocuments?.[0];
 
     if (!doc) {
-      return res.status(400).json({ error: "No identity document detected in image" });
+      return res.status(400).json({ error: "No identity document detected — please upload a clear photo of your passport" });
     }
 
     // Extract fields by type
@@ -185,10 +191,19 @@ exports.verifyPassport = async (req, res) => {
       .update(proofString)
       .digest("hex");
 
-    // Parse expiry and reject if passport is expired
-    const passportExpiry = expirationDate
-      ? new Date(expirationDate)
-      : new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000);
+    // Textract returns dates as MM/DD/YYYY — parse safely
+    function parseTextractDate(str) {
+      if (!str) return null;
+      const parts = str.split("/");
+      if (parts.length === 3) {
+        const [month, day, year] = parts;
+        return new Date(`${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`);
+      }
+      return new Date(str);
+    }
+
+    const passportExpiry = parseTextractDate(expirationDate)
+      || new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000);
 
     if (expirationDate && passportExpiry < new Date()) {
       return res.status(400).json({ error: "Passport has expired — please use a valid passport" });

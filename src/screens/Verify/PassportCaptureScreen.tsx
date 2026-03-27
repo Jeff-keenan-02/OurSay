@@ -13,7 +13,7 @@ const COLOR = VERIFICATION_TIERS[2].color;
 export default function PassportCaptureScreen({ navigation }: any) {
   const theme = useTheme();
   const { updateUser } = useContext(AuthContext);
-  const { photo, loading, capturePassport, uploadPassport } = usePassportVerification();
+  const { photo, loading, error, capturePassport, uploadPassport } = usePassportVerification();
   const [success, setSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -24,7 +24,7 @@ export default function PassportCaptureScreen({ navigation }: any) {
       updateUser({ verification_tier: data.level });
       setSuccess(true);
     } else {
-      setErrorMessage("Passport verification failed. Ensure the MRZ lines are fully visible and try again.");
+      setErrorMessage(error || "Passport verification failed. Please try again.");
     }
   };
 
