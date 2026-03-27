@@ -1,19 +1,20 @@
 const crypto = require('crypto');
 const axios = require('axios');
-const FormData = require('form-data');
-const mrz = require('mrz');
 const pool = require('../db/pool');
 const {
   RekognitionClient,
   CreateFaceLivenessSessionCommand,
   GetFaceLivenessSessionResultsCommand,
 } = require('@aws-sdk/client-rekognition');
+const {
+  TextractClient,
+  AnalyzeIDCommand,
+} = require('@aws-sdk/client-textract');
 
 require("dotenv").config({
   path: require("path").resolve(__dirname, "../../.env"),
 });
 
-const PASSPORT_FUNCTION_URL = process.env.PASSPORT_FUNCTION_URL;
 const IDENTITY_SALT = process.env.IDENTITY_SALT;
 
 // Toggle: true = mock (always passes), false = real AWS Rekognition
@@ -22,13 +23,16 @@ const MOCK_VERIFICATION = false;
 // Minimum confidence score (0-100) to pass liveness
 const LIVENESS_CONFIDENCE_THRESHOLD = 75;
 
-const rekognition = new RekognitionClient({
+const awsConfig = {
   region: process.env.AWS_REGION || 'eu-west-1',
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
-});
+};
+
+const rekognition = new RekognitionClient(awsConfig);
+const textract = new TextractClient(awsConfig);
 
 /* ------------------------------
    POST /verify/liveness/session
@@ -128,79 +132,72 @@ exports.verifyPassport = async (req, res) => {
 
     if (MOCK_VERIFICATION) {
       const proofHash = `mock_passport_${userId}`;
-
       await pool.query(
-        `
-        INSERT INTO verifications (
-          user_id, type, level, passport_hash, issued_at, expires_at
-        )
-        VALUES ($1, 'passport', 2, $2, NOW(), NOW() + INTERVAL '6 months')
-        `,
+        `INSERT INTO verifications (user_id, type, level, passport_hash, issued_at, expires_at)
+         VALUES ($1, 'passport', 2, $2, NOW(), NOW() + INTERVAL '6 months')`,
         [userId, proofHash]
       );
-
       await pool.query(
-        `
-        UPDATE users
-        SET verification_tier = GREATEST(verification_tier, 2)
-        WHERE id = $1
-        `,
+        `UPDATE users SET verification_tier = GREATEST(verification_tier, 2) WHERE id = $1`,
         [userId]
       );
-
       return res.json({ success: true, level: 2, type: "passport", mock: true });
     }
 
-    // Real cloud function
-    const form = new FormData();
-    form.append("file", req.file.buffer, {
-      filename: req.file.originalname || "passport.jpg",
-      contentType: req.file.mimetype || "image/jpeg",
+    // Real AWS Textract AnalyzeID
+    const command = new AnalyzeIDCommand({
+      DocumentPages: [{ Bytes: req.file.buffer }],
     });
 
-    const cfResponse = await axios.post(PASSPORT_FUNCTION_URL, form, {
-      headers: form.getHeaders(),
-      timeout: 60000,
-    });
+    const textractResult = await textract.send(command);
+    const doc = textractResult.IdentityDocuments?.[0];
 
-    const { mrz_lines } = cfResponse.data;
-    if (!mrz_lines || mrz_lines.length < 2) {
-      return res.status(400).json({ error: "MRZ not detected" });
+    if (!doc) {
+      return res.status(400).json({ error: "No identity document detected in image" });
     }
 
-    const mrzResult = mrz.parse(mrz_lines);
-    if (!mrzResult.valid) {
-      return res.status(400).json({ error: "MRZ validation failed", details: mrzResult.errors });
+    // Extract fields by type
+    const fields = {};
+    for (const field of doc.IdentityDocumentFields || []) {
+      const key = field.Type?.Text;
+      const value = field.ValueDetection?.Text;
+      const confidence = field.ValueDetection?.Confidence ?? 0;
+      if (key && value && confidence >= 70) {
+        fields[key] = value;
+      }
     }
 
-    const f = mrzResult.fields;
-    const proofString = `${f.documentNumber}|${f.issuingCountry}|${f.expirationDate}`;
+    const documentNumber = fields["DOCUMENT_NUMBER"];
+    const dateOfBirth = fields["DATE_OF_BIRTH"];
+    const expirationDate = fields["EXPIRATION_DATE"];
+
+    if (!documentNumber || !dateOfBirth) {
+      return res.status(400).json({ error: "Could not extract required passport fields — please use a clearer image" });
+    }
 
     if (!IDENTITY_SALT) {
       throw new Error("IDENTITY_SALT not set");
     }
 
+    const proofString = `${documentNumber}|${dateOfBirth}`;
     const proofHash = crypto
       .createHmac("sha256", IDENTITY_SALT)
       .update(proofString)
       .digest("hex");
 
+    // Use real expiry if detected, otherwise default to 10 years
+    const expiresAt = expirationDate
+      ? new Date(expirationDate)
+      : new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000);
+
     await pool.query(
-      `
-      INSERT INTO verifications (
-        user_id, type, level, passport_hash, issued_at, expires_at
-      )
-      VALUES ($1, 'passport', 2, $2, NOW(), NOW() + INTERVAL '10 years')
-      `,
-      [userId, proofHash]
+      `INSERT INTO verifications (user_id, type, level, passport_hash, issued_at, expires_at)
+       VALUES ($1, 'passport', 2, $2, NOW(), $3)`,
+      [userId, proofHash, expiresAt]
     );
 
     await pool.query(
-      `
-      UPDATE users
-      SET verification_tier = GREATEST(verification_tier, 2)
-      WHERE id = $1
-      `,
+      `UPDATE users SET verification_tier = GREATEST(verification_tier, 2) WHERE id = $1`,
       [userId]
     );
 
