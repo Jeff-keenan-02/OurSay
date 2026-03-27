@@ -319,8 +319,8 @@ exports.verifyResidence = async (req, res) => {
     }
 
     const inIreland = (
-      latitude >= 51.3 && latitude <= 55.5 &&
-      longitude >= -10.7 && longitude <= -5.9
+      latitude >= 51.0 && latitude <= 55.6 &&
+      longitude >= -11.0 && longitude <= -5.4
     );
 
     const verified = inIreland;

@@ -26,7 +26,9 @@ export default function ResidenceCaptureScreen({ navigation }: any) {
     setState("locating");
 
     try {
-      if (Platform.OS === "android") {
+      if (Platform.OS === "ios") {
+        Geolocation.requestAuthorization();
+      } else {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
         );
@@ -58,7 +60,7 @@ export default function ResidenceCaptureScreen({ navigation }: any) {
             setState("failed");
           }
         },
-        (err) => {
+        (_err) => {
           setErrorMessage("Could not get your location. Please allow location access and try again.");
           setState("failed");
         },
