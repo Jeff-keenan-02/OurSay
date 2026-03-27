@@ -76,7 +76,7 @@ exports.confirmLiveness = async (req, res) => {
     if (MOCK_VERIFICATION) {
       await pool.query(
         `INSERT INTO verifications (user_id, type, level, passport_hash, issued_at, expires_at)
-         VALUES ($1, 'liveness', 1, NULL, NOW(), NOW() + INTERVAL '1 year')`,
+         VALUES ($1, 'liveness', 1, NULL, NOW(), NOW() + INTERVAL '7 days')`,
         [userId]
       );
       await pool.query(
@@ -101,7 +101,7 @@ exports.confirmLiveness = async (req, res) => {
 
     await pool.query(
       `INSERT INTO verifications (user_id, type, level, passport_hash, issued_at, expires_at)
-       VALUES ($1, 'liveness', 1, NULL, NOW(), NOW() + INTERVAL '1 year')`,
+       VALUES ($1, 'liveness', 1, NULL, NOW(), NOW() + INTERVAL '7 days')`,
       [userId]
     );
 
@@ -227,7 +227,7 @@ exports.verifyPassport = async (req, res) => {
 
   } catch (err) {
     if (err.code === '23505') {
-      return res.status(409).json({ error: "This passport is already verified on another account" });
+      return res.status(409).json({ error: "This passport has already been used to verify another account" });
     }
     console.error("Passport verification failed:", err);
     return res.status(500).json({ error: "Passport verification failed" });
