@@ -314,6 +314,9 @@ exports.verifyResidence = async (req, res) => {
     // GPS bounding box for Ireland
     const { latitude, longitude } = req.body;
 
+    console.log("Residence check - received body:", JSON.stringify(req.body));
+    console.log("Residence check - lat:", latitude, "lng:", longitude);
+
     if (latitude === undefined || longitude === undefined) {
       return res.status(400).json({ error: "Location coordinates are required" });
     }
@@ -322,6 +325,8 @@ exports.verifyResidence = async (req, res) => {
       latitude >= 51.0 && latitude <= 55.6 &&
       longitude >= -11.0 && longitude <= -5.4
     );
+
+    console.log("Residence check - inIreland:", inIreland);
 
     const verified = inIreland;
 
@@ -346,7 +351,7 @@ exports.verifyResidence = async (req, res) => {
       );
     }
 
-    return res.json({ verified, level: verified ? 3 : 2, score });
+    return res.json({ verified, level: verified ? 3 : 2 });
 
   } catch (err) {
     console.error("Residence verification failed:", err);

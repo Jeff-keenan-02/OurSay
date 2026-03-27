@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location is checked once to confirm Irish residency</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Camera access is needed to capture your passport</string>
 	<key>NSCameraUsageDescription</key>

@@ -18,14 +18,14 @@ type Props = {
 export function TierBadge({ tier }: Props) {
   const theme = useTheme();
   const [visible, setVisible] = useState(false);
-  const { data, loading } = useVerificationSummary();
+  const { data, loading, reload } = useVerificationSummary();
 
   const tierInfo = VERIFICATION_TIERS[tier] ?? VERIFICATION_TIERS[0];
 
   return (
     <>
       <TouchableOpacity
-        onPress={() => setVisible(true)}
+        onPress={() => { setVisible(true); reload(); }}
         style={[
           styles.container,
           {
