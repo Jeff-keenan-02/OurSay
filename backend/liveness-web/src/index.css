@@ -8,6 +8,7 @@ html, body {
   width: 100%;
   height: 100%;
   background: #fff;
+  overflow: hidden;
 }
 
 #root {
@@ -15,5 +16,10 @@ html, body {
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+}
+
+/* Scale down the entire liveness detector to fit screen */
+[class*="amplify-liveness"] {
+  transform: scale(0.82);
+  transform-origin: top center;
 }
