@@ -27,12 +27,12 @@ services:
       DB_USER: oursay
       DB_PASSWORD: RILEY2015
       DB_NAME: oursaydb
-      JWT_SECRET: super_secret_dev_key
-      PASSWORD_SALT: dev_salt_change_me
-      AWS_REGION: eu-west-1
-      AWS_COGNITO_IDENTITY_POOL_ID: eu-west-1:0819e9c0-e9e6-448f-8969-ccb836debbce
-      AWS_ACCESS_KEY_ID: AKIAVDLVOSE5HKCSMB7O
-      AWS_SECRET_ACCESS_KEY: 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
+      JWT_SECRET: ${JWT_SECRET}
+      PASSWORD_SALT: ${PASSWORD_SALT}
+      AWS_REGION: ${AWS_REGION}
+      AWS_COGNITO_IDENTITY_POOL_ID: ${AWS_COGNITO_IDENTITY_POOL_ID}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
     ports:
       - "3000:3000"
 
