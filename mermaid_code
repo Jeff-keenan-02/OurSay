@@ -145,6 +145,82 @@
 config:
   theme: neo-dark
 ---
+flowchart TB
+    subgraph OurSay["OurSay Mobile System"]
+        subgraph Unverified["Tier 0 - Any User"]
+            UC1["Browse Polls"]
+            UC2["Browse Petitions"]
+            UC3["Browse Discussions"]
+            UC4["View Analytics"]
+        end
+        subgraph Liveness["Tier 1 - Liveness Verified"]
+            UC5["Comment on Discussions"]
+            UC6["Upvote / Downvote Discussions"]
+        end
+        subgraph Passport["Tier 2 - Passport Verified"]
+            UC7["Vote on Standard Polls"]
+            UC8["Sign Standard Petitions"]
+        end
+        subgraph Residence["Tier 3 - Residence Verified"]
+            UC9["Vote on High-Trust Polls"]
+            UC10["Sign Sensitive Petitions"]
+            UC11["Create Discussions"]
+            UC12["Create Petitions"]
+        end
+        subgraph Verification["Identity Verification Flow"]
+            UV1["Complete Liveness Check\n(AWS Rekognition)"]
+            UV2["Scan Passport\n(AWS Textract)"]
+            UV3["Confirm GPS Location\n(Ireland bounding box)"]
+        end
+    end
+    User --> UC1 & UC2 & UC3 & UC4
+    User --> UV1 --> UV2 --> UV3
+    UV1 --> UC5 & UC6
+    UV2 --> UC7 & UC8
+    UV3 --> UC9 & UC10 & UC11 & UC12
+    Admin --> UC1 & UC2 & UC3
+
+
+---
+config:
+  theme: neo-dark
+---
+sequenceDiagram
+    actor User
+    participant RN as React Native App
+    participant WV as Liveness WebView
+    participant LW as Liveness Web App
+    participant API as Backend
+    participant REK as AWS Rekognition
+    participant DB as PostgreSQL
+
+    User ->> RN: Tap Start Liveness Check
+    RN ->> API: POST /verify/liveness/session
+    API ->> REK: CreateFaceLivenessSessionCommand
+    REK -->> API: SessionId
+    API -->> RN: sessionId
+    RN ->> WV: Open WebView with sessionId param
+    WV ->> LW: Load liveness web app
+    LW ->> REK: FaceLivenessDetector SDK (disableStartScreen)
+    REK ->> REK: Streaming liveness challenge
+    User ->> REK: Follow on-screen face prompts
+    REK -->> LW: onAnalysisComplete
+    LW -->> WV: postMessage(sessionId)
+    WV -->> RN: onMessage(sessionId)
+    RN ->> API: POST /verify/liveness/confirm (sessionId)
+    API ->> REK: GetFaceLivenessSessionResultsCommand
+    REK -->> API: Confidence score
+    API ->> API: Check confidence >= 75%
+    API ->> DB: INSERT verifications (type=liveness, level=1, expires_at = +7 days)
+    API ->> DB: UPDATE users SET verification_tier = GREATEST(tier, 1)
+    API -->> RN: Success - level 1 granted
+    RN -->> User: Liveness verified
+
+
+---
+config:
+  theme: neo-dark
+---
 sequenceDiagram
     actor User
     participant RN as React Native App
@@ -168,19 +244,20 @@ sequenceDiagram
     actor User
     participant RN as React Native App
     participant API as Backend
-    participant CF as Google Cloud Function
+    participant TX as AWS Textract
     participant DB as PostgreSQL
 
-    User ->> RN: Capture passport image
-    RN ->> API: POST /verify/passport (multipart)
-    API ->> CF: Forward image (no local storage)
-    CF ->> CF: Google Cloud Vision OCR
-    CF ->> CF: Extract and filter MRZ lines
-    CF -->> API: MRZ lines
-    API ->> API: Parse and validate MRZ checksums
-    API ->> API: HMAC-SHA256(documentNumber|country|expiry, SALT)
-    API ->> DB: INSERT verifications (type=passport, level=2, passport_hash)
-    DB -->> API: Constraint check - unique active passport hash
+    User ->> RN: Capture passport photo (Vision Camera)
+    RN ->> API: POST /verify/passport (multipart image)
+    API ->> TX: AnalyzeID - image bytes
+    TX ->> TX: Extract identity document fields
+    TX -->> API: IdentityDocumentFields (document number, DOB, expiry, confidence scores)
+    API ->> API: Filter fields by confidence >= 70%
+    API ->> API: Parse expiry date (Irish bilingual + MM/DD/YYYY formats)
+    API ->> API: Reject if passport expired
+    API ->> API: HMAC-SHA256(documentNumber|dateOfBirth, SALT)
+    API ->> DB: INSERT verifications (type=passport, level=2, passport_hash, expires_at)
+    DB -->> API: Unique constraint check - reject if duplicate passport hash
     API ->> DB: UPDATE users SET verification_tier = GREATEST(tier, 2)
     API -->> RN: Success - level 2 granted
     RN -->> User: Passport verified
@@ -226,12 +303,16 @@ flowchart LR
     subgraph Device["User Device"]
         RN["React Native App
         iOS + Android"]
+        WV["Liveness WebView
+        (AWS Amplify UI)"]
     end
 
     subgraph Backend["Backend Server - Render"]
         API["Node.js / Express
         Routes · Controllers
         Middleware · Services"]
+        LW["Liveness Web App
+        (Vite + React)"]
     end
 
     subgraph Database["Data Layer"]
@@ -239,19 +320,34 @@ flowchart LR
         Database")]
     end
 
-    subgraph Cloud["Google Cloud"]
-        CF1["Cloud Function
-        Passport OCR"]
-        CF2["Cloud Function
-        Liveness Detection"]
+    subgraph AWS["AWS"]
+        REK["Rekognition
+        Face Liveness"]
+        TX["Textract
+        AnalyzeID"]
     end
 
     RN -- "HTTPS / JSON" --> API
+    RN -- "WebView" --> LW
+    LW -- "FaceLivenessDetector SDK" --> REK
     API -- "SQL Queries" --> PG
-    API -- "Image Upload" --> CF1
-    API -- "Image Upload" --> CF2
-    CF1 -- "MRZ Lines" --> API
-    CF2 -- "Liveness Result" --> API
+    API -- "CreateFaceLivenessSession\nGetFaceLivenessSessionResults" --> REK
+    API -- "AnalyzeID - image bytes" --> TX
+    TX -- "Identity document fields" --> API
+    REK -- "Session ID" --> API
+
+    style RN fill:#1e3a8a,stroke:#3b82f6,color:#fff
+    style WV fill:#1e3a8a,stroke:#3b82f6,color:#fff
+    style API fill:#14532d,stroke:#22c55e,color:#fff
+    style LW fill:#14532d,stroke:#22c55e,color:#fff
+    style PG fill:#7f1d1d,stroke:#ef4444,color:#fff
+    style REK fill:#713f12,stroke:#eab308,color:#fff
+    style TX fill:#713f12,stroke:#eab308,color:#fff
+
+    style Device fill:#0f172a,stroke:#3b82f6,color:#93c5fd
+    style Backend fill:#0f172a,stroke:#22c55e,color:#86efac
+    style Database fill:#0f172a,stroke:#ef4444,color:#fca5a5
+    style AWS fill:#0f172a,stroke:#eab308,color:#fde047
 
 
 ---
@@ -276,7 +372,7 @@ flowchart TB
         Vote in standard polls
         Sign standard petitions
         Duplicate prevention via passport hash
-        Expires after 10 years"]
+        Expires after 6 months or passport expiry"]
     end
     subgraph T3["Tier 3 - Residence Verification"]
         D["All Tier 2 access
