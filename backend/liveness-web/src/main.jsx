@@ -42,7 +42,7 @@ function App() {
 
   function handleError(error) {
     console.error("Liveness error:", error);
-    const msg = error?.state || error?.message || JSON.stringify(error) || "Liveness check failed";
+    const msg = [error?.name, error?.state, error?.message, error?.error?.message].filter(Boolean).join(" | ") || "Liveness check failed";
     setErrorDetail(msg);
     setStatus("error");
     postToApp({ type: "LIVENESS_ERROR", message: msg });
