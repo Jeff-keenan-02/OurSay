@@ -21,7 +21,7 @@ const MOCK_VERIFICATION = false;
 
 // Minimum confidence score (0-100) to pass liveness
 const LIVENESS_CONFIDENCE_THRESHOLD = 75;
-
+ 
 const awsConfig = {
   region: process.env.AWS_REGION || 'eu-west-1',
   credentials: {
@@ -48,14 +48,16 @@ exports.createLivenessSession = async (req, res) => {
       return res.json({ sessionId: `mock-session-${userId}` });
     }
 
+    console.log('[LIVENESS] Creating session. region=', awsConfig.region, 'keyPrefix=', (process.env.AWS_ACCESS_KEY_ID || '').slice(0, 6), 'hasSecret=', !!process.env.AWS_SECRET_ACCESS_KEY);
     const command = new CreateFaceLivenessSessionCommand({});
     const response = await rekognition.send(command);
+    console.log('[LIVENESS] Session created:', response.SessionId);
 
     return res.json({ sessionId: response.SessionId });
 
   } catch (err) {
-    console.error('Failed to create liveness session:', err);
-    return res.status(500).json({ error: 'Failed to create liveness session' });
+    console.error('[LIVENESS] Failed to create liveness session:', err?.name, err?.message, err);
+    return res.status(500).json({ error: 'Failed to create liveness session', detail: err?.name || err?.message });
   }
 };
 
