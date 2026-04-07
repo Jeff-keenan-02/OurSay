@@ -12,7 +12,7 @@ exports.votePoll = async ({ userId, pollId, choice }) => {
       throw new Error('Invalid choice');
     }
 
-    // 1️⃣ Validate tier + get passport proof
+    // 1. Validate tier + get passport proof
     const { effectiveTier, passportHash } = await verificationService.getVotingIdentity(userId);
 
     const pollResult = await client.query(
@@ -43,14 +43,14 @@ exports.votePoll = async ({ userId, pollId, choice }) => {
       throw new Error('Active passport verification required');
     }
 
-    // 2️⃣ Enforce one passport per poll
+    // 2. Enforce one passport per poll
     await client.query(
       `INSERT INTO poll_identity_usage (poll_id, passport_hash)
        VALUES ($1, $2)`,
       [pollId, passportHash]
     );
 
-    // 3️⃣ Generate anonymous vote token
+    // 3. Generate anonymous vote token
     const token = generateActionToken();
 
     await client.query(
@@ -60,7 +60,7 @@ exports.votePoll = async ({ userId, pollId, choice }) => {
       [token, pollId]
     );
 
-    // 4️⃣ Store vote anonymously
+    // 4. Store vote anonymously
     await client.query(
       `INSERT INTO poll_votes (poll_id, token_hash, choice)
        VALUES ($1, $2, $3)`,
@@ -74,7 +74,7 @@ exports.votePoll = async ({ userId, pollId, choice }) => {
       [token]
     );
 
-    // 5️⃣ UI-only participation tracking
+    // 5. UI-only participation tracking
     await client.query(
       `INSERT INTO poll_participation (user_id, poll_id)
        VALUES ($1, $2)

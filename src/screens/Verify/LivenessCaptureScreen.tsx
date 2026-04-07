@@ -57,7 +57,7 @@ export default function LivenessCaptureScreen({ navigation }: any) {
   function handleWebViewMessage(event: any) {
     try {
       const data = JSON.parse(event.nativeEvent.data);
-if (data.type === "LIVENESS_COMPLETE" && data.success && data.sessionId) {
+      if (data.type === "LIVENESS_COMPLETE" && data.success && data.sessionId) {
         confirmSession(data.sessionId);
         return;
       }

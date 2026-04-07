@@ -13,7 +13,7 @@ CREATE TABLE users (
   verification_tier SMALLINT NOT NULL DEFAULT 0 CHECK (verification_tier BETWEEN 0 AND 3),
   created_at TIMESTAMP DEFAULT NOW()
 );
-
+z
 --------------------------------------------------------------
 -- Topics
 --------------------------------------------------------------

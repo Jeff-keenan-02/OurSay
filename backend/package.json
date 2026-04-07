@@ -12,7 +12,7 @@
     "collectCoverageFrom": [
       "src/services/**/*.js",
       "src/middleware/**/*.js",
-      "src/controllers/auth.controller.js"
+      "src/controllers/**/*.js"
     ]
   },
   "keywords": [],

@@ -24,10 +24,10 @@
 # }
 
 
-# ---
-# config:
-#   theme: neo-dark
-# ---
+---
+config:
+  theme: neo-dark
+---
 # sequenceDiagram
 #     actor User
 #     participant RN as React Native App
