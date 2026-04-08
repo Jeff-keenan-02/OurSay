@@ -31,13 +31,16 @@ export default function LivenessCaptureScreen({ navigation }: any) {
 
   async function createSession() {
     try {
+      console.log("[LIVENESS] createSession starting");
       setState("loading");
       setErrorMessage("");
       const response = await api.post<{ sessionId: string }>("/verify/liveness/session", {});
+      console.log("[LIVENESS] createSession success, sessionId=", response.sessionId);
       setSessionId(response.sessionId);
       setState("ready");
-    } catch (err) {
-      setErrorMessage("Could not start liveness session. Please try again.");
+    } catch (err: any) {
+      console.log("[LIVENESS] createSession failed:", err?.message, err);
+      setErrorMessage(err?.message || "Could not start liveness session. Please try again.");
       setState("error");
     }
   }
