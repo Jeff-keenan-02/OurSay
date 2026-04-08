@@ -39,9 +39,12 @@ const sts = new STSClient(awsConfig);
    GET /verify/debug-aws  (TEMPORARY — remove after debugging)
 ------------------------------ */
 exports.debugAws = async (req, res) => {
-  const keyId = process.env.AWS_ACCESS_KEY_ID || '';
-  const secret = process.env.AWS_SECRET_ACCESS_KEY || '';
+  const keyId = (process.env.AWS_ACCESS_KEY_ID_V2 || process.env.AWS_ACCESS_KEY_ID) || '';
+  const secret = (process.env.AWS_SECRET_ACCESS_KEY_V2 || process.env.AWS_SECRET_ACCESS_KEY) || '';
   const info = {
+    codeVersion: 'v3-with-v2-vars',
+    usingV2Key: !!process.env.AWS_ACCESS_KEY_ID_V2,
+    usingV2Secret: !!process.env.AWS_SECRET_ACCESS_KEY_V2,
     region: awsConfig.region,
     keyIdPrefix: keyId.slice(0, 6),
     keyIdLength: keyId.length,
