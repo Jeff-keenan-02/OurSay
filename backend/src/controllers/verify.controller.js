@@ -23,11 +23,21 @@ const MOCK_VERIFICATION = false;
 // Minimum confidence score (0-100) to pass liveness
 const LIVENESS_CONFIDENCE_THRESHOLD = 75;
  
+// Load AWS creds from Render Secret File if present, otherwise fall back to env vars.
+let secretFileCreds = null;
+try {
+  const fs = require('fs');
+  const raw = fs.readFileSync('/etc/secrets/aws-creds.json', 'utf8');
+  secretFileCreds = JSON.parse(raw);
+} catch (e) {
+  // file not present — fall back to env vars
+}
+
 const awsConfig = {
-  region: process.env.AWS_REGION || 'eu-west-1',
+  region: 'eu-west-1',
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID_V2 || process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY_V2 || process.env.AWS_SECRET_ACCESS_KEY,
+    accessKeyId: secretFileCreds?.accessKeyId || process.env.AWS_ACCESS_KEY_ID_V2 || process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: secretFileCreds?.secretAccessKey || process.env.AWS_SECRET_ACCESS_KEY_V2 || process.env.AWS_SECRET_ACCESS_KEY,
   },
 };
 
@@ -42,7 +52,8 @@ exports.debugAws = async (req, res) => {
   const keyId = (process.env.AWS_ACCESS_KEY_ID_V2 || process.env.AWS_ACCESS_KEY_ID) || '';
   const secret = (process.env.AWS_SECRET_ACCESS_KEY_V2 || process.env.AWS_SECRET_ACCESS_KEY) || '';
   const info = {
-    codeVersion: 'v3-with-v2-vars',
+    codeVersion: 'v4-with-secret-file',
+    usingSecretFile: !!secretFileCreds,
     usingV2Key: !!process.env.AWS_ACCESS_KEY_ID_V2,
     usingV2Secret: !!process.env.AWS_SECRET_ACCESS_KEY_V2,
     region: awsConfig.region,
