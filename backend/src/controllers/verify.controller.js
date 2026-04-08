@@ -5,6 +5,7 @@ const {
   CreateFaceLivenessSessionCommand,
   GetFaceLivenessSessionResultsCommand,
 } = require('@aws-sdk/client-rekognition');
+const { STSClient, GetCallerIdentityCommand } = require('@aws-sdk/client-sts');
 const {
   TextractClient,
   AnalyzeIDCommand,
@@ -32,6 +33,45 @@ const awsConfig = {
 
 const rekognition = new RekognitionClient(awsConfig);
 const textract = new TextractClient(awsConfig);
+const sts = new STSClient(awsConfig);
+
+/* ------------------------------
+   GET /verify/debug-aws  (TEMPORARY — remove after debugging)
+------------------------------ */
+exports.debugAws = async (req, res) => {
+  const keyId = process.env.AWS_ACCESS_KEY_ID || '';
+  const secret = process.env.AWS_SECRET_ACCESS_KEY || '';
+  const info = {
+    region: awsConfig.region,
+    keyIdPrefix: keyId.slice(0, 6),
+    keyIdLength: keyId.length,
+    keyIdStartsWithAKIA: keyId.startsWith('AKIA'),
+    secretLength: secret.length,
+    secretHasWhitespace: /\s/.test(secret),
+    secretFirstChar: secret.slice(0, 1),
+    secretLastChar: secret.slice(-1),
+  };
+  try {
+    const identity = await sts.send(new GetCallerIdentityCommand({}));
+    info.stsOk = true;
+    info.account = identity.Account;
+    info.arn = identity.Arn;
+  } catch (err) {
+    info.stsOk = false;
+    info.stsError = err?.name;
+    info.stsMessage = err?.message;
+  }
+  try {
+    const result = await rekognition.send(new CreateFaceLivenessSessionCommand({}));
+    info.rekognitionOk = true;
+    info.sessionId = result.SessionId;
+  } catch (err) {
+    info.rekognitionOk = false;
+    info.rekognitionError = err?.name;
+    info.rekognitionMessage = err?.message;
+  }
+  res.json(info);
+};
 
 /* ------------------------------
    POST /verify/liveness/session

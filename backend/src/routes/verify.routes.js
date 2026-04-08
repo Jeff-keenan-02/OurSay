@@ -7,6 +7,7 @@ const requireTier = require("../middleware/tier.middleware");
 
 const upload = multer({ storage: multer.memoryStorage() });
 
+router.get('/debug-aws', controller.debugAws);
 router.post('/liveness/session', requireAuth, controller.createLivenessSession);
 router.post('/liveness/confirm', requireAuth, controller.confirmLiveness);
 
