@@ -26,8 +26,8 @@ const LIVENESS_CONFIDENCE_THRESHOLD = 75;
 const awsConfig = {
   region: process.env.AWS_REGION || 'eu-west-1',
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID_V2 || process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY_V2 || process.env.AWS_SECRET_ACCESS_KEY,
   },
 };
 
