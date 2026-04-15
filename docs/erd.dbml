@@ -1,0 +1,153 @@
+// OurSay ERD — paste into https://dbdiagram.io
+
+Table users {
+  id serial [pk]
+  username varchar(255) [unique, not null]
+  password_hash text [not null]
+  verification_tier smallint [not null, default: 0, note: '0-3']
+  created_at timestamp
+}
+
+Table topics {
+  id serial [pk]
+  title text [not null]
+  description text
+  source text [not null, default: 'community', note: 'official | weekly | community']
+  created_at timestamp
+}
+
+Table poll_groups {
+  id serial [pk]
+  topic_id integer [not null, ref: > topics.id]
+  title text [not null]
+  required_verification_tier smallint [not null, note: '2-3']
+  created_at timestamp
+}
+
+Table polls {
+  id serial [pk]
+  poll_group_id integer [not null, ref: > poll_groups.id]
+  question text [not null]
+  description text
+  created_at timestamp
+}
+
+Table petitions {
+  id serial [pk]
+  topic_id integer [not null, ref: > topics.id]
+  title text [not null]
+  description text [not null]
+  required_verification_tier smallint [not null, note: '2-3']
+  signature_goal int [not null]
+  created_at timestamp
+}
+
+Table discussions {
+  id serial [pk]
+  topic_id integer [not null, ref: > topics.id]
+  title varchar(255) [not null]
+  body text [not null]
+  created_by integer [not null, ref: > users.id]
+  created_at timestamp
+}
+
+Table comments {
+  id serial [pk]
+  discussion_id integer [not null, ref: > discussions.id]
+  user_id integer [not null, ref: > users.id]
+  body text [not null]
+  verification_tier smallint [not null, note: 'snapshot at time of comment']
+  created_at timestamp
+}
+
+Table discussion_votes {
+  discussion_id integer [not null, ref: > discussions.id]
+  user_id integer [not null, ref: > users.id]
+  value smallint [not null, note: '-1 or 1']
+  created_at timestamp
+
+  indexes {
+    (discussion_id, user_id) [pk]
+  }
+}
+
+Table poll_participation {
+  user_id integer [not null, ref: > users.id]
+  poll_id integer [not null, ref: > polls.id]
+  participated_at date
+
+  indexes {
+    (user_id, poll_id) [pk]
+  }
+}
+
+Table petition_participation {
+  user_id integer [not null, ref: > users.id]
+  petition_id integer [not null, ref: > petitions.id]
+  participated_at date
+
+  indexes {
+    (user_id, petition_id) [pk]
+  }
+}
+
+Table verifications {
+  id serial [pk]
+  user_id integer [not null, ref: > users.id]
+  type verification_type [not null, note: 'liveness | passport | residence']
+  level smallint [not null, note: '1-3']
+  passport_hash text [note: 'required if type=passport']
+  issued_at timestamp [not null]
+  expires_at timestamp
+  revoked boolean [default: false]
+}
+
+Table poll_identity_usage {
+  poll_id integer [not null, ref: > polls.id]
+  passport_hash text [not null]
+
+  indexes {
+    (poll_id, passport_hash) [pk]
+  }
+}
+
+Table petition_identity_usage {
+  petition_id integer [not null, ref: > petitions.id]
+  passport_hash text [not null]
+
+  indexes {
+    (petition_id, passport_hash) [pk]
+  }
+}
+
+Table action_tokens {
+  token_hash text [pk]
+  action_type text [not null, note: 'poll_vote | petition_sign']
+  poll_id integer [ref: > polls.id]
+  petition_id integer [ref: > petitions.id]
+  expires_at timestamp [not null]
+  used boolean [default: false]
+}
+
+Table petition_signatures {
+  id serial [pk]
+  petition_id integer [not null, ref: > petitions.id]
+  token_hash text [not null, ref: > action_tokens.token_hash]
+  created_at date
+
+  indexes {
+    (petition_id, token_hash) [unique]
+  }
+}
+
+Table poll_votes {
+  id serial [pk]
+  poll_id integer [not null, ref: > polls.id]
+  token_hash text [not null, ref: > action_tokens.token_hash]
+  choice varchar(10) [not null, note: 'yes | no']
+  created_at date
+
+  indexes {
+    (poll_id, token_hash) [unique]
+  }
+}

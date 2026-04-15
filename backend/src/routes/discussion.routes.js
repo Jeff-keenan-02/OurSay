@@ -13,7 +13,8 @@ router.get('/weekly',requireAuth, controller.getWeeklyDiscussion);
 
 // Interactions
 router.post('/:id/comments',requireAuth, requireTier(1), controller.postComment);
-router.post('/:id/vote', requireAuth, controller.voteDiscussion);
+
+router.post('/:id/vote', requireAuth, requireTier(1), controller.voteDiscussion);
 
 router.post('/', requireAuth, requireTier(3), controller.createDiscussion);
 
@@ -21,3 +22,4 @@ router.post('/', requireAuth, requireTier(3), controller.createDiscussion);
 router.get('/:id', requireAuth, controller.getDiscussion);
 
 module.exports = router;
+

@@ -1,9 +1,6 @@
 import { useState, useCallback } from "react";
-
 import { useApiClient } from "../common/useApiClient";
-
 import { PhotoAsset } from "../../types/Photo";
-import { User } from "../../types/User";
 import { VerificationResponse } from "../../types/verification";
 
 
@@ -46,10 +43,10 @@ export function usePassportVerification(): UsePassportVerificationResult {
     setError(null);
   }, []);
 
+
   /* -------------------------------------------------
      Upload Passport
   --------------------------------------------------*/
-
   const uploadPassport = useCallback(async () => {
 
     if (!photo) {
@@ -74,7 +71,6 @@ export function usePassportVerification(): UsePassportVerificationResult {
         form
       );
       
-
       return data;
 
     } catch (err: any) {

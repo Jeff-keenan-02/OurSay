@@ -32,7 +32,7 @@ export default function DiscussionHomeScreen() {
      Mutations
   --------------------------------------------------*/
 
-const { vote } = useDiscussionVote(user, trendingQuery.updateData);
+const { vote, canVote } = useDiscussionVote(user, trendingQuery.updateData);
 
   /* -------------------------------------------------
      Navigation
@@ -101,6 +101,7 @@ const { vote } = useDiscussionVote(user, trendingQuery.updateData);
                 openDiscussion(item.id, item.title)
               }
               onVote={vote}
+              canVote={canVote}
             />
           )}
         />

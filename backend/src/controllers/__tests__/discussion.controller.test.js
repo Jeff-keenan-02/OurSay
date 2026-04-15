@@ -153,7 +153,7 @@ describe('getTrending', () => {
 describe('postComment', () => {
   test('returns 201 with comment on valid input', async () => {
     pool.query
-      .mockResolvedValueOnce({ rows: [{ verification_tier: 2 }] }) // user tier
+      .mockResolvedValueOnce({ rows: [{ tier: 2 }] }) // user effective tier (live query)
       .mockResolvedValueOnce({ rows: [{ id: 50, body: 'Hello', created_at: new Date(), verification_tier: 2 }] });
 
     const req = { user: { id: 1 }, params: { id: '10' }, body: { body: 'Hello' } };
@@ -181,7 +181,7 @@ describe('postComment', () => {
 
   test('snapshots user verification tier into the comment row', async () => {
     pool.query
-      .mockResolvedValueOnce({ rows: [{ verification_tier: 3 }] })
+      .mockResolvedValueOnce({ rows: [{ tier: 3 }] }) // user effective tier (live query)
       .mockResolvedValueOnce({ rows: [{ id: 51, body: 'Hello', created_at: new Date(), verification_tier: 3 }] });
 
     const req = { user: { id: 1 }, params: { id: '10' }, body: { body: 'Hello' } };

@@ -21,10 +21,11 @@ type RouteParams = {
   PetitionList: { topicId: number; title: string };
 };
 
-type FilterKey = "all" | "open" | "goal_met";
+type FilterKey = "all" | "signed" | "open" | "goal_met";
 
 const FILTERS = [
   { key: "all" as FilterKey,      label: "All"          },
+  { key: "signed" as FilterKey,   label: "Signed"       },
   { key: "open" as FilterKey,     label: "In Progress"  },
   { key: "goal_met" as FilterKey, label: "Goal Reached" },
 ];
@@ -63,13 +64,14 @@ export default function PetitionListScreen() {
         p.description?.toLowerCase().includes(search.toLowerCase());
       const matchFilter =
         filter === "all"      ? true :
+        filter === "signed"   ? p.has_signed :
         filter === "open"     ? p.progress < 1 :
         filter === "goal_met" ? p.progress >= 1 :
         true;
       const matchTier =
         tierFilter === "all"   ? true :
-        tierFilter === "tier2" ? p.required_verification_tier >= 2 :
-        tierFilter === "tier3" ? p.required_verification_tier >= 3 :
+        tierFilter === "tier2" ? p.required_verification_tier === 2 :
+        tierFilter === "tier3" ? p.required_verification_tier === 3 :
         true;
       return matchSearch && matchFilter && matchTier;
     });

@@ -110,9 +110,6 @@ export default function PollGroupCard({
             <Text style={[styles.metaText, { color: theme.colors.onSurfaceVariant }]}>
               {completed_polls}/{total_polls} questions
             </Text>
-            <Text style={[styles.metaText, { color: theme.colors.onSurfaceVariant }]}>
-              {(respondent_count ?? 0).toLocaleString()} participant{respondent_count === 1 ? "" : "s"}
-            </Text>
           </View>
 
           {onViewAnalytics && (

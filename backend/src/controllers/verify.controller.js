@@ -18,7 +18,7 @@ require("dotenv").config({
 const IDENTITY_SALT = process.env.IDENTITY_SALT;
 
 // Toggle: true = mock (always passes), false = real AWS Rekognition
-const MOCK_VERIFICATION = false;
+const MOCK_VERIFICATION = true;
 
 // Minimum confidence score (0-100) to pass liveness
 const LIVENESS_CONFIDENCE_THRESHOLD = 75;
@@ -45,47 +45,6 @@ const rekognition = new RekognitionClient(awsConfig);
 const textract = new TextractClient(awsConfig);
 const sts = new STSClient(awsConfig);
 
-/* ------------------------------
-   GET /verify/debug-aws  (TEMPORARY — remove after debugging)
------------------------------- */
-exports.debugAws = async (req, res) => {
-  const keyId = (process.env.AWS_ACCESS_KEY_ID_V2 || process.env.AWS_ACCESS_KEY_ID) || '';
-  const secret = (process.env.AWS_SECRET_ACCESS_KEY_V2 || process.env.AWS_SECRET_ACCESS_KEY) || '';
-  const info = {
-    codeVersion: 'v4-with-secret-file',
-    usingSecretFile: !!secretFileCreds,
-    usingV2Key: !!process.env.AWS_ACCESS_KEY_ID_V2,
-    usingV2Secret: !!process.env.AWS_SECRET_ACCESS_KEY_V2,
-    region: awsConfig.region,
-    keyIdPrefix: keyId.slice(0, 6),
-    keyIdLength: keyId.length,
-    keyIdStartsWithAKIA: keyId.startsWith('AKIA'),
-    secretLength: secret.length,
-    secretHasWhitespace: /\s/.test(secret),
-    secretFirstChar: secret.slice(0, 1),
-    secretLastChar: secret.slice(-1),
-  };
-  try {
-    const identity = await sts.send(new GetCallerIdentityCommand({}));
-    info.stsOk = true;
-    info.account = identity.Account;
-    info.arn = identity.Arn;
-  } catch (err) {
-    info.stsOk = false;
-    info.stsError = err?.name;
-    info.stsMessage = err?.message;
-  }
-  try {
-    const result = await rekognition.send(new CreateFaceLivenessSessionCommand({}));
-    info.rekognitionOk = true;
-    info.sessionId = result.SessionId;
-  } catch (err) {
-    info.rekognitionOk = false;
-    info.rekognitionError = err?.name;
-    info.rekognitionMessage = err?.message;
-  }
-  res.json(info);
-};
 
 /* ------------------------------
    POST /verify/liveness/session
@@ -102,10 +61,8 @@ exports.createLivenessSession = async (req, res) => {
       return res.json({ sessionId: `mock-session-${userId}` });
     }
 
-    console.log('[LIVENESS] Creating session. region=', awsConfig.region, 'keyPrefix=', (process.env.AWS_ACCESS_KEY_ID || '').slice(0, 6), 'hasSecret=', !!process.env.AWS_SECRET_ACCESS_KEY);
     const command = new CreateFaceLivenessSessionCommand({});
     const response = await rekognition.send(command);
-    console.log('[LIVENESS] Session created:', response.SessionId);
 
     return res.json({ sessionId: response.SessionId });
 
@@ -199,7 +156,7 @@ exports.verifyPassport = async (req, res) => {
       return res.json({ success: true, level: 2, type: "passport", mock: true });
     }
 
-    // Real AWS Textract AnalyzeID
+    // AWS Textract AnalyzeID
     let textractResult;
     try {
       const command = new AnalyzeIDCommand({
@@ -228,11 +185,10 @@ exports.verifyPassport = async (req, res) => {
       }
     }
 
-    // Log all fields returned by Textract for debugging
-    console.log("Textract raw fields:", JSON.stringify(
+    // Log only field keys and confidence scores for debugging — never the extracted values (PII)
+    console.log("Textract fields extracted:", JSON.stringify(
       doc.IdentityDocumentFields.map(f => ({
         key: f.Type?.Text,
-        value: f.ValueDetection?.Text,
         confidence: f.ValueDetection?.Confidence,
       }))
     ));

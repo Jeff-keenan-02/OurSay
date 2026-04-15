@@ -13,6 +13,7 @@ type Props = {
   item: DiscussionListItem;
   onPress: () => void;
   onVote: (id: number, direction: "up" | "down") => void;
+  canVote?: boolean;
 };
 
 function formatDate(dateStr: string): string {
@@ -21,12 +22,13 @@ function formatDate(dateStr: string): string {
   return date.toLocaleDateString("en-IE", { day: "numeric", month: "short", year: "numeric" });
 }
 
-export default function DiscussionListCard({ item, onPress, onVote }: Props) {
+export default function DiscussionListCard({ item, onPress, onVote, canVote = true }: Props) {
   const theme = useTheme();
   const tier = item.verification_tier as VerificationTier | undefined;
   const [myVote, setMyVote] = useState<"up" | "down" | null>(null);
 
   const handleVote = (direction: "up" | "down") => {
+    if (!canVote) return;
     if (myVote === direction) return; // already voted this way
     setMyVote(direction);
     onVote(item.id, direction);
@@ -73,8 +75,13 @@ export default function DiscussionListCard({ item, onPress, onVote }: Props) {
 
         <View style={styles.actionsRow}>
           <TouchableOpacity
-            style={[styles.voteAction, upActive && { ...styles.voteActiveBox, borderColor: theme.colors.primary + "60", backgroundColor: theme.colors.primary + "18" }]}
+            style={[
+              styles.voteAction,
+              upActive && { ...styles.voteActiveBox, borderColor: theme.colors.primary + "60", backgroundColor: theme.colors.primary + "18" },
+              !canVote && { opacity: 0.4 },
+            ]}
             onPress={() => handleVote("up")}
+            disabled={!canVote}
           >
             <MaterialCommunityIcons
               name={upActive ? "thumb-up" : "thumb-up-outline"}
@@ -85,8 +92,13 @@ export default function DiscussionListCard({ item, onPress, onVote }: Props) {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.voteAction, downActive && { ...styles.voteActiveBox, borderColor: "#f87171" + "60", backgroundColor: "#f87171" + "18" }]}
+            style={[
+              styles.voteAction,
+              downActive && { ...styles.voteActiveBox, borderColor: "#f87171" + "60", backgroundColor: "#f87171" + "18" },
+              !canVote && { opacity: 0.4 },
+            ]}
             onPress={() => handleVote("down")}
+            disabled={!canVote}
           >
             <MaterialCommunityIcons
               name={downActive ? "thumb-down" : "thumb-down-outline"}

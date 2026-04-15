@@ -188,13 +188,15 @@ exports.postComment = async (req, res) => {
   }
 
   try {
-    //  get user's current verification tier
+    //  get user's effective verification tier (live query, respects revocation/expiry)
     const userResult = await pool.query(
-      `SELECT verification_tier FROM users WHERE id = $1`,
+      `SELECT COALESCE(MAX(level), 0) AS tier
+       FROM verifications
+       WHERE user_id = $1 AND revoked = false AND expires_at > NOW()`,
       [userId]
     );
 
-    const verificationTier = userResult.rows[0]?.verification_tier ?? 0;
+    const verificationTier = Number(userResult.rows[0]?.tier ?? 0);
 
     const result = await pool.query(
       `

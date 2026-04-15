@@ -12,7 +12,7 @@ export type TierInfo = {
 
 export const VERIFICATION_TIERS: Record<VerificationTier, TierInfo> = {
   0: {
-    label: "Unverified",
+    label: "Tier 0",
     description: "Read-only access",
     icon: "shield-outline",
     color: "#6b7280",
@@ -30,7 +30,8 @@ export const VERIFICATION_TIERS: Record<VerificationTier, TierInfo> = {
     color: "#f97316",
     next: "Verify passport",
     permissions: [
-      "Comment on discussions"
+      "Comment on discussions",
+      "Vote on discussions",
     ],
   },
 

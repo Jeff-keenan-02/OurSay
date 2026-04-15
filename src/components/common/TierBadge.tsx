@@ -20,7 +20,8 @@ export function TierBadge({ tier }: Props) {
   const [visible, setVisible] = useState(false);
   const { data, loading, reload } = useVerificationSummary();
 
-  const tierInfo = VERIFICATION_TIERS[tier] ?? VERIFICATION_TIERS[0];
+  const effectiveTier = (data?.currentTier ?? tier) as VerificationTier;
+  const tierInfo = VERIFICATION_TIERS[effectiveTier] ?? VERIFICATION_TIERS[0];
 
   return (
     <>
@@ -46,7 +47,7 @@ export function TierBadge({ tier }: Props) {
           variant="labelMedium"
           style={[styles.text, { color: tierInfo.color }]}
         >
-          Tier {tier}
+          Tier {effectiveTier}
         </Text>
       </TouchableOpacity>
 
@@ -62,7 +63,7 @@ export function TierBadge({ tier }: Props) {
               <ActivityIndicator style={{ padding: 32 }} />
             ) : (
               <TierAccessCard
-                tier={tier}
+                tier={effectiveTier}
                 expiresAt={data?.expiresAt ?? null}
               />
             )}

@@ -19,6 +19,7 @@ type Props = {
   onPress: () => void;
   onVote?: (id: number, direction: "up" | "down") => void;
   onViewAnalytics?: () => void;
+  canVote?: boolean;
 };
 
 export default function TrendingEngagementCard({
@@ -26,6 +27,7 @@ export default function TrendingEngagementCard({
   onPress,
   onVote,
   onViewAnalytics,
+  canVote = true,
 }: Props) {
   const theme = useTheme();
   const meta = CONTENT_TYPES[data.type as ContentType] ?? CONTENT_TYPES.poll;
@@ -78,8 +80,8 @@ export default function TrendingEngagementCard({
       case "discussion":
         return (
           <View style={styles.metricsRow}>
-            <Metric icon="thumb-up"   value={data.upvotes}      onPress={() => onVote?.(data.id, "up")}   color={theme.colors.primary} />
-            <Metric icon="thumb-down" value={data.downvotes}    onPress={() => onVote?.(data.id, "down")} color={theme.colors.primary} />
+            <Metric icon="thumb-up"   value={data.upvotes}      onPress={canVote ? () => onVote?.(data.id, "up")   : undefined} color={theme.colors.primary} disabled={!canVote} />
+            <Metric icon="thumb-down" value={data.downvotes}    onPress={canVote ? () => onVote?.(data.id, "down") : undefined} color={theme.colors.primary} disabled={!canVote} />
             <Metric icon="comment"    value={data.comment_count}                                           color={theme.colors.primary} />
           </View>
         );
@@ -218,10 +220,10 @@ export default function TrendingEngagementCard({
 /* --------------------------------------------------
    Metric
 ---------------------------------------------------*/
-function Metric({ icon, value, onPress, color }: { icon: string; value: number; onPress?: () => void; color: string }) {
+function Metric({ icon, value, onPress, color, disabled }: { icon: string; value: number; onPress?: () => void; color: string; disabled?: boolean }) {
   return (
-    <View style={styles.metricGroup}>
-      <IconButton icon={icon} size={20} iconColor={color} onPress={onPress} />
+    <View style={[styles.metricGroup, disabled && { opacity: 0.4 }]}>
+      <IconButton icon={icon} size={20} iconColor={color} onPress={onPress} disabled={disabled} />
       <Text>{value}</Text>
     </View>
   );

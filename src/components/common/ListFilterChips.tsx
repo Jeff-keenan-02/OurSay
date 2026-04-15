@@ -14,7 +14,7 @@ export type TierFilterKey = "all" | "tier2" | "tier3";
 
 const TIER_CHIPS: FilterChip<TierFilterKey>[] = [
   { key: "all",   label: "All Tiers",  icon: "account-group-outline" },
-  { key: "tier2", label: "Tier 2+",    icon: "shield-half-full"      },
+  { key: "tier2", label: "Tier 2",     icon: "shield-half-full"      },
   { key: "tier3", label: "Tier 3",     icon: "shield-check"          },
 ];
 

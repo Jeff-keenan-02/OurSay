@@ -17,6 +17,11 @@ export function useDiscussionVote(
 ) {
 
   const api = useApiClient();
+
+  // Tier 1 (liveness) is required to vote on discussions.
+  // Enforced in UI (button disabled) and backend (requireTier(1) middleware).
+  const canVote = (user?.verification_tier ?? 0) >= 1;
+
   /* -------------------------------------------------
      Vote Mutation
   --------------------------------------------------*/
@@ -28,6 +33,10 @@ export function useDiscussionVote(
 
     if (!user) {
       throw new Error("Not logged in");
+    }
+
+    if (!canVote) {
+      throw new Error("Tier 1 verification required to vote on discussions");
     }
 
     try {
@@ -63,5 +72,5 @@ export function useDiscussionVote(
      Return Mutation
   --------------------------------------------------*/
 
-  return { vote };
+  return { vote, canVote };
 }

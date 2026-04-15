@@ -195,8 +195,13 @@ return (
                     {/* Vote row */}
                     <View style={styles.voteRow}>
                       <TouchableOpacity
-                        style={[styles.voteBtn, myVote === "up" && { backgroundColor: theme.colors.primary + "20", borderColor: theme.colors.primary + "60" }]}
+                        style={[
+                          styles.voteBtn,
+                          myVote === "up" && { backgroundColor: theme.colors.primary + "20", borderColor: theme.colors.primary + "60" },
+                          userTier < 1 && { opacity: 0.4 },
+                        ]}
                         onPress={() => handleVote("up")}
+                        disabled={userTier < 1}
                       >
                         <MaterialCommunityIcons
                           name={myVote === "up" ? "thumb-up" : "thumb-up-outline"}
@@ -209,8 +214,13 @@ return (
                       </TouchableOpacity>
 
                       <TouchableOpacity
-                        style={[styles.voteBtn, myVote === "down" && { backgroundColor: "#f87171" + "20", borderColor: "#f87171" + "60" }]}
+                        style={[
+                          styles.voteBtn,
+                          myVote === "down" && { backgroundColor: "#f87171" + "20", borderColor: "#f87171" + "60" },
+                          userTier < 1 && { opacity: 0.4 },
+                        ]}
                         onPress={() => handleVote("down")}
+                        disabled={userTier < 1}
                       >
                         <MaterialCommunityIcons
                           name={myVote === "down" ? "thumb-down" : "thumb-down-outline"}
@@ -226,6 +236,11 @@ return (
                         {new Date(discussion.created_at).toLocaleDateString("en-IE", { day: "numeric", month: "short", year: "numeric" })}
                       </Text>
                     </View>
+                    {userTier < 1 && (
+                      <Text style={[styles.voteLockedHint, { color: theme.colors.onSurfaceVariant }]}>
+                        Complete liveness verification (Tier 1) to vote on discussions
+                      </Text>
+                    )}
                   </View>
 
                   {/* Comments section header + tier filter */}
@@ -350,6 +365,11 @@ const styles = StyleSheet.create({
   voteCount: {
     fontSize: 14,
     fontWeight: "600",
+  },
+  voteLockedHint: {
+    fontSize: 12,
+    fontStyle: "italic",
+    marginTop: spacing.xs,
   },
   commentsSectionHeader: {
     flexDirection: "row",

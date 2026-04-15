@@ -68,8 +68,8 @@ export default function PollListScreen() {
         true;
       const matchTier =
         tierFilter === "all"   ? true :
-        tierFilter === "tier2" ? g.required_verification_tier >= 2 :
-        tierFilter === "tier3" ? g.required_verification_tier >= 3 :
+        tierFilter === "tier2" ? g.required_verification_tier === 2 :
+        tierFilter === "tier3" ? g.required_verification_tier === 3 :
         true;
       return matchSearch && matchFilter && matchTier;
     });

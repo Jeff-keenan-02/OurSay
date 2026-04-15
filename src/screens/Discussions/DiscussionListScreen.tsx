@@ -39,7 +39,7 @@ export default function DiscussionsListScreen() {
   const { topicId, title } = route.params;
 
   const topicDiscussionsQuery = useDiscussionByTopic(topicId);
-  const { vote } = useDiscussionVote(user, topicDiscussionsQuery.updateData);
+  const { vote, canVote } = useDiscussionVote(user, topicDiscussionsQuery.updateData);
 
   const [search, setSearch] = useState("");
   const [sort, setSort]     = useState<SortKey>("popular");
@@ -128,6 +128,7 @@ export default function DiscussionsListScreen() {
                     item={item}
                     onPress={() => openDiscussion(item.id)}
                     onVote={vote}
+                    canVote={canVote}
                   />
                 )}
               />

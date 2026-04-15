@@ -13,7 +13,7 @@ CREATE TABLE users (
   verification_tier SMALLINT NOT NULL DEFAULT 0 CHECK (verification_tier BETWEEN 0 AND 3),
   created_at TIMESTAMP DEFAULT NOW()
 );
-z
+
 --------------------------------------------------------------
 -- Topics
 --------------------------------------------------------------
@@ -161,6 +161,26 @@ CREATE TABLE verifications (
 CREATE UNIQUE INDEX unique_active_passport_hash
 ON verifications (passport_hash)
 WHERE type = 'passport' AND revoked = false;
+
+-- Cascade revocation: revoking a passport automatically revokes dependent residence
+CREATE OR REPLACE FUNCTION cascade_passport_revocation()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.type = 'passport' AND NEW.revoked = true AND OLD.revoked = false THEN
+    UPDATE verifications
+    SET revoked = true
+    WHERE user_id = NEW.user_id
+      AND type = 'residence'
+      AND revoked = false;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_cascade_passport_revocation
+  AFTER UPDATE ON verifications
+  FOR EACH ROW
+  EXECUTE FUNCTION cascade_passport_revocation();
 
 
 -------------------------------------------------------------
@@ -985,4 +1005,6 @@ BEGIN
     END LOOP;
   END LOOP;
 END $$;
+
+
 

@@ -27,9 +27,12 @@ export default function CreateDiscussionScreen({ navigation }: any) {
     try {
       const data = await createDiscussion(title.trim(), body.trim());
 
-      navigation.navigate("Discussions", {
-        screen: "DiscussionDetail",
-        params: { id: data.id },
+      navigation.reset({
+        index: 1,
+        routes: [
+          { name: "Discussions", params: { screen: "DiscussionHome" } },
+          { name: "Discussions", params: { screen: "DiscussionDetail", params: { id: data.id } } },
+        ],
       });
     } catch (err: any) {
       console.error("Create failed:", err.message);

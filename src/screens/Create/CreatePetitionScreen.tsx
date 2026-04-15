@@ -43,9 +43,12 @@ export default function CreatePetitionScreen({ navigation }: any) {
         signature_goal: GOAL_MAP[goalTier],
       });
 
-      navigation.navigate("Petitions", {
-        screen: "PetitionDetail",
-        params: { petitionId: data.id },
+      navigation.reset({
+        index: 1,
+        routes: [
+          { name: "Petitions", params: { screen: "PetitionHome" } },
+          { name: "Petitions", params: { screen: "PetitionDetail", params: { petitionId: data.id } } },
+        ],
       });
     } catch (err: any) {
       console.error("Create petition failed:", err);
@@ -55,7 +58,7 @@ export default function CreatePetitionScreen({ navigation }: any) {
   };
 
   return (
-    <Screen title="New Petition" scroll showBack>
+    <Screen scroll showBack>
       <Pressable onPress={Keyboard.dismiss}>
 
           {/* Coloured hero banner */}
@@ -199,7 +202,7 @@ const styles = StyleSheet.create({
   helperDescription: {
     opacity: 0.6,
     fontSize: 13,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   input: {
     marginBottom: spacing.md,
