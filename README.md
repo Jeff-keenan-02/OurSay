@@ -185,6 +185,4 @@ npm test
 
 ## Notes
 
-- Liveness verification is currently in **mock mode** — it simulates approval without calling an external provider. In a production deployment this would be replaced by a provider such as Onfido.
-- Passport OCR uses Google Cloud Vision. The integration is present but the service is disabled by default; mock mode is used instead.
-- The `topic_id` in `createPetition` is hardcoded to `8` — this is a known placeholder for a future topic-selection flow.
+

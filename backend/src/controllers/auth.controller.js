@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const pool = require('../db/pool');
 const { generateToken } = require("../services/jwt.service");
 
-const SALT_ROUNDS = 12; //12 is a good balance.
+const SALT_ROUNDS = 12;
 
 // ---------------------------------------------------------------------------
 // POST /signup
