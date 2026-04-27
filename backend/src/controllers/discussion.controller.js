@@ -188,15 +188,15 @@ exports.postComment = async (req, res) => {
   }
 
   try {
-    //  get user's effective verification tier (live query, respects revocation/expiry)
-    const userResult = await pool.query(
+    // Get user's effective verification tier (live, respects revocation and expiry)
+    const tierResult = await pool.query(
       `SELECT COALESCE(MAX(level), 0) AS tier
        FROM verifications
        WHERE user_id = $1 AND revoked = false AND expires_at > NOW()`,
       [userId]
     );
 
-    const verificationTier = Number(userResult.rows[0]?.tier ?? 0);
+    const verificationTier = Number(tierResult.rows[0]?.tier ?? 0);
 
     const result = await pool.query(
       `
@@ -213,6 +213,7 @@ exports.postComment = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 /**
  * POST a discussions for tier 3 users
