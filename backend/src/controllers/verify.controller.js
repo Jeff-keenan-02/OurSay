@@ -18,7 +18,9 @@ require("dotenv").config({
 const IDENTITY_SALT = process.env.IDENTITY_SALT;
 
 // Toggle: true = mock (always passes), false = real AWS Rekognition
-const MOCK_VERIFICATION = true;
+const MOCK_LIVENESS = false;
+const MOCK_PASSPORT = true;
+const MOCK_RESIDENCE = false;
 
 // Minimum confidence score (0-100) to pass liveness
 const LIVENESS_CONFIDENCE_THRESHOLD = 75;
@@ -57,7 +59,7 @@ exports.createLivenessSession = async (req, res) => {
       return res.status(400).json({ error: 'Missing userId' });
     }
 
-    if (MOCK_VERIFICATION) {
+    if (MOCK_LIVENESS) {
       return res.json({ sessionId: `mock-session-${userId}` });
     }
 
@@ -85,7 +87,7 @@ exports.confirmLiveness = async (req, res) => {
       return res.status(400).json({ error: 'Session ID required' });
     }
 
-    if (MOCK_VERIFICATION) {
+    if (MOCK_LIVENESS) {
       await pool.query(
         `INSERT INTO verifications (user_id, type, level, passport_hash, issued_at, expires_at)
          VALUES ($1, 'liveness', 1, NULL, NOW(), NOW() + INTERVAL '7 days')`,
@@ -142,7 +144,7 @@ exports.verifyPassport = async (req, res) => {
       return res.status(400).json({ error: "Missing userId" });
     }
 
-    if (MOCK_VERIFICATION) {
+    if (MOCK_PASSPORT) {
       const proofHash = `mock_passport_${userId}`;
       await pool.query(
         `INSERT INTO verifications (user_id, type, level, passport_hash, issued_at, expires_at)
@@ -300,7 +302,7 @@ exports.verifyResidence = async (req, res) => {
 
     const passportExpiry = passportResult.rows[0].expires_at;
 
-    if (MOCK_VERIFICATION) {
+    if (MOCK_RESIDENCE) {
       await pool.query(
         `
         INSERT INTO verifications (

@@ -158,6 +158,9 @@ CREATE TABLE verifications (
 
 
 -- global protecetion of reused passport
+
+
+
 CREATE UNIQUE INDEX unique_active_passport_hash
 ON verifications (passport_hash)
 WHERE type = 'passport' AND revoked = false;
