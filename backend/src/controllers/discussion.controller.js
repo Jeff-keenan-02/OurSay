@@ -113,7 +113,7 @@ exports.getDiscussion = async (req, res) => {
         c.body,
         c.created_at,
         u.username,
-        u.verification_tier
+        c.verification_tier
       FROM comments c
       LEFT JOIN users u ON u.id = c.user_id
       WHERE c.discussion_id = $1

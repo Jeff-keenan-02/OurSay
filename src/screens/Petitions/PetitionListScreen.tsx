@@ -79,7 +79,7 @@ export default function PetitionListScreen() {
 
   const stats = useMemo(() => {
     const list = petitionsQuery.data ?? [];
-    const signed = list.filter((p) => p.signatures > 0).length;
+    const signed = list.filter((p) => p.has_signed).length;
     const goalMet = list.filter((p) => p.progress >= 1).length;
     return { total: list.length, signed, goalMet };
   }, [petitionsQuery.data]);

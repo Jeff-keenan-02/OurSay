@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   TouchableOpacity,
   StyleSheet,
@@ -7,6 +7,7 @@ import {
 } from "react-native";
 import { Text, useTheme, ActivityIndicator } from "react-native-paper";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useFocusEffect } from "@react-navigation/native";
 import { VERIFICATION_TIERS, VerificationTier } from "../../types/verification";
 import { TierAccessCard } from "../../hooks/common/TierAccessCard";
 import { useVerificationSummary } from "../../hooks/verify/useVerificationSummary";
@@ -19,6 +20,8 @@ export function TierBadge({ tier }: Props) {
   const theme = useTheme();
   const [visible, setVisible] = useState(false);
   const { data, loading, reload } = useVerificationSummary();
+
+  useFocusEffect(useCallback(() => { reload(); }, []));
 
   const effectiveTier = (data?.currentTier ?? tier) as VerificationTier;
   const tierInfo = VERIFICATION_TIERS[effectiveTier] ?? VERIFICATION_TIERS[0];
